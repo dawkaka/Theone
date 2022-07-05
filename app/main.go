@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dawkaka/theone/config"
+	"github.com/dawkaka/theone/repository"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -25,10 +26,10 @@ func main() {
 		}
 	}()
 
-	usersCollection := client.Database(config.DB_DATABASE).Collection("users")
-	couplesCollection := client.Database(config.DB_DATABASE).Collection("couples")
-	postsCollection := client.Database(config.DB_DATABASE).Collection("posts")
-	videosCollection := client.Database(config.DB_DATABASE).Collection("videos")
+	usersCollection := repository.NewUserMongo(client.Database(config.DB_DATABASE).Collection("users"))
+	couplesCollection := repository.NewCoupleMongo(client.Database(config.DB_DATABASE).Collection("couples"))
+	postsCollection := repository.NewPostMongo(client.Database(config.DB_DATABASE).Collection("posts"))
+	videosCollection := repository.NewVideoMongo(client.Database(config.DB_DATABASE).Collection("videos"))
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

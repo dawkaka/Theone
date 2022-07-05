@@ -23,5 +23,5 @@ type Repository interface {
 type UseCase interface {
 	CreateCouple(couple entity.Couple) (entity.ID, error)
 	UpdateCouple(couple entity.Couple) error
-	GetCouple(coupleName string) error
+	GetCouple(coupleName string) (entity.Couple, error)
 }
