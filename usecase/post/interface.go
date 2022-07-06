@@ -5,7 +5,7 @@ import "github.com/dawkaka/theone/entity"
 //Reader interface
 type Reader interface {
 	Get(id entity.ID) (*entity.Post, error)
-	List(userName string) ([]*entity.Post, error)
+	List(id entity.ID) ([]*entity.Post, error)
 }
 
 //Writer user writer

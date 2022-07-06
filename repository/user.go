@@ -23,7 +23,7 @@ func NewUserMongo(col *mongo.Collection) *UserMongo {
 func (u *UserMongo) Get(userName string) (*entity.User, error) {
 	var result entity.User
 
-	err := u.collection.FindOne(context.TODO(), bson.D{bson.E{Key: "user_name", Value: userName}}).Decode(&result)
+	err := u.collection.FindOne(context.TODO(), bson.D{{Key: "user_name", Value: userName}}).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +35,10 @@ func (u *UserMongo) Search(query string) ([]*entity.User, error) {
 	cursor, err := u.collection.Find(
 		context.TODO(),
 		bson.D{
-			bson.E{Key: "$or", Value: bson.D{
-				bson.E{Key: "user_name", Value: bson.D{bson.E{Key: "$regex", Value: "/^" + query + "/i"}}},
-				bson.E{Key: "first_name", Value: bson.D{bson.E{Key: "$regex", Value: "/^" + query + "/i"}}},
-				bson.E{Key: "last_name", Value: bson.D{bson.E{Key: "$regex", Value: "/^" + query + "/i"}}},
+			{Key: "$or", Value: bson.D{
+				{Key: "user_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}},
+				{Key: "first_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}},
+				{Key: "last_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}},
 			}}},
 	)
 	if err != nil {
@@ -55,7 +55,7 @@ func (u *UserMongo) Search(query string) ([]*entity.User, error) {
 
 func (u *UserMongo) List(users []entity.ID) ([]*entity.User, error) {
 	cursor, err := u.collection.Find(context.TODO(),
-		bson.D{bson.E{Key: "id", Value: bson.D{bson.E{Key: "$in", Value: users}}}},
+		bson.D{{Key: "id", Value: bson.D{{Key: "$in", Value: users}}}},
 	)
 	if err != nil {
 		return nil, err
@@ -83,8 +83,8 @@ func (u *UserMongo) Update(e *entity.User) error {
 
 	_, err := u.collection.UpdateOne(
 		context.TODO(),
-		bson.D{bson.E{Key: "user_name", Value: e.UserName}},
-		bson.D{bson.E{Key: "$set", Value: e}},
+		bson.D{{Key: "user_name", Value: e.UserName}},
+		bson.D{{Key: "$set", Value: e}},
 	)
 	return err
 }
@@ -92,7 +92,7 @@ func (u *UserMongo) Update(e *entity.User) error {
 func (u *UserMongo) Delete(id entity.ID) error {
 	_, err := u.collection.DeleteOne(
 		context.TODO(),
-		bson.D{bson.E{Key: "id", Value: id}},
+		bson.D{{Key: "id", Value: id}},
 	)
 	return err
 }

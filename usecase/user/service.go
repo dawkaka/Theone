@@ -20,15 +20,14 @@ func NewService(r Repository) *Service {
 }
 
 //CreateUser Create an user
-func (s *Service) CreateUser(email, password, firstName, lastName string) (entity.ID, error) {
-	e := entity.NewUser(email, firstName, lastName, time.Date(1999, time.March, 16, 0, 0, 0, 0, time.Now().Location()))
-
+func (s *Service) CreateUser(email, password, firstName, lastName string) error {
+	e := entity.NewUser(email, firstName, lastName)
 	return s.repo.Create(e)
 }
 
 //GetUser Get an user
-func (s *Service) GetUser(id entity.ID) (*entity.User, error) {
-	return s.repo.Get(id)
+func (s *Service) GetUser(userName string) (*entity.User, error) {
+	return s.repo.Get(userName)
 }
 
 //SearchUsers Search users
@@ -43,14 +42,6 @@ func (s *Service) ListUsers(users []entity.ID) ([]*entity.User, error) {
 
 //DeleteUser Delete an user
 func (s *Service) DeleteUser(id entity.ID) error {
-	u, err := s.GetUser(id)
-	if u == nil {
-		return entity.ErrNotFound
-	}
-	if err != nil {
-		return err
-	}
-
 	return s.repo.Delete(id)
 }
 

@@ -7,6 +7,10 @@ import (
 
 	"github.com/dawkaka/theone/config"
 	"github.com/dawkaka/theone/repository"
+	"github.com/dawkaka/theone/usecase/couple"
+	"github.com/dawkaka/theone/usecase/post"
+	"github.com/dawkaka/theone/usecase/user"
+	"github.com/dawkaka/theone/usecase/video"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -26,10 +30,15 @@ func main() {
 		}
 	}()
 
-	usersCollection := repository.NewUserMongo(client.Database(config.DB_DATABASE).Collection("users"))
-	couplesCollection := repository.NewCoupleMongo(client.Database(config.DB_DATABASE).Collection("couples"))
-	postsCollection := repository.NewPostMongo(client.Database(config.DB_DATABASE).Collection("posts"))
-	videosCollection := repository.NewVideoMongo(client.Database(config.DB_DATABASE).Collection("videos"))
+	usersRepo := repository.NewUserMongo(client.Database(config.DB_DATABASE).Collection("users"))
+	couplesRepo := repository.NewCoupleMongo(client.Database(config.DB_DATABASE).Collection("couples"))
+	postsRepo := repository.NewPostMongo(client.Database(config.DB_DATABASE).Collection("posts"))
+	videosRepo := repository.NewVideoMongo(client.Database(config.DB_DATABASE).Collection("videos"))
+
+	vidoeService := video.NewService(videosRepo)
+	userService := user.NewService(usersRepo)
+	postService := post.NewService(postsRepo)
+	coupleService := couple.NewService(couplesRepo)
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

@@ -4,7 +4,7 @@ import "github.com/dawkaka/theone/entity"
 
 //Writer couple writer methods
 type Writer interface {
-	Create(couple entity.Couple) (entity.ID, error)
+	Create(couple entity.Couple) error
 	Update(couple entity.Couple) error
 }
 
@@ -21,7 +21,7 @@ type Repository interface {
 
 //Couple usecase
 type UseCase interface {
-	CreateCouple(couple entity.Couple) (entity.ID, error)
+	CreateCouple(couple entity.Couple) error
 	UpdateCouple(couple entity.Couple) error
 	GetCouple(coupleName string) (entity.Couple, error)
 }

@@ -46,10 +46,37 @@ func (p *PostMongo) List(id entity.ID) ([]*entity.Post, error) {
 // Update(e *entity.Post) error
 // Delete(id entity.ID) error
 
-func (p *PostMongo) Create(post entity.Post) (entity.ID, error) {
-
+func (p *PostMongo) Create(post *entity.Post) (entity.ID, error) {
 	result, err := p.collection.InsertOne(context.TODO(), post)
-
 	return result.InsertedID.(primitive.ObjectID), err
+}
 
+func (p *PostMongo) Update(post *entity.Post) error {
+	result, err := p.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: post.ID}},
+		bson.D{{Key: "$set", Value: post}},
+	)
+	if err != nil {
+		return err
+	}
+	if result.ModifiedCount < 1 {
+		return entity.ErrNotFound
+	}
+	return nil
+}
+
+func (p *PostMongo) Delete(id entity.ID) error {
+	result, err := p.collection.DeleteOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: id}},
+	)
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount < 1 {
+		return entity.ErrNotFound
+	}
+
+	return nil
 }

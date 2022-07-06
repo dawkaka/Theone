@@ -16,7 +16,7 @@ func (s *Service) GetCouple(coupleName string) (entity.Couple, error) {
 	return s.repo.Get(coupleName)
 }
 
-func (s *Service) CreateCouple(couple entity.Couple) (entity.ID, error) {
+func (s *Service) CreateCouple(couple entity.Couple) error {
 	return s.repo.Create(couple)
 }
 

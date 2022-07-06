@@ -35,15 +35,21 @@ type User struct {
 	ContentPriorityQueue []ID           `json:"content_priority_queue" bson:"content_priority_queue"`
 }
 
-func NewUser(firstName, lastName, email string, dateOfBirth time.Time) *User {
+func NewUser(firstName, lastName, email string) *User {
 	return &User{
-		Email:       email,
-		LastName:    lastName,
-		FirstName:   firstName,
-		DateOfBirth: dateOfBirth,
-		UserName:    fmt.Sprintf("%s_%s_%d", firstName, lastName, time.Now()),
-		CreatedAt:   time.Now(),
-		HasPartner:  false,
-		Bio:         "-",
+		Email:      email,
+		LastName:   lastName,
+		FirstName:  firstName,
+		UserName:   fmt.Sprintf("%s_%s_%d", firstName, lastName, time.Now()),
+		CreatedAt:  time.Now(),
+		HasPartner: false,
+		Bio:        "-",
 	}
+}
+
+func (u *User) Validate() error {
+	if u.Email == "" || u.LastName == "" || u.FirstName == "" {
+		return ErrInvalidEntity
+	}
+	return nil
 }
