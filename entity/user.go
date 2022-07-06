@@ -12,7 +12,7 @@ type Notification struct {
 
 //User data
 type User struct {
-	ID                   ID             `json:"id"`
+	ID                   ID             `json:"id" bson:"_id"`
 	Email                string         `json:"email"`
 	UserName             string         `json:"user_name" bson:"user_name"`
 	FirstName            string         `json:"first_name" bson:"first_name"`
@@ -37,7 +37,6 @@ type User struct {
 
 func NewUser(firstName, lastName, email string, dateOfBirth time.Time) *User {
 	return &User{
-		ID:          NewID(),
 		Email:       email,
 		LastName:    lastName,
 		FirstName:   firstName,
