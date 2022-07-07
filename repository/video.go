@@ -21,8 +21,6 @@ func NewVideoMongo(col *mongo.Collection) *VideoMongo {
 }
 
 //Read operations
-// List(videos []entity.ID) ([]*entity.Video, error)
-// Get(id entity.ID) (*entity.Video, error)
 
 func (v *VideoMongo) Get(id entity.ID) (*entity.Video, error) {
 	var video *entity.Video
@@ -42,9 +40,6 @@ func (v *VideoMongo) List(ids []entity.ID) ([]*entity.Video, error) {
 }
 
 //Write Operations
-// Create(e *entity.Video) (entity.ID, error)
-// 	Update(e *entity.Video) error
-// 	Delete(id entity.ID) error
 
 func (v *VideoMongo) Create(video *entity.Video) (entity.ID, error) {
 	result, err := v.collection.InsertOne(context.TODO(), video)

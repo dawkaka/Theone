@@ -5,7 +5,7 @@ import "github.com/dawkaka/theone/entity"
 //Reader interface
 type Reader interface {
 	Get(id entity.ID) (*entity.Post, error)
-	List(id entity.ID) ([]*entity.Post, error)
+	List(id []entity.ID) ([]*entity.Post, error)
 }
 
 //Writer user writer
@@ -24,7 +24,7 @@ type Repository interface {
 //Post use case
 type UseCase interface {
 	CreatePost(e *entity.Post) (entity.ID, error)
-	ListPosts() []*entity.Post
+	ListPosts(id []entity.ID) ([]*entity.Post, error)
 	UpdatePost(e *entity.Post) error
 	DeletePost(id entity.ID) error
 }

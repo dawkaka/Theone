@@ -21,7 +21,7 @@ func (s *Service) CreatePost(e *entity.Post) (entity.ID, error) {
 	return id, nil
 }
 
-func (s *Service) ListPosts(id entity.ID) ([]*entity.Post, error) {
+func (s *Service) ListPosts(id []entity.ID) ([]*entity.Post, error) {
 	posts, err := s.repo.List(id)
 	if err != nil {
 		return nil, err

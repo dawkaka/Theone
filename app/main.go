@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/dawkaka/theone/app/handler"
 	"github.com/dawkaka/theone/config"
 	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
@@ -35,10 +36,15 @@ func main() {
 	postsRepo := repository.NewPostMongo(client.Database(config.DB_DATABASE).Collection("posts"))
 	videosRepo := repository.NewVideoMongo(client.Database(config.DB_DATABASE).Collection("videos"))
 
-	vidoeService := video.NewService(videosRepo)
+	videoService := video.NewService(videosRepo)
 	userService := user.NewService(usersRepo)
 	postService := post.NewService(postsRepo)
 	coupleService := couple.NewService(couplesRepo)
+
+	handler.MakeUserHandlers(r, userService)
+	handler.MakeCoupleHandlers(r, coupleService)
+	handler.MakePostHandlers(r, postService)
+	handler.MakeVideoHandlers(r, videoService)
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

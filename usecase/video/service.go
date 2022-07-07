@@ -12,12 +12,8 @@ func NewService(r Repository) *Service {
 	}
 }
 
-func (s *Service) CreateVideo(e *entity.Video) (entity.ID, error) {
-	id, err := s.repo.Create(e)
-	if err != nil {
-		return id, err
-	}
-	return id, nil
+func (s *Service) GetVideo(id entity.ID) (*entity.Video, error) {
+	return s.repo.Get(id)
 }
 
 func (s *Service) ListVideos(ids []entity.ID) ([]*entity.Video, error) {
@@ -26,6 +22,14 @@ func (s *Service) ListVideos(ids []entity.ID) ([]*entity.Video, error) {
 		return nil, err
 	}
 	return posts, nil
+}
+
+func (s *Service) CreateVideo(e *entity.Video) (entity.ID, error) {
+	id, err := s.repo.Create(e)
+	if err != nil {
+		return id, err
+	}
+	return id, nil
 }
 
 func (s *Service) UpdateVideo(e *entity.Video) error {
