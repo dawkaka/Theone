@@ -20,8 +20,8 @@ func NewService(r Repository) *Service {
 }
 
 //CreateUser Create an user
-func (s *Service) CreateUser(email, password, firstName, lastName string) error {
-	e := entity.NewUser(email, firstName, lastName)
+func (s *Service) CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) error {
+	e := entity.NewUser(email, password, firstName, lastName, userName, dateOfBirth)
 	return s.repo.Create(e)
 }
 

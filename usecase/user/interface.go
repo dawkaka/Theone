@@ -1,6 +1,10 @@
 package user
 
-import "github.com/dawkaka/theone/entity"
+import (
+	"time"
+
+	"github.com/dawkaka/theone/entity"
+)
 
 //Reader interface
 type Reader interface {
@@ -27,7 +31,7 @@ type UseCase interface {
 	GetUser(userName string) (*entity.User, error)
 	SearchUsers(query string) ([]*entity.User, error)
 	ListUsers([]entity.ID) ([]*entity.User, error)
-	CreateUser(email, password, firstName, lastName string) error
+	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) error
 	UpdateUser(e *entity.User) error
 	DeleteUser(id entity.ID) error
 }

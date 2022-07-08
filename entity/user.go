@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -35,16 +34,45 @@ type User struct {
 	ContentPriorityQueue []ID           `json:"content_priority_queue" bson:"content_priority_queue"`
 }
 
-func NewUser(firstName, lastName, email string) *User {
+type Signup struct {
+	Email       string    `json:"email"`
+	UserName    string    `json:"user_name" bson:"user_name"`
+	FirstName   string    `json:"first_name" bson:"first_name"`
+	LastName    string    `json:"last_name" bson:"last_name"`
+	Password    string    `json:"password"`
+	DateOfBirth time.Time `json:"date_of_birth" bson:"date_of_birth"`
+}
+
+type Login struct {
+	Email    string `json:"email"`
+	UserName string `json:"user_name" bson:"user_name"`
+	Password string `json:"password"`
+}
+
+func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) *User {
 	return &User{
-		Email:      email,
-		LastName:   lastName,
-		FirstName:  firstName,
-		UserName:   fmt.Sprintf("%s_%s_%d", firstName, lastName, time.Now()),
-		CreatedAt:  time.Now(),
-		HasPartner: false,
-		Bio:        "-",
+		Email:       email,
+		LastName:    lastName,
+		FirstName:   firstName,
+		UserName:    userName,
+		Password:    password,
+		CreatedAt:   time.Now(),
+		DateOfBirth: dateOfBirth,
+		HasPartner:  false,
+		Bio:         "-",
 	}
+}
+
+func (u *User) IsEmail(email string) bool {
+
+}
+
+func (u *User) IsName(name string) bool {
+
+}
+
+func (u *User) IsUserName(userName string) bool {
+
 }
 
 func (u *User) Validate() error {

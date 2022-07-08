@@ -39,7 +39,7 @@ func deleteVideo(service video.UseCase) gin.HandlerFunc {
 }
 
 func MakeVideoHandlers(r *gin.Engine, service video.UseCase) {
-	r.GET("/:userName/video/:videoId", getVideo(service))
+	r.GET("/:coupleName/video/:videoId", getVideo(service))
 	r.GET("/video/list", listVideos(service))
 	r.POST("/video/new", newVideo(service))
 	r.PUT("/video/update", updateVideo(service))
