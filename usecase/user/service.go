@@ -47,10 +47,6 @@ func (s *Service) DeleteUser(id entity.ID) error {
 
 //UpdateUser Update an user
 func (s *Service) UpdateUser(e *entity.User) error {
-	err := e.Validate()
-	if err != nil {
-		return entity.ErrInvalidEntity
-	}
 	e.UpdatedAt = time.Now()
 	return s.repo.Update(e)
 }

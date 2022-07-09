@@ -2,11 +2,11 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/password"
+	"github.com/dawkaka/theone/pkg/password/validator"
 	"github.com/dawkaka/theone/usecase/user"
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +18,13 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		err := ctx.ShouldBind(newUser)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(entity.ErrNotFound.Error()))
+			return
+		}
+
+		errs := newUser.Validate()
+		if len(errs) > 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"type": "ERROR", "errors": errs})
+			return
 		}
 
 		firstName, lastName, userName, email, dateOfBith, userPassword :=
@@ -27,11 +34,13 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		hashedPassword, err := password.Generate(userPassword)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(err.Error()))
+			return
 		}
 
 		err = service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBith)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(err.Error()))
+			return
 		}
 
 		ctx.JSON(http.StatusCreated, presentation.Success("Signup successfull"))
@@ -64,7 +73,7 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		userName := ctx.Param("userName")
-		if strings.TrimSpace(userName) == "" {
+		if !validator.IsUserName(userName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error("Invalid user name"))
 			return
 		}
@@ -74,7 +83,15 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(entity.ErrNotFound.Error()))
 			return
 		}
-		pUser := presentation.UserProfile(user)
+		pUser := presentation.UserProfile{
+			UserName:       user.UserName,
+			FirstName:      user.UserName,
+			Bio:            user.Bio,
+			LastName:       user.LastName,
+			ProfilePicture: user.ProfilePicture,
+			CoverPicture:   user.CoverPicture,
+		}
+
 		ctx.JSON(http.StatusOK, gin.H{"user": pUser})
 	}
 }

@@ -1,7 +1,11 @@
 package entity
 
 import (
+	"errors"
 	"time"
+
+	"github.com/dawkaka/theone/pkg/password/validator"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Notification struct {
@@ -26,6 +30,7 @@ type User struct {
 	CoverPicture         string         `json:"cover_picture" bson:"cover_picture"`
 	ShowPictures         []string       `json:"show_pictures" bson:"show_pictures"`
 	Likes                []string       `json:"likes"`
+	EmailVerified        bool           `json:"email_verified" bson:"email_verified"`
 	Partner              ID             `json:"partner"`
 	Following            []ID           `json:"following"`
 	Notifications        []Notification `json:"notifications"`
@@ -36,11 +41,28 @@ type User struct {
 
 type Signup struct {
 	Email       string    `json:"email"`
-	UserName    string    `json:"user_name" bson:"user_name"`
 	FirstName   string    `json:"first_name" bson:"first_name"`
 	LastName    string    `json:"last_name" bson:"last_name"`
+	UserName    string    `json:"user_name" bson:"user_name"`
 	Password    string    `json:"password"`
 	DateOfBirth time.Time `json:"date_of_birth" bson:"date_of_birth"`
+}
+
+func (s *Signup) Validate() []error {
+	errs := []error{}
+	if !validator.IsEmail(s.Email) {
+		errs = append(errs, errors.New("wrong email format"))
+	}
+	if !validator.IsRealName(s.FirstName) {
+		errs = append(errs, errors.New("wrong first name format"))
+	}
+	if !validator.IsRealName(s.FirstName) {
+		errs = append(errs, errors.New("wrong last name format"))
+	}
+	if !validator.IsPassword(s.Password) {
+		errs = append(errs, errors.New("Wrong password format"))
+	}
+	return errs
 }
 
 type Login struct {
@@ -51,33 +73,26 @@ type Login struct {
 
 func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) *User {
 	return &User{
-		Email:       email,
-		LastName:    lastName,
-		FirstName:   firstName,
-		UserName:    userName,
-		Password:    password,
-		CreatedAt:   time.Now(),
-		DateOfBirth: dateOfBirth,
-		HasPartner:  false,
-		Bio:         "-",
+		Email:                email,
+		UserName:             userName,
+		FirstName:            firstName,
+		LastName:             lastName,
+		Password:             password,
+		DateOfBirth:          dateOfBirth,
+		Bio:                  "-",
+		HasPartner:           false,
+		CreatedAt:            time.Now(),
+		UpdatedAt:            time.Time{},
+		ProfilePicture:       "defaultProfile.jpg",
+		CoverPicture:         "defaultCover.jpg",
+		ShowPictures:         []string{},
+		Likes:                []string{},
+		EmailVerified:        false,
+		Partner:              [12]byte{},
+		Following:            []primitive.ObjectID{},
+		Notifications:        []Notification{},
+		LastVisited:          time.Time{},
+		LoginIPs:             []string{},
+		ContentPriorityQueue: []primitive.ObjectID{},
 	}
-}
-
-func (u *User) IsEmail(email string) bool {
-
-}
-
-func (u *User) IsName(name string) bool {
-
-}
-
-func (u *User) IsUserName(userName string) bool {
-
-}
-
-func (u *User) Validate() error {
-	if u.Email == "" || u.LastName == "" || u.FirstName == "" {
-		return ErrInvalidEntity
-	}
-	return nil
 }

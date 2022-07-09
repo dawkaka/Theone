@@ -1,0 +1,8 @@
+
+{
+    "errSomethingWentWrong": {
+        "description": "Something went wrong error message",
+        "one": "Something went wrong",
+        "other": "Soemthing went wrong"
+    }
+}
