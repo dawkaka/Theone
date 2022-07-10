@@ -41,7 +41,20 @@ func IsUserName(userName string) bool {
 	return true
 }
 
+func IsCoupleName(coupleName string) bool {
+	coupleName = strings.TrimSpace(coupleName)
+	if len(coupleName) < 5 || len(coupleName) > 30 {
+		return false
+	}
+
+	if strings.ContainsAny(coupleName, ".#@/][*)(^%$!~`'\"\\{}<>,-+=|?") {
+		return false
+	}
+
+	return true
+}
+
 func IsPassword(password string) bool {
-	password = strings.Trim(password, " ")
+	password = strings.TrimSpace(password)
 	return len(password) > 7
 }

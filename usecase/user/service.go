@@ -1,7 +1,6 @@
 package user
 
 import (
-	"strings"
 	"time"
 
 	"github.com/dawkaka/theone/entity"
@@ -32,7 +31,7 @@ func (s *Service) GetUser(userName string) (*entity.User, error) {
 
 //SearchUsers Search users
 func (s *Service) SearchUsers(query string) ([]*entity.User, error) {
-	return s.repo.Search(strings.ToLower(query))
+	return s.repo.Search(query)
 }
 
 //ListUsers List users

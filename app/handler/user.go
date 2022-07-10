@@ -2,13 +2,16 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/password"
 	"github.com/dawkaka/theone/pkg/password/validator"
 	"github.com/dawkaka/theone/usecase/user"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func signup(service user.UseCase) gin.HandlerFunc {
@@ -96,7 +99,26 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func searchUsers(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		query := ctx.Param("query")
+		if strings.TrimSpace(query) == "" {
+			return
+		}
+		users, err := service.SearchUsers(query)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error("Something went wrong"))
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"users": users})
+
+	}
+}
+
 func updateUser(service user.UseCase) gin.HandlerFunc {
+
 	return func(ctx *gin.Context) {
 
 	}
@@ -104,18 +126,19 @@ func updateUser(service user.UseCase) gin.HandlerFunc {
 
 func deleteUser(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		session := sessions.Default(ctx)
+		userId := session.Get("userID")
 
-	}
-}
-
-func searchUsers(service user.UseCase) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-
+		err := service.DeleteUser((userId.(primitive.ObjectID)))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error("something went wrong"))
+			return
+		}
+		ctx.JSON(http.StatusAccepted, presentation.Success("Account deleted"))
 	}
 }
 
 func MakeUserHandlers(r *gin.Engine, service user.UseCase) {
-
 	r.GET("/user/:userName", getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
 	r.POST("/user/signup", signup(service))
