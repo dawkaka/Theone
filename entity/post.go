@@ -2,8 +2,6 @@ package entity
 
 import "time"
 
-//Comment data
-
 //Post data
 type Post struct {
 	ID        ID        `json:"id"`

@@ -11,6 +11,8 @@ type Writer interface {
 //Reader couple reader methods
 type Reader interface {
 	Get(coupleName string) (entity.Couple, error)
+	GetCouplePosts(coupleName string, skip int) ([]entity.Post, error)
+	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 }
 
 //Repository all couple methods
@@ -24,4 +26,6 @@ type UseCase interface {
 	CreateCouple(couple entity.Couple) error
 	UpdateCouple(couple entity.Couple) error
 	GetCouple(coupleName string) (entity.Couple, error)
+	GetCouplePosts(coupleName string, skip int) ([]entity.Post, error)
+	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 }

@@ -14,7 +14,6 @@ import (
 	"github.com/dawkaka/theone/usecase/video"
 	"github.com/gin-gonic/gin"
 
-	//"github.com/go-redis/redis/v8"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,13 +22,6 @@ import (
 
 func main() {
 	r := gin.Default()
-	//var ctx = context.Background()
-
-	// rdb := redis.NewClient(&redis.Options{
-	// 	Addr:     "localhost:6379",
-	// 	Password: "", // no password set
-	// 	DB:       0,  // use default DB
-	// })
 	store, err := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
 	if err != nil {
 		panic(err)

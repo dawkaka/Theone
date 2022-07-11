@@ -1,0 +1,18 @@
+{
+  "hello_world": "Hello World",
+  "messages": {
+    "description": "The number of messages a person has",
+    "one": "{{.Name}} has {{.Count}} message.",
+    "other": "{{.Name}} has {{.Count}} messages."
+  },
+  "LoginRequired": {
+    "description": "User is required to sign in",
+    "one": "Login required",
+    "other": "Login required"
+  },
+  "SomethingWentWrong": {
+    "description": "Message for unkown errors or error that can't detailed to user",
+    "one": "Something went wrong, please try again",
+    "other": "Something went wrong, please try again"
+  }
+}

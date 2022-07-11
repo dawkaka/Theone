@@ -16,6 +16,14 @@ func (s *Service) GetCouple(coupleName string) (entity.Couple, error) {
 	return s.repo.Get(coupleName)
 }
 
+func (s *Service) GetCouplePosts(coupleName string, skip int) ([]entity.Post, error) {
+	return s.repo.GetCouplePosts(coupleName, skip)
+}
+
+func (s *Service) GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error) {
+	return s.repo.GetCoupleVideos(coupleName, skip)
+}
+
 func (s *Service) CreateCouple(couple entity.Couple) error {
 	return s.repo.Create(couple)
 }

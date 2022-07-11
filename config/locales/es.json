@@ -1,0 +1,19 @@
+
+{
+  "hello_world": "Hello World",
+  "messages": {
+    "description": "The number of messages a person has",
+    "one": "{{.Name}} has {{.Count}} message.",
+    "other": "{{.Name}} has {{.Count}} messages."
+  },
+  "LoginRequired": {
+    "description": "User is required to login",
+    "one": "Necesario iniciar sesión",
+    "other": "Necesario iniciar sesión"
+  },
+  "SomethingWentWrong": {
+    "description": "Message for unkown errors or error that can't detailed to user",
+    "one": "Algo salió mal, por favor vuelva a intentarlo.",
+    "other": "Algo salió mal, por favor vuelva a intentarlo."
+  }
+}

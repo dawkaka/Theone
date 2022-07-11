@@ -10,7 +10,7 @@ type CoupleProfile struct {
 	ProfilePicture string    `json:"profile_picture"`
 	CoverPicture   string    `json:"cover_picture"`
 	Bio            string    `json:"bio"`
-	Followers      int       `json:"followers"`
+	FollowersCount uint64    `json:"followers"`
 	PostCount      uint64    `json:"post_count"`
 	Status         string    `json:"status"`
 }

@@ -31,6 +31,70 @@ func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
 	return result, err
 }
 
+func (c *CoupleMongo) GetCouplePosts(coupleName string, skip int) ([]entity.Post, error) {
+	var result []entity.Post
+	//opts := options.Find().SetSkip(int64(skip)).SetLimit(15)
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
+	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: 20}}
+	joinStage := bson.D{
+		{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "posts"},
+				{Key: "localfield", Value: "_id"},
+				{Key: "foreignfield", Value: "couple_id"},
+				{Key: "as", Value: "couple_posts"},
+			},
+		},
+	}
+	unwindStage := bson.D{{Key: "$unwind", Value: "$couple_posts"}}
+
+	cursor, err := c.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, skipLimitStage, joinStage, unwindStage},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(context.TODO(), &result); err != nil {
+		return nil, err
+	}
+	return result, err
+}
+
+func (c *CoupleMongo) GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error) {
+	var result []entity.Video
+	//opts := options.Find().SetSkip(int64(skip)).SetLimit(15)
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
+	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: 15}}
+	joinStage := bson.D{
+		{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "videos"},
+				{Key: "localfield", Value: "_id"},
+				{Key: "foreignfield", Value: "couple_id"},
+				{Key: "as", Value: "couple_videos"},
+			},
+		},
+	}
+	unwindStage := bson.D{{Key: "$unwind", Value: "$couple_videos"}}
+
+	cursor, err := c.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, skipLimitStage, joinStage, unwindStage},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(context.TODO(), &result); err != nil {
+		return nil, err
+	}
+	return result, err
+}
+
 //Write Operations
 func (c *CoupleMongo) Create(couple entity.Couple) error {
 	_, err := c.collection.InsertOne(context.TODO(), couple)

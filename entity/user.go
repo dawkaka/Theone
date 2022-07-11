@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dawkaka/theone/pkg/password/validator"
+	"github.com/dawkaka/theone/pkg/validator"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

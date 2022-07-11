@@ -15,6 +15,7 @@ type Couple struct {
 	CoverPicture   string    `json:"cover_picture"`
 	Bio            string    `json:"bio"`
 	Followers      []ID      `json:"followers"`
+	FollowersCount uint64    `json:"followers_count"`
 	PostCount      uint64    `json:"post_count"`
 	Status         string    `json:"status"`
 }
