@@ -5,15 +5,59 @@ import (
 	"strconv"
 
 	"github.com/dawkaka/theone/app/presentation"
+	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/dawkaka/theone/usecase/couple"
+	"github.com/dawkaka/theone/usecase/user"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func newCouple(service couple.UseCase) gin.HandlerFunc {
+func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
+		session := sessions.Default(ctx)
+		userb := session.Get("user").(entity.UserSession)
+		partnerID, err := entity.StringToID(ctx.Param("partnerID"))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			return
+		}
+		userId := userb.ID
 
+		users, err := userService.ListUsers([]primitive.ObjectID{userId, partnerID})
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			return
+		}
+		if len(users) < 2 {
+			ctx.JSON(http.StatusForbidden, presentation.Error(ctx.Request.Header, "InvalidParnterRequest"))
+			return
+		}
+		var (
+			partner entity.User
+			user    entity.User
+		)
+		for i := 0; i < len(users); i++ {
+			if users[i].ID == userId {
+				user = users[i]
+			} else if users[i].ID == partnerID {
+				partner = users[i]
+			}
+		}
+
+		if !partner.HasPendingRequest || user.ID != partner.PartnerID {
+			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(ctx.Request.Header, "NotAllowed"))
+			return
+		}
+
+		err = service.CreateCouple(userb.ID.String(), partnerID.String())
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			return
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(ctx.Request.Header, "CoupleCreated"))
 	}
 
 }
@@ -89,11 +133,11 @@ func updateCouple(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
-func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase) {
+func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase) {
 	r.GET("/:coupleName", getCouple(service))
 	r.GET("/:coupleName/posts/:skip", getCouplePosts(service))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
-	r.POST("/couple/new", newCouple(service))
+	r.POST("/couple/new/:partnerID", newCouple(service, userService))
 	r.PUT("/couple/update", updateCouple(service))
 
 }

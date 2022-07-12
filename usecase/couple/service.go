@@ -1,6 +1,11 @@
 package couple
 
-import "github.com/dawkaka/theone/entity"
+import (
+	"time"
+
+	"github.com/dawkaka/theone/entity"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Service struct {
 	repo Repository
@@ -24,7 +29,30 @@ func (s *Service) GetCoupleVideos(coupleName string, skip int) ([]entity.Video, 
 	return s.repo.GetCoupleVideos(coupleName, skip)
 }
 
-func (s *Service) CreateCouple(couple entity.Couple) error {
+func (s *Service) CreateCouple(userId, partnerId string) error {
+	initiated, err := entity.StringToID(partnerId)
+	if err != nil {
+		return err
+	}
+	accepted, err := entity.StringToID(userId)
+	if err != nil {
+		return err
+	}
+
+	couple := entity.Couple{
+		Iniated:        initiated,
+		Accepted:       accepted,
+		IniatedAt:      time.Time{},
+		AcceptedAt:     time.Now(),
+		CoupleName:     "",
+		ProfilePicture: "defaultProfile.jpg",
+		CoverPicture:   "defaultCover.jpg",
+		Bio:            "-",
+		Followers:      []primitive.ObjectID{},
+		FollowersCount: 0,
+		PostCount:      0,
+		Status:         "In a relationship",
+	}
 	return s.repo.Create(couple)
 }
 

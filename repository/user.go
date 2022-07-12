@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -53,7 +54,7 @@ func (u *UserMongo) Search(query string) ([]*entity.User, error) {
 	return results, nil
 }
 
-func (u *UserMongo) List(users []entity.ID) ([]*entity.User, error) {
+func (u *UserMongo) List(users []entity.ID) ([]entity.User, error) {
 	cursor, err := u.collection.Find(context.TODO(),
 		bson.D{{Key: "id", Value: bson.D{{Key: "$in", Value: users}}}},
 	)
@@ -61,12 +62,59 @@ func (u *UserMongo) List(users []entity.ID) ([]*entity.User, error) {
 		return nil, err
 	}
 
-	var results []*entity.User
+	var results []entity.User
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		return nil, err
 	}
 	return results, nil
+}
+
+//Confirm if the parnter actually requested to be a couple
+func (u *UserMongo) ConfirmCouple(userID, partnerID entity.ID) bool {
+	err := u.collection.FindOne(
+		context.TODO(),
+		bson.D{
+			{Key: "_id", Value: partnerID},
+			{Key: "parnter_id", Value: userID},
+		},
+	)
+	return err == nil
+}
+
+func (u *UserMongo) Request(from, to entity.ID) error {
+	result, err := u.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: "from"}},
+		bson.D{
+			{
+				Key: "$set",
+				Value: bson.D{
+					{Key: "has_pending_request", Value: true},
+					{Key: "partner_id", Value: to},
+				},
+			},
+		},
+	)
+	if result.ModifiedCount != 1 {
+		return errors.New("something went wrong")
+	}
+	return err
+}
+
+func (u *UserMongo) Notify(userName string, notif any) error {
+	result, err := u.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "user_name", Value: userName}},
+		bson.D{{Key: "$push", Value: bson.D{
+			{Key: "notifications", Value: notif},
+		}},
+		},
+	)
+	if result.MatchedCount != 1 {
+		return errors.New("notify: couldn't update user notifications")
+	}
+	return err
 }
 
 //Write Methods

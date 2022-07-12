@@ -15,17 +15,26 @@ func Initialize() *i18n.Bundle {
 	return bundle
 }
 
-func Localizer(lang, messageId string) string {
+func Localize(lang, messageId string) string {
 	bundle := Initialize()
 	loc := i18n.NewLocalizer(bundle, lang)
-	messagesCount := 10
+	translation := loc.MustLocalize(&i18n.LocalizeConfig{
+		MessageID: messageId,
+	})
+
+	return translation
+}
+
+func LocalizeWithFullName(lang, firstName, lastName, messageId string) string {
+
+	bundle := Initialize()
+	loc := i18n.NewLocalizer(bundle, lang)
 	translation := loc.MustLocalize(&i18n.LocalizeConfig{
 		MessageID: messageId,
 		TemplateData: map[string]interface{}{
-			"Name":  "Alex",
-			"Count": messagesCount,
+			"FirstName": firstName,
+			"LastName":  lastName,
 		},
-		PluralCount: messagesCount,
 	})
 
 	return translation

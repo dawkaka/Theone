@@ -50,7 +50,7 @@ func main() {
 	coupleService := couple.NewService(couplesRepo)
 
 	handler.MakeUserHandlers(r, userService)
-	handler.MakeCoupleHandlers(r, coupleService)
+	handler.MakeCoupleHandlers(r, coupleService, userService)
 	handler.MakePostHandlers(r, postService)
 	handler.MakeVideoHandlers(r, videoService)
 

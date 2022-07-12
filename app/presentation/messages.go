@@ -20,7 +20,7 @@ func translate(header http.Header, message string) string {
 	} else {
 		lang = "en"
 	}
-	translation := inter.Localizer(lang, message)
+	translation := inter.Localize(lang, message)
 	return translation
 }
 

@@ -24,6 +24,10 @@ func (s *Service) CreateUser(email, password, firstName, lastName, userName stri
 	return s.repo.Create(e)
 }
 
+func (s *Service) CreateRequest(from, to entity.ID) error {
+	return s.repo.Request(from, to)
+}
+
 //GetUser Get an user
 func (s *Service) GetUser(userName string) (*entity.User, error) {
 	return s.repo.Get(userName)
@@ -35,7 +39,7 @@ func (s *Service) SearchUsers(query string) ([]*entity.User, error) {
 }
 
 //ListUsers List users
-func (s *Service) ListUsers(users []entity.ID) ([]*entity.User, error) {
+func (s *Service) ListUsers(users []entity.ID) ([]entity.User, error) {
 	return s.repo.List(users)
 }
 
@@ -48,4 +52,21 @@ func (s *Service) DeleteUser(id entity.ID) error {
 func (s *Service) UpdateUser(e *entity.User) error {
 	e.UpdatedAt = time.Now()
 	return s.repo.Update(e)
+}
+
+func (s *Service) ConfirmCouple(userID, partnerID string) (bool, error) {
+	user, err := entity.StringToID(userID)
+	if err != nil {
+		return false, err
+	}
+	parnter, err := entity.StringToID(partnerID)
+
+	if err != nil {
+		return false, err
+	}
+	return s.repo.ConfirmCouple(user, parnter), nil
+}
+
+func (s *Service) NotifyUser(user string, notif any) error {
+	return s.repo.Notify(user, notif)
 }
