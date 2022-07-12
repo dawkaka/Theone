@@ -1,11 +1,15 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
+	"github.com/dawkaka/theone/inter"
+	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/dawkaka/theone/usecase/user"
@@ -52,11 +56,23 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			return
 		}
 
-		err = service.CreateCouple(userb.ID.String(), partnerID.String())
+		coupleName := fmt.Sprintf("%s&%s_%d", partner.FirstName, user.FirstName, time.Now())
+
+		err = service.CreateCouple(userb.ID.String(), partnerID.String(), coupleName)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
 			return
 		}
+		notif := entity.Notification{
+			Type: "Request accepted",
+			Message: inter.LocalizeWithFullName(
+				utils.GetLang(ctx.Request.Header),
+				user.FirstName,
+				user.LastName,
+				"RequestAccepted",
+			),
+		}
+		_ = userService.NotifyUser(partner.UserName, notif)
 		ctx.JSON(http.StatusCreated, presentation.Success(ctx.Request.Header, "CoupleCreated"))
 	}
 
@@ -127,6 +143,24 @@ func getCoupleVideos(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
+func getFollowers(service couple.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		coupleName := ctx.Param("coupleName")
+		skip, err := strconv.Atoi(ctx.Param("skip")) //pagination
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+		}
+		if !validator.IsCoupleName(coupleName) {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+		}
+		followers, err := service.GetFollowers(coupleName, skip)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+		}
+		ctx.JSON(http.StatusOK, gin.H{"followers": followers})
+	}
+}
+
 func updateCouple(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -137,6 +171,7 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/:coupleName", getCouple(service))
 	r.GET("/:coupleName/posts/:skip", getCouplePosts(service))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
+	r.GET("/:coupleName/followers/:skip", getFollowers(service))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))
 	r.PUT("/couple/update", updateCouple(service))
 

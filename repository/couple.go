@@ -95,6 +95,37 @@ func (c *CoupleMongo) GetCoupleVideos(coupleName string, skip int) ([]entity.Vid
 	return result, err
 }
 
+func (c *CoupleMongo) Followers(coupleName string, skip int) ([]entity.Follower, error) {
+	var followers []entity.Follower
+
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
+	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: 30}}
+	unwindStage := bson.D{{Key: "$unwind", Value: "$followers"}}
+	joinStage := bson.D{
+		{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "users"},
+				{Key: "localfield", Value: "followers"},
+				{Key: "foreignfield", Value: "_id"},
+				{Key: "as", Value: "couple_followers"},
+			},
+		},
+	}
+	unwindStage2 := bson.D{{Key: "$unwind", Value: "$couple_followers"}}
+	cursor, err := c.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, unwindStage, skipLimitStage, joinStage, unwindStage2},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &followers); err != nil {
+		return nil, err
+	}
+	return followers, nil
+}
+
 //Write Operations
 func (c *CoupleMongo) Create(couple entity.Couple) error {
 	_, err := c.collection.InsertOne(context.TODO(), couple)

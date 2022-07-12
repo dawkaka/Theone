@@ -213,8 +213,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase) {
 	r.GET("/user/search/:query", searchUsers(service))
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
-	r.POST("/user/couple-request/:userName", initiateRequest(service))
+	r.PUT("/user/couple-request/:userName", initiateRequest(service))
 	r.PUT("/user/update", updateUser(service))
-
 	r.DELETE("/user/delete-account", deleteUser(service))
 }

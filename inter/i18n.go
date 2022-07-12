@@ -7,16 +7,15 @@ import (
 	"golang.org/x/text/language"
 )
 
-func Initialize() *i18n.Bundle {
-	bundle := i18n.NewBundle(language.English)
+var bundle = i18n.NewBundle(language.English)
+
+func init() {
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 	bundle.MustLoadMessageFile("../config/locales/en.json")
 	bundle.MustLoadMessageFile("../config/locales/es.json")
-	return bundle
 }
 
 func Localize(lang, messageId string) string {
-	bundle := Initialize()
 	loc := i18n.NewLocalizer(bundle, lang)
 	translation := loc.MustLocalize(&i18n.LocalizeConfig{
 		MessageID: messageId,
@@ -26,8 +25,6 @@ func Localize(lang, messageId string) string {
 }
 
 func LocalizeWithFullName(lang, firstName, lastName, messageId string) string {
-
-	bundle := Initialize()
 	loc := i18n.NewLocalizer(bundle, lang)
 	translation := loc.MustLocalize(&i18n.LocalizeConfig{
 		MessageID: messageId,
