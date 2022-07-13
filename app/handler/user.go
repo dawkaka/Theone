@@ -159,13 +159,16 @@ func getFollowing(service user.UseCase) gin.HandlerFunc {
 		skip, err := strconv.Atoi(ctx.Param("skip"))
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethinWentWrong"))
+			return
 		}
 		following, err := service.UserFollowing(userName, skip)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "NotFound"))
+				return
 			}
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			return
 		}
 		ctx.JSON(http.StatusOK, gin.H{"following": following})
 	}
@@ -258,7 +261,7 @@ func deleteUser(service user.UseCase) gin.HandlerFunc {
 func MakeUserHandlers(r *gin.Engine, service user.UseCase) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
-	r.GET("/user/following", getFollowing(service))
+	r.GET("/user/following/:skip", getFollowing(service))
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
 	r.PUT("/user/couple-request/:userName", initiateRequest(service))
