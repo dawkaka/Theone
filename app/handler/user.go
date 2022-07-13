@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"encoding/gob"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/dawkaka/theone/app/middlewares"
@@ -36,7 +38,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		firstName, lastName, userName, email, dateOfBith, userPassword :=
+		firstName, lastName, userName, email, dateOfBirth, userPassword :=
 			newUser.FirstName, newUser.LastName, newUser.UserName,
 			newUser.Email, newUser.DateOfBirth, newUser.Password
 
@@ -46,12 +48,25 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		err = service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBith)
+		insertedID, err := service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBirth)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, err.Error()))
 			return
 		}
-
+		session := sessions.Default(ctx)
+		userSession := entity.UserSession{
+			ID:                insertedID,
+			Email:             email,
+			Name:              userName,
+			FirstName:         firstName,
+			LastName:          lastName,
+			HasPartner:        false,
+			HasPendingRequest: false,
+			DateOfBirth:       dateOfBirth,
+		}
+		gob.Register(userSession)
+		session.Set("user", userSession)
+		_ = session.Save()
 		ctx.JSON(http.StatusCreated, presentation.Success(ctx.Request.Header, "Signup successfull"))
 	}
 }
@@ -74,6 +89,21 @@ func login(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "Wrong user name or password"))
 			return
 		}
+		session := sessions.Default(ctx)
+		userSession := entity.UserSession{
+			ID:                user.ID,
+			Name:              user.UserName,
+			Email:             user.Email,
+			HasPartner:        user.HasPartner,
+			PartnerID:         user.PartnerID,
+			HasPendingRequest: user.HasPendingRequest,
+			FirstName:         user.FirstName,
+			LastName:          user.LastName,
+			DateOfBirth:       user.DateOfBirth,
+		}
+		gob.Register(userSession)
+		session.Set("user", userSession)
+		_ = session.Save()
 		ctx.JSON(http.StatusOK, presentation.Success(ctx.Request.Header, "login successfull"))
 	}
 }
@@ -107,7 +137,6 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 
 func searchUsers(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
 		query := ctx.Param("query")
 		if !validator.IsUserName(query) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
@@ -121,6 +150,24 @@ func searchUsers(service user.UseCase) gin.HandlerFunc {
 
 		ctx.JSON(http.StatusOK, gin.H{"users": users})
 
+	}
+}
+
+func getFollowing(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userName := sessions.Default(ctx).Get("user").(entity.UserSession).Name
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethinWentWrong"))
+		}
+		following, err := service.UserFollowing(userName, skip)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "NotFound"))
+			}
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+		}
+		ctx.JSON(http.StatusOK, gin.H{"following": following})
 	}
 }
 
@@ -211,6 +258,7 @@ func deleteUser(service user.UseCase) gin.HandlerFunc {
 func MakeUserHandlers(r *gin.Engine, service user.UseCase) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
+	r.GET("/user/following", getFollowing(service))
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
 	r.PUT("/user/couple-request/:userName", initiateRequest(service))

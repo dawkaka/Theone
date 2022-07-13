@@ -42,9 +42,10 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) error {
 	couple := entity.Couple{
 		Iniated:        initiated,
 		Accepted:       accepted,
-		IniatedAt:      time.Time{},
 		AcceptedAt:     time.Now(),
 		CoupleName:     coupleName,
+		Married:        false,
+		Verified:       false,
 		ProfilePicture: "defaultProfile.jpg",
 		CoverPicture:   "defaultCover.jpg",
 		Bio:            "-",

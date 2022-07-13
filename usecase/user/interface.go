@@ -12,11 +12,12 @@ type Reader interface {
 	Search(query string) ([]*entity.User, error)
 	List(users []entity.ID) ([]entity.User, error)
 	ConfirmCouple(userID, partnerID entity.ID) bool
+	Following(userName string, skip int) ([]entity.Following, error)
 }
 
 //Writer user writer
 type Writer interface {
-	Create(e *entity.User) error
+	Create(e *entity.User) (entity.ID, error)
 	Update(e *entity.User) error
 	Delete(id entity.ID) error
 	Request(from, to entity.ID) error
@@ -34,7 +35,8 @@ type UseCase interface {
 	GetUser(userName string) (*entity.User, error)
 	SearchUsers(query string) ([]*entity.User, error)
 	ListUsers([]entity.ID) ([]entity.User, error)
-	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) error
+	UserFollowing(userName string, skip int) ([]entity.Following, error)
+	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) (entity.ID, error)
 	CreateRequest(from, to entity.ID) error
 	UpdateUser(e *entity.User) error
 	DeleteUser(id entity.ID) error

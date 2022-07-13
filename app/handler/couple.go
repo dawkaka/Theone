@@ -102,6 +102,8 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			ProfilePicture: couple.ProfilePicture,
 			CoverPicture:   couple.CoverPicture,
 			PostCount:      couple.PostCount,
+			Married:        couple.Married,
+			Verified:       couple.Verified,
 		}
 		ctx.JSON(http.StatusOK, gin.H{"couple": pCouple})
 	}

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/dawkaka/theone/app/handler"
 	"github.com/dawkaka/theone/config"
@@ -53,11 +52,5 @@ func main() {
 	handler.MakeCoupleHandlers(r, coupleService, userService)
 	handler.MakePostHandlers(r, postService)
 	handler.MakeVideoHandlers(r, videoService)
-
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
 	r.Run(fmt.Sprintf(":%d", config.API_PORT)) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

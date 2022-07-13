@@ -42,12 +42,19 @@ type User struct {
 }
 
 type Follower struct {
-	FirstName  string `json:"first_name" bson:"first_name"`
-	LastName   string `json:"last_name" bson:"last_name"`
-	UserName   string `json:"user_name" bson:"user_name"`
-	HasPartner bool   `json:"has_partner" bson:"has_partner"`
+	FirstName      string `json:"first_name" bson:"first_name"`
+	LastName       string `json:"last_name" bson:"last_name"`
+	UserName       string `json:"user_name" bson:"user_name"`
+	HasPartner     bool   `json:"has_partner" bson:"has_partner"`
+	ProfilePicture string `json:"profile_picture" bson:"profile_picture"`
 }
 
+type Following struct {
+	CoupleName     string `json:"couple_name" bson:"couple_name"`
+	ProfilePicture string `json:"profile_picture" bson:"profile_picture"`
+	Married        string `json:"married"`
+	Verified       string `json:"verified"`
+}
 type UserSession struct {
 	ID                ID        `json:"id" bson:"_id"`
 	Name              string    `json:"name"`
@@ -57,7 +64,6 @@ type UserSession struct {
 	HasPendingRequest bool      `json:"has_pending_request"`
 	FirstName         string    `json:"first_name" bson:"first_name"`
 	LastName          string    `json:"last_name" bson:"last_name"`
-	UserName          string    `json:"user_name" bson:"user_name"`
 	DateOfBirth       time.Time `json:"date_of_birth" bson:"date_of_birth"`
 }
 

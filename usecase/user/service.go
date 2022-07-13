@@ -19,7 +19,8 @@ func NewService(r Repository) *Service {
 }
 
 //CreateUser Create an user
-func (s *Service) CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) error {
+func (s *Service) CreateUser(email, password, firstName, lastName, userName string,
+	dateOfBirth time.Time) (entity.ID, error) {
 	e := entity.NewUser(email, password, firstName, lastName, userName, dateOfBirth)
 	return s.repo.Create(e)
 }
@@ -41,6 +42,10 @@ func (s *Service) SearchUsers(query string) ([]*entity.User, error) {
 //ListUsers List users
 func (s *Service) ListUsers(users []entity.ID) ([]entity.User, error) {
 	return s.repo.List(users)
+}
+
+func (s *Service) UserFollowing(userName string, skip int) ([]entity.Following, error) {
+	return s.repo.Following(userName, skip)
 }
 
 //DeleteUser Delete an user

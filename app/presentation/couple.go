@@ -13,4 +13,6 @@ type CoupleProfile struct {
 	FollowersCount uint64    `json:"followers"`
 	PostCount      uint64    `json:"post_count"`
 	Status         string    `json:"status"`
+	Married        bool      `json:"married"`
+	Verified       bool      `json:"verified"`
 }

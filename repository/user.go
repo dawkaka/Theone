@@ -82,6 +82,38 @@ func (u *UserMongo) ConfirmCouple(userID, partnerID entity.ID) bool {
 	return err == nil
 }
 
+func (u *UserMongo) Following(userName string, skip int) ([]entity.Following, error) {
+	var following []entity.Following
+
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: userName}}}}
+	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: 30}}
+	unwindStage := bson.D{{Key: "$unwind", Value: "$following"}}
+	joinStage := bson.D{
+		{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "couples"},
+				{Key: "localfield", Value: "following"},
+				{Key: "foreignfield", Value: "_id"},
+				{Key: "as", Value: "user_following"},
+			},
+		},
+	}
+	unwindStage2 := bson.D{{Key: "$unwind", Value: "$user_following"}}
+	cursor, err := u.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, unwindStage, skipLimitStage, joinStage, unwindStage2},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &following); err != nil {
+		return nil, err
+	}
+	return following, nil
+}
+
 func (u *UserMongo) Request(from, to entity.ID) error {
 	result, err := u.collection.UpdateOne(
 		context.TODO(),
@@ -118,13 +150,10 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 }
 
 //Write Methods
-func (u *UserMongo) Create(e *entity.User) error {
+func (u *UserMongo) Create(e *entity.User) (entity.ID, error) {
 
-	_, err := u.collection.InsertOne(context.TODO(), e)
-	if err != nil {
-		return err
-	}
-	return nil
+	result, err := u.collection.InsertOne(context.TODO(), e)
+	return result.InsertedID.(entity.ID), err
 }
 
 func (u *UserMongo) Update(e *entity.User) error {
