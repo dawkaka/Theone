@@ -61,6 +61,10 @@ func (s *Service) GetFollowers(coupleName string, skip int) ([]entity.Follower, 
 	return s.repo.Followers(coupleName, skip)
 }
 
+func (s *Service) NewFollower(userID, coupleID entity.ID) error {
+	return s.repo.Follower(userID, coupleID)
+}
+
 func (s *Service) UpdateCouple(couple entity.Couple) error {
 
 	return s.repo.Update(couple)

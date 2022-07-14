@@ -14,6 +14,7 @@ type Reader interface {
 	GetCouplePosts(coupleName string, skip int) ([]entity.Post, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	Followers(coupleName string, skip int) ([]entity.Follower, error)
+	Follower(userID, coupleID entity.ID) error
 }
 
 //Repository all couple methods
@@ -30,4 +31,5 @@ type UseCase interface {
 	GetCouplePosts(coupleName string, skip int) ([]entity.Post, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	GetFollowers(coupleName string, skip int) ([]entity.Follower, error)
+	NewFollower(userID, coupleID entity.ID) error
 }

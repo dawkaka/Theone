@@ -21,6 +21,7 @@ import (
 
 func main() {
 	r := gin.Default()
+
 	store, err := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
 	if err != nil {
 		panic(err)
@@ -48,9 +49,9 @@ func main() {
 	postService := post.NewService(postsRepo)
 	coupleService := couple.NewService(couplesRepo)
 
-	handler.MakeUserHandlers(r, userService)
+	handler.MakeUserHandlers(r, userService, coupleService)
 	handler.MakeCoupleHandlers(r, coupleService, userService)
-	handler.MakePostHandlers(r, postService)
-	handler.MakeVideoHandlers(r, videoService)
+	handler.MakePostHandlers(r, postService, coupleService)
+	handler.MakeVideoHandlers(r, videoService, coupleService)
 	r.Run(fmt.Sprintf(":%d", config.API_PORT)) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

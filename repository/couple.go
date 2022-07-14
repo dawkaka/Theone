@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -124,6 +125,21 @@ func (c *CoupleMongo) Followers(coupleName string, skip int) ([]entity.Follower,
 		return nil, err
 	}
 	return followers, nil
+}
+
+func (c *CoupleMongo) Follower(userID, coupleID entity.ID) error {
+	result, err := c.collection.UpdateByID(
+		context.TODO(),
+		coupleID,
+		bson.D{
+			{Key: "$incr", Value: "followers_count"},
+			{Key: "$push", Value: bson.D{{Key: "following", Value: userID}}},
+		},
+	)
+	if result.ModifiedCount < 1 {
+		return errors.New("user follow: something went wrong")
+	}
+	return err
 }
 
 //Write Operations

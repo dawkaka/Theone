@@ -12,8 +12,8 @@ func NewService(r Repository) *Service {
 	}
 }
 
-func (s *Service) GetVideo(id entity.ID) (*entity.Video, error) {
-	return s.repo.Get(id)
+func (s *Service) GetVideo(coupleID, videoID string) (*entity.Video, error) {
+	return s.repo.Get(coupleID, videoID)
 }
 
 func (s *Service) ListVideos(ids []entity.ID) ([]*entity.Video, error) {

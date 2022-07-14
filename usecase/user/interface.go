@@ -21,6 +21,7 @@ type Writer interface {
 	Update(e *entity.User) error
 	Delete(id entity.ID) error
 	Request(from, to entity.ID) error
+	Follow(coupleId, userID entity.ID) error
 	Notify(userToNotify string, notification any) error
 }
 
@@ -41,5 +42,6 @@ type UseCase interface {
 	UpdateUser(e *entity.User) error
 	DeleteUser(id entity.ID) error
 	ConfirmCouple(userID, partnerID string) (bool, error)
+	Follow(coupleID, userID entity.ID) error
 	NotifyUser(userToNotify string, notification any) error
 }

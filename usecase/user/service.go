@@ -59,6 +59,10 @@ func (s *Service) UpdateUser(e *entity.User) error {
 	return s.repo.Update(e)
 }
 
+func (s *Service) Follow(coupleID, userID entity.ID) error {
+	return s.repo.Follow(coupleID, userID)
+}
+
 func (s *Service) ConfirmCouple(userID, partnerID string) (bool, error) {
 	user, err := entity.StringToID(userID)
 	if err != nil {

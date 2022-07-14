@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"fmt"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 func GetLang(header http.Header) string {
@@ -13,4 +16,16 @@ func GetLang(header http.Header) string {
 		lang = "en"
 	}
 	return lang
+}
+
+func GenerateID() string {
+	alphabets := "abc8debg7hijkl0mn6GH5IJKLMNo9pq1rstuv2wxy3zABCD4EFOPQRSTUVWSYZ"
+	var id string
+	for i := 0; i < 12; i++ {
+		rand.Seed(time.Now().UnixNano())
+		ind := rand.Intn(61)
+		fmt.Println(ind)
+		id += string(alphabets[ind])
+	}
+	return id
 }

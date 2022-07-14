@@ -13,8 +13,8 @@ func NewService(r Repository) *Service {
 	}
 }
 
-func (s *Service) GetPost(coupleName, postID string) (*entity.Post, error) {
-	return s.repo.Get(coupleName, postID)
+func (s *Service) GetPost(coupleID, postID string) (*entity.Post, error) {
+	return s.repo.Get(coupleID, postID)
 }
 
 func (s *Service) CreatePost(e *entity.Post) (entity.ID, error) {

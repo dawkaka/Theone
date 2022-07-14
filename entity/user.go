@@ -31,6 +31,7 @@ type User struct {
 	CoverPicture         string    `json:"cover_picture" bson:"cover_picture"`
 	ShowPictures         []string  `json:"show_pictures" bson:"show_pictures"`
 	Likes                []string  `json:"likes"`
+	LikesCount           int64     `json:"likes_count" bson:"likes_count"`
 	EmailVerified        bool      `json:"email_verified" bson:"email_verified"`
 	PartnerID            ID        `json:"partner_id" bson:"partner_id"`
 	Following            []ID      `json:"following"`

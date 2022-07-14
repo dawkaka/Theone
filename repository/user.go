@@ -166,6 +166,21 @@ func (u *UserMongo) Update(e *entity.User) error {
 	return err
 }
 
+func (u *UserMongo) Follow(coupleID entity.ID, userID entity.ID) error {
+	result, err := u.collection.UpdateByID(
+		context.TODO(),
+		userID,
+		bson.D{
+			{Key: "$incr", Value: "following_count"},
+			{Key: "$push", Value: bson.D{{Key: "following", Value: coupleID}}},
+		},
+	)
+	if result.ModifiedCount < 1 {
+		return errors.New("user follow: something went wrong")
+	}
+	return err
+}
+
 func (u *UserMongo) Delete(id entity.ID) error {
 	_, err := u.collection.DeleteOne(
 		context.TODO(),

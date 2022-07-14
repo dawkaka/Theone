@@ -21,10 +21,19 @@ func NewVideoMongo(col *mongo.Collection) *VideoMongo {
 }
 
 //Read operations
-
-func (v *VideoMongo) Get(id entity.ID) (*entity.Video, error) {
+func (v *VideoMongo) Get(coupleID, videoID string) (*entity.Video, error) {
 	var video *entity.Video
-	err := v.collection.FindOne(context.TODO(), bson.D{{Key: "_id", Value: id}}).Decode(&video)
+	ID, err := entity.StringToID(coupleID)
+	if err != nil {
+		return video, err
+	}
+	err = v.collection.FindOne(
+		context.TODO(),
+		bson.D{
+			{Key: "video_id", Value: videoID},
+			{Key: "couple_id", Value: ID},
+		},
+	).Decode(&video)
 	return video, err
 }
 
@@ -40,7 +49,6 @@ func (v *VideoMongo) List(ids []entity.ID) ([]*entity.Video, error) {
 }
 
 //Write Operations
-
 func (v *VideoMongo) Create(video *entity.Video) (entity.ID, error) {
 	result, err := v.collection.InsertOne(context.TODO(), video)
 	return result.InsertedID.(primitive.ObjectID), err

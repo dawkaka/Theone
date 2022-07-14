@@ -22,13 +22,17 @@ func NewPostMongo(col *mongo.Collection) *PostMongo {
 
 //Read opertions
 
-func (p *PostMongo) Get(coupleName, postID string) (*entity.Post, error) {
+func (p *PostMongo) Get(coupleID, postID string) (*entity.Post, error) {
 	var result entity.Post
-	err := p.collection.FindOne(
+	ID, err := entity.StringToID(coupleID)
+	if err != nil {
+		return nil, err
+	}
+	err = p.collection.FindOne(
 		context.TODO(),
 		bson.D{
 			{Key: "post_id", Value: postID},
-			{Key: "couple_name", Value: coupleName},
+			{Key: "couple_id", Value: ID},
 		},
 	).Decode(&result)
 
