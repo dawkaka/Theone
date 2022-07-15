@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -37,6 +38,18 @@ func (v *VideoMongo) Get(coupleID, videoID string) (*entity.Video, error) {
 	return video, err
 }
 
+func (v *VideoMongo) GetByID(id string) (entity.Video, error) {
+	ID, err := entity.StringToID(id)
+	if err != nil {
+		return entity.Video{}, errors.New("parsing id: failed to convert string to id")
+	}
+	var video entity.Video
+	err = v.collection.FindOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: ID}},
+	).Decode(&video)
+	return video, err
+}
 func (v *VideoMongo) List(ids []entity.ID) ([]*entity.Video, error) {
 	var videos []*entity.Video
 	cursor, err := v.collection.Find(context.TODO(), bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: ids}}}})

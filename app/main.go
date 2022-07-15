@@ -51,7 +51,7 @@ func main() {
 
 	handler.MakeUserHandlers(r, userService, coupleService)
 	handler.MakeCoupleHandlers(r, coupleService, userService)
-	handler.MakePostHandlers(r, postService, coupleService)
-	handler.MakeVideoHandlers(r, videoService, coupleService)
+	handler.MakePostHandlers(r, postService, coupleService, userService)
+	handler.MakeVideoHandlers(r, videoService, coupleService, userService)
 	r.Run(fmt.Sprintf(":%d", config.API_PORT)) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

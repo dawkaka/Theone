@@ -1,6 +1,10 @@
 package post
 
-import "github.com/dawkaka/theone/entity"
+import (
+	"errors"
+
+	"github.com/dawkaka/theone/entity"
+)
 
 //Post service
 type Service struct {
@@ -15,6 +19,14 @@ func NewService(r Repository) *Service {
 
 func (s *Service) GetPost(coupleID, postID string) (*entity.Post, error) {
 	return s.repo.Get(coupleID, postID)
+}
+
+func (s *Service) GetPostByID(id string) (entity.Post, error) {
+	ID, err := entity.StringToID(id)
+	if err != nil {
+		return entity.Post{}, errors.New("parsing ID: not a mongodb id")
+	}
+	return s.repo.GetByID((ID))
 }
 
 func (s *Service) CreatePost(e *entity.Post) (entity.ID, error) {

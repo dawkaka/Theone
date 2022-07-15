@@ -133,7 +133,7 @@ func (c *CoupleMongo) Follower(userID, coupleID entity.ID) error {
 		coupleID,
 		bson.D{
 			{Key: "$inc", Value: "followers_count"},
-			{Key: "$push", Value: bson.D{{Key: "following", Value: userID}}},
+			{Key: "$push", Value: bson.D{{Key: "followers", Value: userID}}},
 		},
 	)
 	if result.ModifiedCount < 1 {
@@ -152,7 +152,7 @@ func (c *CoupleMongo) Update(couple entity.Couple) error {
 
 	result, err := c.collection.UpdateOne(
 		context.TODO(),
-		bson.D{{Key: "user_name", Value: couple.CoupleName}},
+		bson.D{{Key: "couple_name", Value: couple.CoupleName}},
 		bson.D{{Key: "$set", Value: couple}},
 	)
 

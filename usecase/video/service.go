@@ -16,6 +16,10 @@ func (s *Service) GetVideo(coupleID, videoID string) (*entity.Video, error) {
 	return s.repo.Get(coupleID, videoID)
 }
 
+func (s *Service) GetVideoByID(id string) (entity.Video, error) {
+	return s.repo.GetByID(id)
+}
+
 func (s *Service) ListVideos(ids []entity.ID) ([]*entity.Video, error) {
 	posts, err := s.repo.List(ids)
 	if err != nil {

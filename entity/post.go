@@ -7,6 +7,8 @@ type Post struct {
 	ID            ID        `json:"id" bson:"_id"`
 	PostID        string    `json:"post_id" bson:"post_id"`
 	CoupleID      ID        `json:"couple_id" bson:"couple_id"`
+	InitiatedID   ID        `json:"initiated_id" bson:"initiated_id"`
+	AcceptedID    ID        `json:"accepted_id" bson:"accepted_id"`
 	FileName      string    `json:"file_name" bson:"file_name"`
 	Caption       string    `json:"caption"`
 	Likes         []ID      `json:"likes"`

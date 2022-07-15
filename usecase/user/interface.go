@@ -23,6 +23,7 @@ type Writer interface {
 	Request(from, to entity.ID) error
 	Follow(coupleId, userID entity.ID) error
 	Notify(userToNotify string, notification any) error
+	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
 }
 
 //Repository interface
@@ -44,4 +45,5 @@ type UseCase interface {
 	ConfirmCouple(userID, partnerID string) (bool, error)
 	Follow(coupleID, userID entity.ID) error
 	NotifyUser(userToNotify string, notification any) error
+	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
 }

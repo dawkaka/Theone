@@ -79,3 +79,7 @@ func (s *Service) ConfirmCouple(userID, partnerID string) (bool, error) {
 func (s *Service) NotifyUser(user string, notif any) error {
 	return s.repo.Notify(user, notif)
 }
+
+func (s *Service) NotifyCouple(couple [2]entity.ID, notif entity.Notification) error {
+	return s.repo.NotifyCouple(couple, notif)
+}

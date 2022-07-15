@@ -39,6 +39,15 @@ func (p *PostMongo) Get(coupleID, postID string) (*entity.Post, error) {
 	return &result, err
 }
 
+func (p *PostMongo) GetByID(ID entity.ID) (entity.Post, error) {
+	var result entity.Post
+	err := p.collection.FindOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: ID}},
+	).Decode((&result))
+	return result, err
+}
+
 func (p *PostMongo) List(ids []entity.ID) ([]*entity.Post, error) {
 
 	var result []*entity.Post

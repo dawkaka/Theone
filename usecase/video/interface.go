@@ -5,6 +5,7 @@ import "github.com/dawkaka/theone/entity"
 //Reader interface
 type Reader interface {
 	Get(coupleID, videoID string) (*entity.Video, error)
+	GetByID(id string) (entity.Video, error)
 	List(videos []entity.ID) ([]*entity.Video, error)
 }
 
@@ -26,6 +27,7 @@ type Repository interface {
 //UseCase interface
 type UseCase interface {
 	GetVideo(coupleID, videoID string) (*entity.Video, error)
+	GetVideoByID(id string) (entity.Video, error)
 	ListVideos(ids []entity.ID) ([]*entity.Video, error)
 	CreateVideo(video *entity.Video) (entity.ID, error)
 	UpdateVideo(e *entity.Video) error

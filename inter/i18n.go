@@ -36,3 +36,15 @@ func LocalizeWithFullName(lang, firstName, lastName, messageId string) string {
 
 	return translation
 }
+
+func LocalizeWithUserName(lang, userName, messageId string) string {
+	loc := i18n.NewLocalizer(bundle, lang)
+	translation := loc.MustLocalize(&i18n.LocalizeConfig{
+		MessageID: messageId,
+		TemplateData: map[string]interface{}{
+			"UserName": userName,
+		},
+	})
+
+	return translation
+}

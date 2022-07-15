@@ -6,6 +6,7 @@ import "github.com/dawkaka/theone/entity"
 type Reader interface {
 	Get(coupleID, postID string) (*entity.Post, error)
 	List(id []entity.ID) ([]*entity.Post, error)
+	GetByID(id entity.ID) (entity.Post, error)
 }
 
 //Writer user writer
@@ -26,6 +27,7 @@ type Repository interface {
 //Post use case
 type UseCase interface {
 	GetPost(coupleID, postID string) (*entity.Post, error)
+	GetPostByID(postID string) (entity.Post, error)
 	CreatePost(e *entity.Post) (entity.ID, error)
 	ListPosts(id []entity.ID) ([]*entity.Post, error)
 	UpdatePost(e *entity.Post) error

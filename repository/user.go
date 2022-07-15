@@ -143,7 +143,19 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 		}},
 		},
 	)
-	if result.MatchedCount != 1 {
+	if result.ModifiedCount != 1 {
+		return errors.New("notify: couldn't update user notifications")
+	}
+	return err
+}
+
+func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) error {
+	result, err := u.collection.UpdateMany(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: c}}}},
+		bson.D{{Key: "$push", Value: bson.D{{Key: "notifications", Value: notif}}}},
+	)
+	if result.ModifiedCount < 2 {
 		return errors.New("notify: couldn't update user notifications")
 	}
 	return err

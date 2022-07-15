@@ -5,6 +5,7 @@ import "github.com/dawkaka/theone/entity"
 //Writer couple writer methods
 type Writer interface {
 	Create(couple entity.Couple) error
+	Follower(userID, coupleID entity.ID) error
 	Update(couple entity.Couple) error
 }
 
@@ -14,7 +15,6 @@ type Reader interface {
 	GetCouplePosts(coupleName string, skip int) ([]entity.Post, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	Followers(coupleName string, skip int) ([]entity.Follower, error)
-	Follower(userID, coupleID entity.ID) error
 }
 
 //Repository all couple methods
