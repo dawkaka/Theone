@@ -25,6 +25,26 @@ func (s *Service) CreatePost(e *entity.Post) (entity.ID, error) {
 	return id, nil
 }
 
+func (s *Service) NewComment(postID string, comment entity.Comment) error {
+	id, err := entity.StringToID(postID)
+	if err != nil {
+		return err
+	}
+	return s.repo.AddComment(id, comment)
+}
+
+func (s *Service) LikePost(postID, userID string) error {
+	id, err := entity.StringToID(userID)
+	if err != nil {
+		return err
+	}
+	pID, err := entity.StringToID(postID)
+	if err != nil {
+		return err
+	}
+	return s.repo.Like(pID, id)
+}
+
 func (s *Service) ListPosts(id []entity.ID) ([]*entity.Post, error) {
 	posts, err := s.repo.List(id)
 	if err != nil {

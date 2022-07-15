@@ -13,6 +13,8 @@ type Writer interface {
 	Create(e *entity.Video) (entity.ID, error)
 	Update(e *entity.Video) error
 	Delete(id entity.ID) error
+	AddComment(videoID entity.ID, comment entity.Comment) error
+	Like(videoID, userID entity.ID) error
 }
 
 //Repository interface
@@ -28,4 +30,6 @@ type UseCase interface {
 	CreateVideo(video *entity.Video) (entity.ID, error)
 	UpdateVideo(e *entity.Video) error
 	DeleteVideo(id entity.ID) error
+	NewComment(videoID string, comment entity.Comment) error
+	LikeVideo(videoID, userID string) error
 }

@@ -132,7 +132,7 @@ func (c *CoupleMongo) Follower(userID, coupleID entity.ID) error {
 		context.TODO(),
 		coupleID,
 		bson.D{
-			{Key: "$incr", Value: "followers_count"},
+			{Key: "$inc", Value: "followers_count"},
 			{Key: "$push", Value: bson.D{{Key: "following", Value: userID}}},
 		},
 	)

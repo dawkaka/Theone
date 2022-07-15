@@ -13,6 +13,8 @@ type Writer interface {
 	Create(e *entity.Post) (entity.ID, error)
 	Update(e *entity.Post) error
 	Delete(id entity.ID) error
+	AddComment(postID entity.ID, comment entity.Comment) error
+	Like(postID, userID entity.ID) error
 }
 
 //Repository interface
@@ -28,4 +30,6 @@ type UseCase interface {
 	ListPosts(id []entity.ID) ([]*entity.Post, error)
 	UpdatePost(e *entity.Post) error
 	DeletePost(id entity.ID) error
+	NewComment(postID string, comment entity.Comment) error
+	LikePost(postID, userID string) error
 }

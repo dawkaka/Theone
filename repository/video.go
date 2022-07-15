@@ -79,3 +79,27 @@ func (v *VideoMongo) Delete(id entity.ID) error {
 	}
 	return nil
 }
+
+func (v *VideoMongo) AddComment(videoID entity.ID, comment entity.Comment) error {
+	_, err := v.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: videoID}},
+		bson.D{
+			{Key: "$push", Value: bson.D{{Key: "comments", Value: comment}}},
+			{Key: "$inc", Value: "comments_count"},
+		},
+	)
+	return err
+}
+
+func (v *VideoMongo) Like(videoID, userID entity.ID) error {
+	_, err := v.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: videoID}},
+		bson.D{
+			{Key: "$push", Value: bson.D{{Key: "likes", Value: userID}}},
+			{Key: "$inc", Value: "likes_count"},
+		},
+	)
+	return err
+}

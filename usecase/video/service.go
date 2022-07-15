@@ -39,3 +39,23 @@ func (s *Service) UpdateVideo(e *entity.Video) error {
 func (s *Service) DeleteVideo(id entity.ID) error {
 	return s.repo.Delete(id)
 }
+
+func (s *Service) NewComment(videoID string, comment entity.Comment) error {
+	id, err := entity.StringToID(videoID)
+	if err != nil {
+		return err
+	}
+	return s.repo.AddComment(id, comment)
+}
+
+func (s *Service) LikeVideo(videoID, userID string) error {
+	id, err := entity.StringToID(userID)
+	if err != nil {
+		return err
+	}
+	pID, err := entity.StringToID(videoID)
+	if err != nil {
+		return err
+	}
+	return s.repo.Like(pID, id)
+}
