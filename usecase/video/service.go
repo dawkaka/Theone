@@ -55,6 +55,10 @@ func (s *Service) NewComment(videoID string, comment entity.Comment) error {
 	return s.repo.AddComment(id, comment)
 }
 
+func (s *Service) DeleteComment(videoID, commentID string, userID entity.ID) error {
+	return s.repo.DeleteComment(videoID, commentID, userID)
+}
+
 func (s *Service) LikeVideo(videoID, userID string) error {
 	id, err := entity.StringToID(userID)
 	if err != nil {

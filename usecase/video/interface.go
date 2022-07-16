@@ -16,6 +16,7 @@ type Writer interface {
 	Update(e *entity.Video) error
 	Delete(id entity.ID) error
 	AddComment(videoID entity.ID, comment entity.Comment) error
+	DeleteComment(videoID, commentID string, userID entity.ID) error
 	Like(videoID, userID entity.ID) error
 }
 
@@ -35,5 +36,6 @@ type UseCase interface {
 	UpdateVideo(e *entity.Video) error
 	DeleteVideo(id entity.ID) error
 	NewComment(videoID string, comment entity.Comment) error
+	DeleteComment(videoID, commentID string, userID entity.ID) error
 	LikeVideo(videoID, userID string) error
 }

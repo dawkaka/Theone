@@ -11,7 +11,6 @@ type ID = primitive.ObjectID
 type Comment struct {
 	UserID    string    `json:"user_id"`
 	Comment   string    `json:"comment"`
-	Likes     []ID      `json:"likes"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

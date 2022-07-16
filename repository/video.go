@@ -140,6 +140,33 @@ func (v *VideoMongo) AddComment(videoID entity.ID, comment entity.Comment) error
 	return err
 }
 
+func (v *VideoMongo) DeleteComment(videoID, commentID string, userID entity.ID) error {
+	vID, err1 := entity.StringToID(videoID)
+	cID, err2 := entity.StringToID(commentID)
+	if err1 != nil || err2 != nil {
+		return errors.New("invalid id")
+	}
+	_, err := v.collection.UpdateByID(
+		context.TODO(),
+		vID,
+		bson.D{
+			{
+				Key: "$pull",
+				Value: bson.D{
+					{
+						Key: "comments",
+						Value: bson.D{
+							{Key: "_id", Value: cID},
+							{Key: "user_id", Value: userID},
+						},
+					},
+				},
+			},
+		},
+	)
+	return err
+}
+
 func (v *VideoMongo) Like(videoID, userID entity.ID) error {
 	_, err := v.collection.UpdateOne(
 		context.TODO(),

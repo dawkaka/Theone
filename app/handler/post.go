@@ -143,6 +143,23 @@ func postComments(service post.UseCase) gin.HandlerFunc {
 	}
 }
 
+func deletePostComment(service post.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		commentID, postID := ctx.Param("commentID"), ctx.Param("postID")
+		if strings.TrimSpace(commentID) == "" || strings.TrimSpace(postID) == "" {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			return
+		}
+		userID := sessions.Default(ctx).Get("user").(entity.UserSession).ID
+		err := service.DeleteComment(postID, commentID, userID)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(ctx.Request.Header, "Forbidden"))
+			return
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(ctx.Request.Header, "CommentDeleted"))
+	}
+}
+
 func updatePost(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -160,7 +177,9 @@ func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.
 	r.GET("/post/comments/:postID/:skip", postComments(service))
 	r.POST("/post/new", newPost(service))
 	r.POST("/post/new-comment/:postID", newComment(service, userService))
+	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service))
 	r.PATCH("/post/like/:postID", like(service, userService))
+	//r.PATCH("/post/unlike/:postID" unLike(service, userService))
 	r.PUT("/post/update", updatePost(service))
 	r.DELETE("/post/delete", deletePost(service))
 }

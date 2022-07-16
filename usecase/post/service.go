@@ -49,6 +49,9 @@ func (s *Service) NewComment(postID string, comment entity.Comment) error {
 	return s.repo.AddComment(id, comment)
 }
 
+func (s *Service) DeleteComment(postID, commentID string, userID entity.ID) error {
+	return s.repo.DeleteComment(postID, commentID, userID)
+}
 func (s *Service) LikePost(postID, userID string) error {
 	id, err := entity.StringToID(userID)
 	if err != nil {

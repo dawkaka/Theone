@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -125,6 +126,33 @@ func (p *PostMongo) AddComment(postID entity.ID, comment entity.Comment) error {
 		bson.D{
 			{Key: "$push", Value: bson.D{{Key: "comments", Value: comment}}},
 			{Key: "$inc", Value: bson.D{{Key: "comments_count", Value: 1}}},
+		},
+	)
+	return err
+}
+
+func (p *PostMongo) DeleteComment(postID, commentID string, userID entity.ID) error {
+	pID, err1 := entity.StringToID(postID)
+	cID, err2 := entity.StringToID(commentID)
+	if err1 != nil || err2 != nil {
+		return errors.New("invalid id")
+	}
+	_, err := p.collection.UpdateByID(
+		context.TODO(),
+		pID,
+		bson.D{
+			{
+				Key: "$pull",
+				Value: bson.D{
+					{
+						Key: "comments",
+						Value: bson.D{
+							{Key: "_id", Value: cID},
+							{Key: "user_id", Value: userID},
+						},
+					},
+				},
+			},
 		},
 	)
 	return err

@@ -16,6 +16,7 @@ type Writer interface {
 	Update(e *entity.Post) error
 	Delete(id entity.ID) error
 	AddComment(postID entity.ID, comment entity.Comment) error
+	DeleteComment(postID, commentId string, userID entity.ID) error
 	Like(postID, userID entity.ID) error
 }
 
@@ -35,5 +36,6 @@ type UseCase interface {
 	UpdatePost(e *entity.Post) error
 	DeletePost(id entity.ID) error
 	NewComment(postID string, comment entity.Comment) error
+	DeleteComment(postID, commentID string, userID entity.ID) error
 	LikePost(postID, userID string) error
 }

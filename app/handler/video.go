@@ -153,6 +153,23 @@ func videoComments(service video.UseCase) gin.HandlerFunc {
 	}
 }
 
+func deleteVideoComment(service video.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		commentID, videoID := ctx.Param("commentID"), ctx.Param("videoID")
+		if strings.TrimSpace(commentID) == "" || strings.TrimSpace(videoID) == "" {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			return
+		}
+		userID := sessions.Default(ctx).Get("user").(entity.UserSession).ID
+		err := service.DeleteComment(videoID, commentID, userID)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(ctx.Request.Header, "Forbidden"))
+			return
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(ctx.Request.Header, "CommentDeleted"))
+	}
+}
+
 func deleteVideo(service video.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -163,6 +180,7 @@ func MakeVideoHandlers(r *gin.Engine, service video.UseCase, coupleService coupl
 	r.GET("/video/:coupleName/:videoId", getVideo(service, coupleService))
 	r.GET("/video/list", listVideos(service))
 	r.GET("/video/comments/:videoID", videoComments(service))
+	r.DELETE("/video/comment/:videoID/:commentID", deleteVideoComment(service))
 	r.POST("/video/new-comment/:videoID", videoComment(service, userService))
 	r.PATCH("/video/like/:videoID", likeVideo(service, userService))
 	r.POST("/video/new", newVideo(service))
