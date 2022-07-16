@@ -123,25 +123,33 @@ func getCouplePosts(service couple.UseCase) gin.HandlerFunc {
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
 		}
-		ctx.JSON(http.StatusBadRequest, gin.H{"posts": posts})
+		page := entity.Pagination{
+			Next: skipPosts + entity.Limit,
+			End:  len(posts) < entity.Limit,
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"posts": posts, "pagination": page})
 	}
 }
 
 func getCoupleVideos(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		coupleName, skip := ctx.Param("coupleName"), ctx.Param("skip")
-		skipPosts, err := strconv.Atoi(skip)
+		skipVideos, err := strconv.Atoi(skip)
 		if !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
 		}
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
 		}
-		posts, err := service.GetCoupleVideos(coupleName, skipPosts)
+		videos, err := service.GetCoupleVideos(coupleName, skipVideos)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
 		}
-		ctx.JSON(http.StatusBadRequest, gin.H{"videos": posts})
+		page := entity.Pagination{
+			Next: skipVideos + entity.Limit,
+			End:  len(videos) < entity.Limit,
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"videos": videos, "pagination": page})
 	}
 }
 
@@ -159,7 +167,11 @@ func getFollowers(service couple.UseCase) gin.HandlerFunc {
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
 		}
-		ctx.JSON(http.StatusOK, gin.H{"followers": followers})
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(followers) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"followers": followers, "pagination": page})
 	}
 }
 
@@ -176,5 +188,4 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/:coupleName/followers/:skip", getFollowers(service))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))
 	r.PUT("/couple/update", updateCouple(service))
-
 }

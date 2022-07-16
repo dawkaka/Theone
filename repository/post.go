@@ -38,6 +38,40 @@ func (p *PostMongo) Get(coupleID, postID string) (*entity.Post, error) {
 
 	return &result, err
 }
+func (p *PostMongo) Comments(videoID string, skip int) ([]entity.Comment, error) {
+	ID, err := entity.StringToID(videoID)
+	if err != nil {
+		return nil, err
+	}
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: ID}}}}
+	sliceStage := bson.D{{Key: "$slice", Value: []interface{}{"$comments", skip, entity.Limit}}}
+	unwindStage := bson.D{{Key: "$unwind", Value: "$comments"}}
+	joinStage := bson.D{
+		{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "users"},
+				{Key: "localfield", Value: "comments"},
+				{Key: "foreignfield", Value: "_id"},
+				{Key: "as", Value: "user"},
+			},
+		},
+	}
+
+	cursor, err := p.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, sliceStage, unwindStage, joinStage},
+	)
+	if err != nil {
+		return nil, err
+	}
+	var comments []entity.Comment
+
+	if err = cursor.All(context.TODO(), &comments); err != nil {
+		return nil, err
+	}
+	return comments, nil
+}
 
 func (p *PostMongo) GetByID(ID entity.ID) (entity.Post, error) {
 	var result entity.Post

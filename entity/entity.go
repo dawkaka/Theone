@@ -19,3 +19,13 @@ type Comment struct {
 func StringToID(s string) (ID, error) {
 	return primitive.ObjectIDFromHex(s)
 }
+
+type Pagination struct {
+	Next int  `json:"next"`
+	End  bool `json:"end"`
+}
+
+var (
+	Limit  = 30
+	LimitP = 15
+)

@@ -86,7 +86,7 @@ func (u *UserMongo) Following(userName string, skip int) ([]entity.Following, er
 	var following []entity.Following
 
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: userName}}}}
-	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: 30}}
+	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: entity.Limit + 1}}
 	unwindStage := bson.D{{Key: "$unwind", Value: "$following"}}
 	joinStage := bson.D{
 		{

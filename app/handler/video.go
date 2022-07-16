@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -130,6 +131,28 @@ func likeVideo(service video.UseCase, userService user.UseCase) gin.HandlerFunc 
 	}
 }
 
+func videoComments(service video.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			return
+		}
+		videoID := ctx.Param("videoID")
+		comments, err := service.GetComments(videoID, skip)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			return
+		}
+
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(comments) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"comments": comments, "pagination": page})
+	}
+}
+
 func deleteVideo(service video.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -139,6 +162,7 @@ func deleteVideo(service video.UseCase) gin.HandlerFunc {
 func MakeVideoHandlers(r *gin.Engine, service video.UseCase, coupleService couple.UseCase, userService user.UseCase) {
 	r.GET("/video/:coupleName/:videoId", getVideo(service, coupleService))
 	r.GET("/video/list", listVideos(service))
+	r.GET("/video/comments/:videoID", videoComments(service))
 	r.POST("/video/new-comment/:videoID", videoComment(service, userService))
 	r.PATCH("/video/like/:videoID", likeVideo(service, userService))
 	r.POST("/video/new", newVideo(service))

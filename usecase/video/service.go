@@ -16,6 +16,9 @@ func (s *Service) GetVideo(coupleID, videoID string) (*entity.Video, error) {
 	return s.repo.Get(coupleID, videoID)
 }
 
+func (s *Service) GetComments(videoId string, skip int) ([]entity.Comment, error) {
+	return s.repo.Comments(videoId, skip)
+}
 func (s *Service) GetVideoByID(id string) (entity.Video, error) {
 	return s.repo.GetByID(id)
 }

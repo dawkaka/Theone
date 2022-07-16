@@ -7,6 +7,7 @@ type Reader interface {
 	Get(coupleID, postID string) (*entity.Post, error)
 	List(id []entity.ID) ([]*entity.Post, error)
 	GetByID(id entity.ID) (entity.Post, error)
+	Comments(postID string, skip int) ([]entity.Comment, error)
 }
 
 //Writer user writer
@@ -27,6 +28,7 @@ type Repository interface {
 //Post use case
 type UseCase interface {
 	GetPost(coupleID, postID string) (*entity.Post, error)
+	GetComments(postID string, skip int) ([]entity.Comment, error)
 	GetPostByID(postID string) (entity.Post, error)
 	CreatePost(e *entity.Post) (entity.ID, error)
 	ListPosts(id []entity.ID) ([]*entity.Post, error)

@@ -7,6 +7,7 @@ type Reader interface {
 	Get(coupleID, videoID string) (*entity.Video, error)
 	GetByID(id string) (entity.Video, error)
 	List(videos []entity.ID) ([]*entity.Video, error)
+	Comments(videoId string, skip int) ([]entity.Comment, error)
 }
 
 //Writer user writer
@@ -27,6 +28,7 @@ type Repository interface {
 //UseCase interface
 type UseCase interface {
 	GetVideo(coupleID, videoID string) (*entity.Video, error)
+	GetComments(videoId string, skip int) ([]entity.Comment, error)
 	GetVideoByID(id string) (entity.Video, error)
 	ListVideos(ids []entity.ID) ([]*entity.Video, error)
 	CreateVideo(video *entity.Video) (entity.ID, error)

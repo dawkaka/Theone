@@ -36,7 +36,7 @@ func (c *CoupleMongo) GetCouplePosts(coupleName string, skip int) ([]entity.Post
 	var result []entity.Post
 	//opts := options.Find().SetSkip(int64(skip)).SetLimit(15)
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
-	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: 20}}
+	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: entity.LimitP + 1}}
 	joinStage := bson.D{
 		{
 			Key: "$lookup",
@@ -68,7 +68,7 @@ func (c *CoupleMongo) GetCoupleVideos(coupleName string, skip int) ([]entity.Vid
 	var result []entity.Video
 	//opts := options.Find().SetSkip(int64(skip)).SetLimit(15)
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
-	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: 15}}
+	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: entity.LimitP + 1}}
 	joinStage := bson.D{
 		{
 			Key: "$lookup",
@@ -100,7 +100,7 @@ func (c *CoupleMongo) Followers(coupleName string, skip int) ([]entity.Follower,
 	var followers []entity.Follower
 
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
-	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: 30}}
+	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: entity.Limit + 1}}
 	unwindStage := bson.D{{Key: "$unwind", Value: "$followers"}}
 	joinStage := bson.D{
 		{

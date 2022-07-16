@@ -163,6 +163,7 @@ func getFollowing(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		following, err := service.UserFollowing(userName, skip)
+
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "NotFound"))
@@ -171,7 +172,12 @@ func getFollowing(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"following": following})
+
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(following) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"following": following, "pagination": page})
 	}
 }
 

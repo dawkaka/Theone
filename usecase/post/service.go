@@ -29,6 +29,10 @@ func (s *Service) GetPostByID(id string) (entity.Post, error) {
 	return s.repo.GetByID((ID))
 }
 
+func (s *Service) GetComments(postid string, skip int) ([]entity.Comment, error) {
+	return s.repo.Comments(postid, skip)
+}
+
 func (s *Service) CreatePost(e *entity.Post) (entity.ID, error) {
 	id, err := s.repo.Create(e)
 	if err != nil {

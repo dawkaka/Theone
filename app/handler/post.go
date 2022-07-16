@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -121,6 +122,27 @@ func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func postComments(service post.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			return
+		}
+		postID := ctx.Param("postID")
+		comments, err := service.GetComments(postID, skip)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			return
+		}
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(comments) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"comments": comments, "pagination": page})
+	}
+}
+
 func updatePost(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -135,6 +157,7 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase) {
 	r.GET("/post/:coupleName/:postID", getPost(service, coupleService))
+	r.GET("/post/comments/:postID/:skip", postComments(service))
 	r.POST("/post/new", newPost(service))
 	r.POST("/post/new-comment/:postID", newComment(service, userService))
 	r.PATCH("/post/like/:postID", like(service, userService))
