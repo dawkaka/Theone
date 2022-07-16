@@ -270,8 +270,45 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
 			return
 		}
-		_ = coupleService.NewFollower(userID, couple.ID)
 
+		_ = coupleService.NewFollower(userID, couple.ID)
+		notif := entity.Notification{
+			Type:    "follow",
+			Message: inter.LocalizeWithUserName(utils.GetLang(ctx.Request.Header), userName, "NewFollower"),
+		}
+		_ = service.NotifyCouple([2]primitive.ObjectID{couple.Accepted, couple.Initiated}, notif)
+		ctx.JSON(http.StatusNoContent, presentation.Success(ctx.Request.Header, "Followed"))
+	}
+}
+
+func unfollow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		coupleName := ctx.Param("coupleName")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		userName := user.Name
+		userID := user.ID
+
+		if !validator.IsCoupleName(coupleName) || !validator.IsUserName(userName) {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			return
+		}
+		couple, err := coupleService.GetCouple(coupleName)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "CoupleNotFound"))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Response.Header, "SomethingWentWrongInternal"))
+			return
+		}
+		err = service.Unfollow(couple.ID, userID)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			return
+		}
+		_ = coupleService.RemoveFollower(userID, couple.ID)
+		ctx.JSON(http.StatusNoContent, presentation.Success(ctx.Request.Header, "Unfollowed"))
 	}
 }
 
@@ -304,6 +341,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/login", login(service))
 	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
 	r.PATCH("/user/couple-request/:userName", initiateRequest(service))
+	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
 	r.PUT("/user/update", updateUser(service))
 	r.DELETE("/user/delete-account", deleteUser(service))
 }

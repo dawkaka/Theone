@@ -6,7 +6,7 @@ import "time"
 
 type Couple struct {
 	ID             ID        `json:"id"`
-	Iniated        ID        `json:"iniated"`
+	Initiated      ID        `json:"iniated"`
 	Accepted       ID        `json:"accepted"`
 	AcceptedAt     time.Time `json:"accepted_at" bson:"accepted_at"`
 	CoupleName     string    `json:"couple_name" bson:"couple_name"`

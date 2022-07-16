@@ -6,6 +6,7 @@ import "github.com/dawkaka/theone/entity"
 type Writer interface {
 	Create(couple entity.Couple) error
 	Follower(userID, coupleID entity.ID) error
+	Unfollow(userID, coupleID entity.ID) error
 	Update(couple entity.Couple) error
 }
 
@@ -32,4 +33,5 @@ type UseCase interface {
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	GetFollowers(coupleName string, skip int) ([]entity.Follower, error)
 	NewFollower(userID, coupleID entity.ID) error
+	RemoveFollower(userID, coupleID entity.ID) error
 }

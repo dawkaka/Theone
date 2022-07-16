@@ -9,6 +9,7 @@ type Video struct {
 	CoupleID      ID            `json:"couple_id" bson:"couple_id"`
 	InitiatedID   ID            `json:"initiated_id" bson:"initiated_id"`
 	AcceptedID    ID            `json:"accepted_id" bson:"accepted_id"`
+	PostedBy      ID            `json:"posted_by" bson:"posted_by"`
 	Caption       string        `json:"caption"`
 	Likes         []ID          `json:"likes"`
 	LikesCount    int64         `json:"likes_count" bson:"likes_count"`

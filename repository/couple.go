@@ -132,7 +132,7 @@ func (c *CoupleMongo) Follower(userID, coupleID entity.ID) error {
 		context.TODO(),
 		coupleID,
 		bson.D{
-			{Key: "$inc", Value: "followers_count"},
+			{Key: "$inc", Value: bson.D{{Key: "followers_count", Value: 1}}},
 			{Key: "$push", Value: bson.D{{Key: "followers", Value: userID}}},
 		},
 	)
@@ -140,6 +140,22 @@ func (c *CoupleMongo) Follower(userID, coupleID entity.ID) error {
 		return errors.New("user follow: something went wrong")
 	}
 	return err
+}
+
+func (c *CoupleMongo) Unfollow(userID, coupleId entity.ID) error {
+	result, err := c.collection.UpdateByID(
+		context.TODO(),
+		userID,
+		bson.D{
+			{Key: "$inc", Value: bson.D{{Key: "followers_count", Value: -1}}},
+			{Key: "$push", Value: bson.D{{Key: "followers", Value: coupleId}}},
+		},
+	)
+	if result.ModifiedCount < 1 {
+		return errors.New("user follow: something went wrong")
+	}
+	return err
+
 }
 
 //Write Operations

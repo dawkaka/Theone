@@ -22,6 +22,7 @@ type Writer interface {
 	Delete(id entity.ID) error
 	Request(from, to entity.ID) error
 	Follow(coupleId, userID entity.ID) error
+	Unfollow(coupleId, userId entity.ID) error
 	Notify(userToNotify string, notification any) error
 	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
 }
@@ -44,6 +45,7 @@ type UseCase interface {
 	DeleteUser(id entity.ID) error
 	ConfirmCouple(userID, partnerID string) (bool, error)
 	Follow(coupleID, userID entity.ID) error
+	Unfollow(coupleID, userID entity.ID) error
 	NotifyUser(userToNotify string, notification any) error
 	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
 }

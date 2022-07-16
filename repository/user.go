@@ -183,12 +183,27 @@ func (u *UserMongo) Follow(coupleID entity.ID, userID entity.ID) error {
 		context.TODO(),
 		userID,
 		bson.D{
-			{Key: "$inc", Value: "following_count"},
+			{Key: "$inc", Value: bson.D{{Key: "following_count", Value: 1}}},
 			{Key: "$push", Value: bson.D{{Key: "following", Value: coupleID}}},
 		},
 	)
 	if result.ModifiedCount < 1 {
 		return errors.New("user follow: something went wrong")
+	}
+	return err
+}
+
+func (u *UserMongo) Unfollow(coupleID, userID entity.ID) error {
+	result, err := u.collection.UpdateByID(
+		context.TODO(),
+		coupleID,
+		bson.D{
+			{Key: "$inc", Value: bson.D{{Key: "following_count", Value: -1}}},
+			{Key: "$pull", Value: bson.D{{Key: "following", Value: coupleID}}},
+		},
+	)
+	if result.MatchedCount < 1 {
+		return errors.New("unfollow: no match found")
 	}
 	return err
 }

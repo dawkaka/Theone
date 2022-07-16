@@ -40,7 +40,7 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) error {
 	}
 
 	couple := entity.Couple{
-		Iniated:        initiated,
+		Initiated:      initiated,
 		Accepted:       accepted,
 		AcceptedAt:     time.Now(),
 		CoupleName:     coupleName,
@@ -63,6 +63,10 @@ func (s *Service) GetFollowers(coupleName string, skip int) ([]entity.Follower, 
 
 func (s *Service) NewFollower(userID, coupleID entity.ID) error {
 	return s.repo.Follower(userID, coupleID)
+}
+
+func (s *Service) RemoveFollower(userID, coupleID entity.ID) error {
+	return s.repo.Unfollow(userID, coupleID)
 }
 
 func (s *Service) UpdateCouple(couple entity.Couple) error {

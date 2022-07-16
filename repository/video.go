@@ -134,7 +134,7 @@ func (v *VideoMongo) AddComment(videoID entity.ID, comment entity.Comment) error
 		bson.D{{Key: "_id", Value: videoID}},
 		bson.D{
 			{Key: "$push", Value: bson.D{{Key: "comments", Value: comment}}},
-			{Key: "$inc", Value: "comments_count"},
+			{Key: "$inc", Value: bson.D{{Key: "comments_count", Value: 1}}},
 		},
 	)
 	return err
@@ -146,7 +146,7 @@ func (v *VideoMongo) Like(videoID, userID entity.ID) error {
 		bson.D{{Key: "_id", Value: videoID}},
 		bson.D{
 			{Key: "$push", Value: bson.D{{Key: "likes", Value: userID}}},
-			{Key: "$inc", Value: "likes_count"},
+			{Key: "$inc", Value: bson.D{{Key: "likes_count", Value: 1}}},
 		},
 	)
 	return err
