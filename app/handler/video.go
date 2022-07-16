@@ -23,18 +23,20 @@ func getVideo(service video.UseCase, coupleService couple.UseCase) gin.HandlerFu
 
 	return func(ctx *gin.Context) {
 		coupleName, videoID := ctx.Param("coupleName"), ctx.Param("videoId")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsUserName(coupleName) || strings.TrimSpace(videoID) == "" {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "NotFound"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "NotFound"))
 			return
 		}
 		couple, err := coupleService.GetCouple(coupleName)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		video, err := service.GetVideo(couple.ID.String(), videoID)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		ctx.JSON(http.StatusOK, gin.H{"video": video})
@@ -63,85 +65,91 @@ func updateVideo(service video.UseCase) gin.HandlerFunc {
 func videoComment(service video.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		videoID := ctx.Param("videoID")
+		thisuser := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(thisuser.Lang, ctx.Request.Header)
 		if strings.TrimSpace(videoID) == "" {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		video, err := service.GetVideoByID(videoID)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "NotFoundComment"))
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "NotFoundComment"))
 				return
 			}
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		var comment entity.Comment
 		err = ctx.ShouldBind(comment)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 		}
 		comment.UserID = user.ID.String()
 		comment.CreatedAt = time.Now()
 		err = service.NewComment(videoID, comment)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		notif := entity.Notification{
 			Type:    "comment",
-			Message: inter.LocalizeWithUserName(utils.GetLang(ctx.Request.Header), user.Name, "VideoCommentNotif"),
+			Message: inter.LocalizeWithUserName(lang, user.Name, "VideoCommentNotif"),
 		}
 		_ = userService.NotifyCouple([2]entity.ID{video.InitiatedID, video.AcceptedID}, notif)
 
-		ctx.JSON(http.StatusCreated, presentation.Success(ctx.Request.Header, "CommentAdded"))
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CommentAdded"))
 	}
 }
 
 func likeVideo(service video.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		videoID := ctx.Param("videoID")
+		thisuser := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(thisuser.Lang, ctx.Request.Header)
 		if strings.TrimSpace(videoID) == "" {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		video, err := service.GetVideoByID(videoID)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "NotFoundComment"))
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "NotFoundComment"))
 				return
 			}
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		err = service.LikeVideo(videoID, user.ID.String())
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 
 		notif := entity.Notification{
 			Type:    "like",
-			Message: inter.LocalizeWithUserName(utils.GetLang(ctx.Request.Header), user.Name, "VideoLikeNotif"),
+			Message: inter.LocalizeWithUserName(lang, user.Name, "VideoLikeNotif"),
 		}
 		_ = userService.NotifyCouple([2]entity.ID{video.InitiatedID, video.AcceptedID}, notif)
-		ctx.JSON(http.StatusCreated, presentation.Success(ctx.Request.Header, "VideoLiked"))
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "VideoLiked"))
 	}
 }
 
 func videoComments(service video.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		skip, err := strconv.Atoi(ctx.Param("skip"))
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		videoID := ctx.Param("videoID")
 		comments, err := service.GetComments(videoID, skip)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 
@@ -156,17 +164,19 @@ func videoComments(service video.UseCase) gin.HandlerFunc {
 func deleteVideoComment(service video.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		commentID, videoID := ctx.Param("commentID"), ctx.Param("videoID")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if strings.TrimSpace(commentID) == "" || strings.TrimSpace(videoID) == "" {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		userID := sessions.Default(ctx).Get("user").(entity.UserSession).ID
 		err := service.DeleteComment(videoID, commentID, userID)
 		if err != nil {
-			ctx.JSON(http.StatusForbidden, presentation.Error(ctx.Request.Header, "Forbidden"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
-		ctx.JSON(http.StatusOK, presentation.Success(ctx.Request.Header, "CommentDeleted"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "CommentDeleted"))
 	}
 }
 

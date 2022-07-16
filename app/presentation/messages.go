@@ -1,30 +1,21 @@
 package presentation
 
 import (
-	"net/http"
-
 	"github.com/dawkaka/theone/inter"
 	"github.com/gin-gonic/gin"
 )
 
-func Error(header http.Header, message string) gin.H {
-	translation := translate(header, message)
+func Error(lang, message string) gin.H {
+	translation := translate(lang, message)
 	return gin.H{"type": "ERROR", "message": translation}
 }
 
-func translate(header http.Header, message string) string {
-	langArr := header["Accept-Language"]
-	var lang string
-	if len(langArr) > 0 {
-		lang = langArr[0]
-	} else {
-		lang = "en"
-	}
+func translate(lang, message string) string {
 	translation := inter.Localize(lang, message)
 	return translation
 }
 
-func Success(header http.Header, message string) gin.H {
-	translation := translate(header, message)
+func Success(lang, message string) gin.H {
+	translation := translate(lang, message)
 	return gin.H{"type": "SUCCESS", "message": translation}
 }

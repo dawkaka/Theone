@@ -23,20 +23,21 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 		userb := session.Get("user").(entity.UserSession)
+		lang := utils.GetLang(userb.Lang, ctx.Request.Header)
 		partnerID, err := entity.StringToID(ctx.Param("partnerID"))
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		userId := userb.ID
 
 		users, err := userService.ListUsers([]primitive.ObjectID{userId, partnerID})
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		if len(users) < 2 {
-			ctx.JSON(http.StatusForbidden, presentation.Error(ctx.Request.Header, "InvalidParnterRequest"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "InvalidParnterRequest"))
 			return
 		}
 		var (
@@ -52,7 +53,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		}
 
 		if !partner.HasPendingRequest || user.ID != partner.PartnerID {
-			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(ctx.Request.Header, "NotAllowed"))
+			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(lang, "NotAllowed"))
 			return
 		}
 
@@ -60,20 +61,20 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 
 		err = service.CreateCouple(userb.ID.String(), partnerID.String(), coupleName)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		notif := entity.Notification{
 			Type: "Request accepted",
 			Message: inter.LocalizeWithFullName(
-				utils.GetLang(ctx.Request.Header),
+				lang,
 				user.FirstName,
 				user.LastName,
 				"RequestAccepted",
 			),
 		}
 		_ = userService.NotifyUser(partner.UserName, notif)
-		ctx.JSON(http.StatusCreated, presentation.Success(ctx.Request.Header, "CoupleCreated"))
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CoupleCreated"))
 	}
 
 }
@@ -82,15 +83,17 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		coupleName := ctx.Param("coupleName")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "Invalid couple name"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Invalid couple name"))
 			return
 		}
 
 		couple, err := service.GetCouple(coupleName)
 
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "Something went wrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Something went wrong"))
 			return
 		}
 		pCouple := presentation.CoupleProfile{
@@ -113,15 +116,17 @@ func getCouplePosts(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		coupleName, skip := ctx.Param("coupleName"), ctx.Param("skip")
 		skipPosts, err := strconv.Atoi(skip)
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 		}
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 		}
 		posts, err := service.GetCouplePosts(coupleName, skipPosts)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 		}
 		page := entity.Pagination{
 			Next: skipPosts + entity.Limit,
@@ -135,15 +140,17 @@ func getCoupleVideos(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		coupleName, skip := ctx.Param("coupleName"), ctx.Param("skip")
 		skipVideos, err := strconv.Atoi(skip)
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 		}
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 		}
 		videos, err := service.GetCoupleVideos(coupleName, skipVideos)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 		}
 		page := entity.Pagination{
 			Next: skipVideos + entity.Limit,
@@ -157,15 +164,17 @@ func getFollowers(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		coupleName := ctx.Param("coupleName")
 		skip, err := strconv.Atoi(ctx.Param("skip")) //pagination
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 		}
 		if !validator.IsCoupleName(coupleName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 		}
 		followers, err := service.GetFollowers(coupleName, skip)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrongInternal"))
 		}
 		page := entity.Pagination{
 			Next: skip + entity.Limit,

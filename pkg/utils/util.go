@@ -7,7 +7,10 @@ import (
 	"time"
 )
 
-func GetLang(header http.Header) string {
+func GetLang(userLang string, header http.Header) string {
+	if userLang != "" {
+		return userLang
+	}
 	langArr := header["Accept-Language"]
 	var lang string
 	if len(langArr) > 0 {

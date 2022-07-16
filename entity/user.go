@@ -65,6 +65,7 @@ type UserSession struct {
 	HasPendingRequest bool      `json:"has_pending_request"`
 	FirstName         string    `json:"first_name" bson:"first_name"`
 	LastName          string    `json:"last_name" bson:"last_name"`
+	Lang              string    `json:"lang" bson:"lang"`
 	DateOfBirth       time.Time `json:"date_of_birth" bson:"date_of_birth"`
 }
 

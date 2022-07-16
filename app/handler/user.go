@@ -28,8 +28,9 @@ func signup(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var newUser *entity.Signup
 		err := ctx.ShouldBind(newUser)
+		lang := utils.GetLang("", ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, entity.ErrNotFound.Error()))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, entity.ErrNotFound.Error()))
 			return
 		}
 
@@ -45,13 +46,13 @@ func signup(service user.UseCase) gin.HandlerFunc {
 
 		hashedPassword, err := password.Generate(userPassword)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, err.Error()))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, err.Error()))
 			return
 		}
 
 		insertedID, err := service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBirth)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, err.Error()))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, err.Error()))
 			return
 		}
 		session := sessions.Default(ctx)
@@ -68,7 +69,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		gob.Register(userSession)
 		session.Set("user", userSession)
 		_ = session.Save()
-		ctx.JSON(http.StatusCreated, presentation.Success(ctx.Request.Header, "Signup successfull"))
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "Signup successfull"))
 	}
 }
 
@@ -76,18 +77,19 @@ func login(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var login *entity.Login
 		err := ctx.ShouldBind(login)
+		lang := utils.GetLang("", ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, entity.ErrSomethingWentWrong.Error()))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
 			return
 		}
 		user, err := service.GetUser(login.UserName)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, entity.ErrSomethingWentWrong.Error()))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
 			return
 		}
 		err = password.Compare(user.Password, login.Password)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "Wrong user name or password"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Wrong user name or password"))
 			return
 		}
 		session := sessions.Default(ctx)
@@ -105,7 +107,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 		gob.Register(userSession)
 		session.Set("user", userSession)
 		_ = session.Save()
-		ctx.JSON(http.StatusOK, presentation.Success(ctx.Request.Header, "login successfull"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "login successfull"))
 	}
 }
 
@@ -113,14 +115,16 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		userName := ctx.Param("userName")
+		thisUser := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(thisUser.Lang, ctx.Request.Header)
 		if !validator.IsUserName(userName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "Invalid user name"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Invalid user name"))
 			return
 		}
 		user, err := service.GetUser(userName)
 
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, entity.ErrNotFound.Error()))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, entity.ErrNotFound.Error()))
 			return
 		}
 		pUser := presentation.UserProfile{
@@ -139,13 +143,15 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 func searchUsers(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		query := ctx.Param("query")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsUserName(query) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		users, err := service.SearchUsers(query)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 
@@ -156,20 +162,22 @@ func searchUsers(service user.UseCase) gin.HandlerFunc {
 
 func getFollowing(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		userName := sessions.Default(ctx).Get("user").(entity.UserSession).Name
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		userName := user.Name
 		skip, err := strconv.Atoi(ctx.Param("skip"))
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethinWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethinWentWrong"))
 			return
 		}
 		following, err := service.UserFollowing(userName, skip)
 
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "NotFound"))
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "NotFound"))
 				return
 			}
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 
@@ -186,48 +194,49 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 		session := sessions.Default(ctx)
 		thisUser := session.Get("user").(entity.UserSession)
 		userName := ctx.Param("userName")
+		lang := utils.GetLang(thisUser.Lang, ctx.Request.Header)
 		if !validator.IsUserName(userName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "InvalidUserName"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidUserName"))
 			return
 		}
 		userAge := time.Since(thisUser.DateOfBirth)
 		if userAge.Hours() < EIGHTEEN_YEARS {
-			ctx.JSON(http.StatusForbidden, presentation.Error(ctx.Request.Header, "UserLessThan18"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "UserLessThan18"))
 			return
 		}
 		if thisUser.HasPartner || thisUser.HasPendingRequest {
-			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(ctx.Request.Header, "UserHasPartnerOrPendingRequest"))
+			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(lang, "UserHasPartnerOrPendingRequest"))
 			return
 		}
 
 		partner, err := service.GetUser(userName)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "UserNotFound"))
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "UserNotFound"))
 				return
 			}
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		partnerAge := time.Since(partner.DateOfBirth)
 		if partnerAge.Hours() < EIGHTEEN_YEARS {
-			ctx.JSON(http.StatusForbidden, presentation.Error(ctx.Request.Header, "PartnerLessThan18"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "PartnerLessThan18"))
 			return
 		}
 		if partner.HasPartner || partner.HasPendingRequest {
-			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(ctx.Request.Header, "PartnerHasPartnerOrPendingRequest"))
+			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(lang, "PartnerHasPartnerOrPendingRequest"))
 			return
 		}
 		err = service.CreateRequest(thisUser.ID, partner.ID)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		notification := entity.NotifyRequest{
 			Type:     "Couple Request",
 			UserName: thisUser.Name,
 			Message: inter.LocalizeWithFullName(
-				utils.GetLang(ctx.Request.Header),
+				lang,
 				thisUser.FirstName,
 				thisUser.LastName,
 				"NewCoupleRequest",
@@ -240,7 +249,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 		session.Set("user", thisUser)
 		session.Save()
 
-		ctx.JSON(http.StatusCreated, presentation.Success(ctx.Request.Header, "RequestCreated"))
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "RequestCreated"))
 	}
 }
 
@@ -250,34 +259,34 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		userName := user.Name
 		userID := user.ID
-
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) || !validator.IsUserName(userName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		couple, err := coupleService.GetCouple(coupleName)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "CoupleNotFound"))
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
 				return
 			}
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Response.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 
 		err = service.Follow(couple.ID, userID)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 
 		_ = coupleService.NewFollower(userID, couple.ID)
 		notif := entity.Notification{
 			Type:    "follow",
-			Message: inter.LocalizeWithUserName(utils.GetLang(ctx.Request.Header), userName, "NewFollower"),
+			Message: inter.LocalizeWithUserName(lang, userName, "NewFollower"),
 		}
 		_ = service.NotifyCouple([2]primitive.ObjectID{couple.Accepted, couple.Initiated}, notif)
-		ctx.JSON(http.StatusNoContent, presentation.Success(ctx.Request.Header, "Followed"))
+		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "Followed"))
 	}
 }
 
@@ -287,28 +296,28 @@ func unfollow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFun
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		userName := user.Name
 		userID := user.ID
-
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) || !validator.IsUserName(userName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		couple, err := coupleService.GetCouple(coupleName)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				ctx.JSON(http.StatusNotFound, presentation.Error(ctx.Request.Header, "CoupleNotFound"))
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
 				return
 			}
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Response.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		err = service.Unfollow(couple.ID, userID)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(ctx.Request.Header, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		_ = coupleService.RemoveFollower(userID, couple.ID)
-		ctx.JSON(http.StatusNoContent, presentation.Success(ctx.Request.Header, "Unfollowed"))
+		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "Unfollowed"))
 	}
 }
 
@@ -322,14 +331,15 @@ func updateUser(service user.UseCase) gin.HandlerFunc {
 func deleteUser(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
-		userId := session.Get("userID")
-
-		err := service.DeleteUser((userId.(primitive.ObjectID)))
+		user := session.Get("user").(entity.UserSession)
+		userId := user.ID
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		err := service.DeleteUser((userId))
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(ctx.Request.Header, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		ctx.JSON(http.StatusAccepted, presentation.Success(ctx.Request.Header, "Account deleted"))
+		ctx.JSON(http.StatusAccepted, presentation.Success(lang, "Account deleted"))
 	}
 }
 
