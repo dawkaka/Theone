@@ -178,3 +178,15 @@ func (v *VideoMongo) Like(videoID, userID entity.ID) error {
 	)
 	return err
 }
+
+func (v *VideoMongo) UnLike(videoID, userID entity.ID) error {
+	_, err := v.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: videoID}},
+		bson.D{
+			{Key: "$pull", Value: bson.D{{Key: "likes", Value: userID}}},
+			{Key: "$inc", Value: bson.D{{Key: "likes_count", Value: -1}}},
+		},
+	)
+	return err
+}

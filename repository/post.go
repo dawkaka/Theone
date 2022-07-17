@@ -170,6 +170,18 @@ func (p *PostMongo) Like(postID, userID entity.ID) error {
 	return err
 }
 
+func (p *PostMongo) UnLike(postID, userID entity.ID) error {
+	_, err := p.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: postID}},
+		bson.D{
+			{Key: "$pull", Value: bson.D{{Key: "likes", Value: userID}}},
+			{Key: "$inc", Value: bson.D{{Key: "likes_count", Value: -1}}},
+		},
+	)
+	return err
+}
+
 func (p *PostMongo) Delete(id entity.ID) error {
 	result, err := p.collection.DeleteOne(
 		context.TODO(),

@@ -56,8 +56,8 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		postID := ctx.Param("postID")
-		thisuser := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := utils.GetLang(thisuser.Lang, ctx.Request.Header)
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if strings.TrimSpace(postID) == "" {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -71,8 +71,6 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		var comment entity.Comment
 		err = ctx.ShouldBind(comment)
 		if err != nil {
@@ -98,8 +96,8 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		postID := ctx.Param("postID")
-		thisuser := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := utils.GetLang(thisuser.Lang, ctx.Request.Header)
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if strings.TrimSpace(postID) == "" {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -113,7 +111,7 @@ func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+
 		err = service.LikePost(postID, user.ID.String())
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
@@ -160,13 +158,32 @@ func deletePostComment(service post.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		userID := sessions.Default(ctx).Get("user").(entity.UserSession).ID
+		userID := user.ID
 		err := service.DeleteComment(postID, commentID, userID)
 		if err != nil {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "CommentDeleted"))
+	}
+}
+
+func unLikePost(service post.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		postID := ctx.Param("postID")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if strings.TrimSpace(postID) == "" {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		userID := user.ID
+		err := service.UnLikePost(postID, userID)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+			return
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "UnlikePost"))
 	}
 }
 
@@ -189,7 +206,7 @@ func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.
 	r.POST("/post/new-comment/:postID", newComment(service, userService))
 	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service))
 	r.PATCH("/post/like/:postID", like(service, userService))
-	//r.PATCH("/post/unlike/:postID" unLike(service, userService))
+	r.PATCH("/post/unlike/:postID", unLikePost(service))
 	r.PUT("/post/update", updatePost(service))
 	r.DELETE("/post/delete", deletePost(service))
 }

@@ -18,6 +18,7 @@ type Writer interface {
 	AddComment(postID entity.ID, comment entity.Comment) error
 	DeleteComment(postID, commentId string, userID entity.ID) error
 	Like(postID, userID entity.ID) error
+	UnLike(postID, userID entity.ID) error
 }
 
 //Repository interface
@@ -38,4 +39,5 @@ type UseCase interface {
 	NewComment(postID string, comment entity.Comment) error
 	DeleteComment(postID, commentID string, userID entity.ID) error
 	LikePost(postID, userID string) error
+	UnLikePost(postID string, userID entity.ID) error
 }

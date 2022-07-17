@@ -52,6 +52,7 @@ func (s *Service) NewComment(postID string, comment entity.Comment) error {
 func (s *Service) DeleteComment(postID, commentID string, userID entity.ID) error {
 	return s.repo.DeleteComment(postID, commentID, userID)
 }
+
 func (s *Service) LikePost(postID, userID string) error {
 	id, err := entity.StringToID(userID)
 	if err != nil {
@@ -62,6 +63,14 @@ func (s *Service) LikePost(postID, userID string) error {
 		return err
 	}
 	return s.repo.Like(pID, id)
+}
+
+func (s *Service) UnLikePost(postID string, userID entity.ID) error {
+	ID, err := entity.StringToID(postID)
+	if err != nil {
+		return err
+	}
+	return s.repo.UnLike(ID, userID)
 }
 
 func (s *Service) ListPosts(id []entity.ID) ([]*entity.Post, error) {
