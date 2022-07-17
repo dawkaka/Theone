@@ -92,6 +92,9 @@ func login(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Wrong user name or password"))
 			return
 		}
+		if user.Lang != "" {
+			lang = user.Lang
+		}
 		session := sessions.Default(ctx)
 		userSession := entity.UserSession{
 			ID:                user.ID,
@@ -99,9 +102,11 @@ func login(service user.UseCase) gin.HandlerFunc {
 			Email:             user.Email,
 			HasPartner:        user.HasPartner,
 			PartnerID:         user.PartnerID,
+			CoupleID:          user.CoupleID,
 			HasPendingRequest: user.HasPendingRequest,
 			FirstName:         user.FirstName,
 			LastName:          user.LastName,
+			Lang:              lang,
 			DateOfBirth:       user.DateOfBirth,
 		}
 		gob.Register(userSession)

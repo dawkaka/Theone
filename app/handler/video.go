@@ -195,6 +195,30 @@ func unLikeVideo(service video.UseCase) gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "UnlikeVideo"))
 	}
 }
+
+func editVideoCaption(service video.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		postID := ctx.Param("postID")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		var Caption struct {
+			Caption string `json:"caption"`
+		}
+		err := ctx.ShouldBindJSON(&Caption)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		err = service.EditCaption(postID, user.CoupleID, Caption.Caption)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Forbidden"))
+			return
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "PostEdited"))
+	}
+}
+
 func deleteVideo(service video.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -209,6 +233,7 @@ func MakeVideoHandlers(r *gin.Engine, service video.UseCase, coupleService coupl
 	r.POST("/video/new-comment/:videoID", videoComment(service, userService))
 	r.PATCH("/video/like/:videoID", likeVideo(service, userService))
 	r.PATCH("/video/unlike/:videoID", unLikeVideo(service))
+	r.PATCH("/video/edit/:videoID", editVideoCaption(service))
 	r.POST("/video/new", newVideo(service))
 	r.PUT("/video/update", updateVideo(service))
 	r.DELETE("/video/delete", deleteVideo(service))

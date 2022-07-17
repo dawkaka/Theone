@@ -187,6 +187,29 @@ func unLikePost(service post.UseCase) gin.HandlerFunc {
 	}
 }
 
+func editPostCaption(service post.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		postID := ctx.Param("postID")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		var Caption struct {
+			Caption string `json:"caption"`
+		}
+		err := ctx.ShouldBindJSON(&Caption)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		err = service.EditCaption(postID, user.CoupleID, Caption.Caption)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Forbidden"))
+			return
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "PostEdited"))
+	}
+}
+
 func updatePost(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -207,6 +230,7 @@ func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.
 	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service))
 	r.PATCH("/post/like/:postID", like(service, userService))
 	r.PATCH("/post/unlike/:postID", unLikePost(service))
+	r.PATCH("/post/edit/:postID", editPostCaption(service))
 	r.PUT("/post/update", updatePost(service))
 	r.DELETE("/post/delete", deletePost(service))
 }

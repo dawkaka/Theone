@@ -6,6 +6,7 @@ import (
 
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -159,9 +160,13 @@ func (c *CoupleMongo) Unfollow(userID, coupleId entity.ID) error {
 }
 
 //Write Operations
-func (c *CoupleMongo) Create(couple entity.Couple) error {
-	_, err := c.collection.InsertOne(context.TODO(), couple)
-	return err
+func (c *CoupleMongo) Create(couple entity.Couple) (entity.ID, error) {
+	var id primitive.ObjectID
+	result, err := c.collection.InsertOne(context.TODO(), couple)
+	if err == nil {
+		id = result.InsertedID.(primitive.ObjectID)
+	}
+	return id, err
 }
 
 func (c *CoupleMongo) Update(couple entity.Couple) error {

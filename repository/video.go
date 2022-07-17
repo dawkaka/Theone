@@ -152,14 +152,10 @@ func (v *VideoMongo) DeleteComment(videoID, commentID string, userID entity.ID) 
 		bson.D{
 			{
 				Key: "$pull",
-				Value: bson.D{
-					{
-						Key: "comments",
-						Value: bson.D{
-							{Key: "_id", Value: cID},
-							{Key: "user_id", Value: userID},
-						},
-					},
+				Value: bson.D{{Key: "comments", Value: bson.D{
+					{Key: "_id", Value: cID},
+					{Key: "user_id", Value: userID},
+				}},
 				},
 			},
 		},
@@ -188,5 +184,16 @@ func (v *VideoMongo) UnLike(videoID, userID entity.ID) error {
 			{Key: "$inc", Value: bson.D{{Key: "likes_count", Value: -1}}},
 		},
 	)
+	return err
+}
+func (p *VideoMongo) Edit(postID, coupleID entity.ID, newCaption string) error {
+	res, err := p.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: postID}, {Key: "couple_id", Value: coupleID}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "caption", Value: newCaption}}}},
+	)
+	if res.ModifiedCount == 0 {
+		return errors.New("no match found")
+	}
 	return err
 }

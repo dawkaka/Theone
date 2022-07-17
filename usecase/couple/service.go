@@ -29,14 +29,14 @@ func (s *Service) GetCoupleVideos(coupleName string, skip int) ([]entity.Video, 
 	return s.repo.GetCoupleVideos(coupleName, skip)
 }
 
-func (s *Service) CreateCouple(userId, partnerId, coupleName string) error {
+func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID, error) {
 	initiated, err := entity.StringToID(partnerId)
 	if err != nil {
-		return err
+		return primitive.ObjectID{}, err
 	}
 	accepted, err := entity.StringToID(userId)
 	if err != nil {
-		return err
+		return primitive.ObjectID{}, err
 	}
 
 	couple := entity.Couple{

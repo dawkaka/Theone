@@ -149,6 +149,8 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 	return err
 }
 
+//Write Methods
+
 func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) error {
 	result, err := u.collection.UpdateMany(
 		context.TODO(),
@@ -161,7 +163,6 @@ func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) erro
 	return err
 }
 
-//Write Methods
 func (u *UserMongo) Create(e *entity.User) (entity.ID, error) {
 
 	result, err := u.collection.InsertOne(context.TODO(), e)
@@ -213,5 +214,15 @@ func (u *UserMongo) Delete(id entity.ID) error {
 		context.TODO(),
 		bson.D{{Key: "id", Value: id}},
 	)
+	return err
+}
+
+func (u *UserMongo) NewCouple(c [2]entity.ID, coupleId entity.ID) error {
+	_, err := u.collection.UpdateMany(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: c}}}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "couple_id", Value: coupleId}}}},
+	)
+
 	return err
 }

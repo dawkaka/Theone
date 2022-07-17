@@ -182,6 +182,18 @@ func (p *PostMongo) UnLike(postID, userID entity.ID) error {
 	return err
 }
 
+func (p *PostMongo) Edit(postID, coupleID entity.ID, newCaption string) error {
+	res, err := p.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: postID}, {Key: "couple_id", Value: coupleID}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "caption", Value: newCaption}}}},
+	)
+	if res.ModifiedCount == 0 {
+		return errors.New("no match found")
+	}
+	return err
+}
+
 func (p *PostMongo) Delete(id entity.ID) error {
 	result, err := p.collection.DeleteOne(
 		context.TODO(),

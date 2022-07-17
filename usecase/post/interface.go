@@ -19,6 +19,7 @@ type Writer interface {
 	DeleteComment(postID, commentId string, userID entity.ID) error
 	Like(postID, userID entity.ID) error
 	UnLike(postID, userID entity.ID) error
+	Edit(postID, coupleID entity.ID, newCaption string) error
 }
 
 //Repository interface
@@ -40,4 +41,5 @@ type UseCase interface {
 	DeleteComment(postID, commentID string, userID entity.ID) error
 	LikePost(postID, userID string) error
 	UnLikePost(postID string, userID entity.ID) error
+	EditCaption(videoID string, coupleID entity.ID, newCaption string) error
 }

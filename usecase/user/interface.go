@@ -25,6 +25,7 @@ type Writer interface {
 	Unfollow(coupleId, userId entity.ID) error
 	Notify(userToNotify string, notification any) error
 	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
+	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 }
 
 //Repository interface
@@ -48,4 +49,5 @@ type UseCase interface {
 	Unfollow(coupleID, userID entity.ID) error
 	NotifyUser(userToNotify string, notification any) error
 	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
+	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 }

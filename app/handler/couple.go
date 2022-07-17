@@ -59,7 +59,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 
 		coupleName := fmt.Sprintf("%s&%s_%d", partner.FirstName, user.FirstName, time.Now())
 
-		err = service.CreateCouple(userb.ID.String(), partnerID.String(), coupleName)
+		Id, err := service.CreateCouple(userb.ID.String(), partnerID.String(), coupleName)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
@@ -73,6 +73,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 				"RequestAccepted",
 			),
 		}
+		_ = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, Id)
 		_ = userService.NotifyUser(partner.UserName, notif)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CoupleCreated"))
 	}

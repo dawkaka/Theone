@@ -22,6 +22,7 @@ type User struct {
 	LastName             string    `json:"last_name" bson:"last_name"`
 	Password             string    `json:"password"`
 	DateOfBirth          time.Time `json:"date_of_birth" bson:"date_of_birth"`
+	CoupleID             ID        `json:"couple_id" bson:"couple_id"`
 	Bio                  string    `json:"bio"`
 	HasPartner           bool      `json:"has_partner" bson:"has_partner"`
 	HasPendingRequest    bool      `json:"has_pending_request" bson:"has_pending_request"`
@@ -37,6 +38,7 @@ type User struct {
 	Following            []ID      `json:"following"`
 	FollowingCount       uint64    `json:"following_count" bson:"following_count"`
 	Notifications        []any     `json:"notifications"`
+	Lang                 string    `json:"lang"`
 	LastVisited          time.Time `json:"last_visited"`
 	LoginIPs             []string  `json:"login_ips" bson:"loging_ips"`
 	ContentPriorityQueue []ID      `json:"content_priority_queue" bson:"content_priority_queue"`
@@ -62,6 +64,7 @@ type UserSession struct {
 	Email             string    `json:"email"`
 	HasPartner        bool      `json:"has_partner"`
 	PartnerID         ID        `json:"partner_id"`
+	CoupleID          ID        `json:"couple_id"`
 	HasPendingRequest bool      `json:"has_pending_request"`
 	FirstName         string    `json:"first_name" bson:"first_name"`
 	LastName          string    `json:"last_name" bson:"last_name"`

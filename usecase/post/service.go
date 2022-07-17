@@ -73,6 +73,14 @@ func (s *Service) UnLikePost(postID string, userID entity.ID) error {
 	return s.repo.UnLike(ID, userID)
 }
 
+func (s *Service) EditCaption(postID string, coupleID entity.ID, newCaption string) error {
+	ID, err := entity.StringToID(postID)
+	if err != nil {
+		return err
+	}
+	return s.repo.Edit(ID, coupleID, newCaption)
+}
+
 func (s *Service) ListPosts(id []entity.ID) ([]*entity.Post, error) {
 	posts, err := s.repo.List(id)
 	if err != nil {

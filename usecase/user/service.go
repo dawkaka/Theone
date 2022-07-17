@@ -87,3 +87,7 @@ func (s *Service) NotifyUser(user string, notif any) error {
 func (s *Service) NotifyCouple(couple [2]entity.ID, notif entity.Notification) error {
 	return s.repo.NotifyCouple(couple, notif)
 }
+
+func (s *Service) NewCouple(couple [2]entity.ID, coupleID entity.ID) error {
+	return s.repo.NewCouple(couple, coupleID)
+}
