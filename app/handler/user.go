@@ -10,6 +10,7 @@ import (
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/inter"
+	"github.com/dawkaka/theone/pkg/aws"
 	"github.com/dawkaka/theone/pkg/password"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
@@ -133,12 +134,12 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		pUser := presentation.UserProfile{
-			UserName:       user.UserName,
 			FirstName:      user.UserName,
-			Bio:            user.Bio,
 			LastName:       user.LastName,
+			UserName:       user.UserName,
 			ProfilePicture: user.ProfilePicture,
-			CoverPicture:   user.CoverPicture,
+			Bio:            user.Bio,
+			FollowingCount: user.FollowingCount,
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{"user": pUser})
@@ -348,6 +349,21 @@ func deleteUser(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func updateUserProfile(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		fileHeader, err := ctx.FormFile("profile-picture")
+		lang := utils.GetLang("", ctx.Request.Header)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+		}
+		err = aws.UploadProfile(fileHeader)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicSuccess"))
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
@@ -358,5 +374,6 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.PATCH("/user/couple-request/:userName", initiateRequest(service))
 	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
 	r.PUT("/user/update", updateUser(service))
+	r.PUT("/user/update/profile", updateUserProfile(service))
 	r.DELETE("/user/delete-account", deleteUser(service))
 }

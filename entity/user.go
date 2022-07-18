@@ -29,8 +29,6 @@ type User struct {
 	CreatedAt            time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at" bson:"updated_at"`
 	ProfilePicture       string    `json:"profile_picture" bson:"profile_picture"`
-	CoverPicture         string    `json:"cover_picture" bson:"cover_picture"`
-	ShowPictures         []string  `json:"show_pictures" bson:"show_pictures"`
 	Likes                []string  `json:"likes"`
 	LikesCount           int64     `json:"likes_count" bson:"likes_count"`
 	EmailVerified        bool      `json:"email_verified" bson:"email_verified"`
@@ -124,8 +122,6 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		CreatedAt:            time.Now(),
 		UpdatedAt:            time.Now(),
 		ProfilePicture:       "defaultProfile.jpg",
-		CoverPicture:         "defaultCover.jpg",
-		ShowPictures:         []string{"defaultPic.jpg", "defaultPic.jpg", "defaultPic.jpg", "defaultPic.jpg", "defaultPic.jpg", "defaultPic.jpg"},
 		Likes:                []string{},
 		EmailVerified:        false,
 		PartnerID:            [12]byte{},
