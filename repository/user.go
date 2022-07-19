@@ -245,3 +245,24 @@ func (u *UserMongo) UpdateProfilePic(fileName string, userID entity.ID) error {
 	}
 	return err
 }
+
+func (u *UserMongo) UpdateShowPicture(userID entity.ID, index int, fileName string) error {
+	result, err := u.collection.UpdateByID(
+		context.TODO(),
+		userID,
+		bson.D{
+			{
+				Key: "$push",
+				Value: bson.D{{Key: "show_pictures", Value: bson.D{
+					{Key: "$each", Value: []string{fileName}},
+					{Key: "$position", Value: index},
+				}}},
+			},
+		},
+	)
+	if result.MatchedCount < 1 {
+		return entity.ErrNoMatch
+	}
+
+	return err
+}

@@ -17,3 +17,5 @@ var ErrNotEnoughBooks = errors.New("not enough books")
 
 //Something Went Wrong Error
 var ErrSomethingWentWrong = errors.New("something went wrong")
+
+var ErrNoMatch = errors.New("no match found")

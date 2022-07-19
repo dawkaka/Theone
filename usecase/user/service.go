@@ -95,3 +95,7 @@ func (s *Service) NewCouple(couple [2]entity.ID, coupleID entity.ID) error {
 func (s *Service) UpdateUserProfilePic(fileName string, userID entity.ID) error {
 	return s.repo.UpdateProfilePic(fileName, userID)
 }
+
+func (s *Service) UpdateShowPicture(userID entity.ID, index int, fileName string) error {
+	return s.repo.UpdateShowPicture(userID, index, fileName)
+}

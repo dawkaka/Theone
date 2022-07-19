@@ -26,11 +26,13 @@ type User struct {
 	DateOfBirth          time.Time `json:"date_of_birth" bson:"date_of_birth"`
 	CoupleID             ID        `json:"couple_id" bson:"couple_id"`
 	Bio                  string    `json:"bio"`
+	Website              string    `json:"website"`
 	HasPartner           bool      `json:"has_partner" bson:"has_partner"`
 	HasPendingRequest    bool      `json:"has_pending_request" bson:"has_pending_request"`
 	CreatedAt            time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at" bson:"updated_at"`
 	ProfilePicture       string    `json:"profile_picture" bson:"profile_picture"`
+	ShowPictures         [6]string `json:"show_pictures" bson:"show_pictures"`
 	Likes                []string  `json:"likes"`
 	LikesCount           int64     `json:"likes_count" bson:"likes_count"`
 	EmailVerified        bool      `json:"email_verified" bson:"email_verified"`
@@ -153,13 +155,16 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		LastName:             lastName,
 		Password:             password,
 		DateOfBirth:          dateOfBirth,
+		CoupleID:             [12]byte{},
 		Bio:                  "-",
 		HasPartner:           false,
 		HasPendingRequest:    false,
 		CreatedAt:            time.Now(),
 		UpdatedAt:            time.Now(),
 		ProfilePicture:       "defaultProfile.jpg",
+		ShowPictures:         [6]string{"defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg"},
 		Likes:                []string{},
+		LikesCount:           0,
 		EmailVerified:        false,
 		PartnerID:            [12]byte{},
 		Following:            []primitive.ObjectID{},

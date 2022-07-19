@@ -392,6 +392,40 @@ func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func updateShowPicture(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		index, err := strconv.Atoi(ctx.Param("index"))
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		fileHeader, err := ctx.FormFile("show_picture")
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+
+		fileName, err := myaws.UploadImageFile(fileHeader, "toonjimages")
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		err = service.UpdateShowPicture(user.ID, index, fileName)
+
+		if err != nil {
+			if err == entity.ErrNoMatch {
+				ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ShowPictureChanged"))
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
@@ -403,5 +437,6 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
 	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))
 	r.PUT("/user/update", updateUser(service))
+	r.PUT("/user/show-pictures/:index", updateShowPicture(service))
 	r.DELETE("/user/delete-account", deleteUser(service))
 }

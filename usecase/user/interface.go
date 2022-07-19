@@ -27,6 +27,7 @@ type Writer interface {
 	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
 	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 	UpdateProfilePic(fileName string, userID entity.ID) error
+	UpdateShowPicture(userID entity.ID, index int, fileName string) error
 }
 
 //Repository interface
@@ -52,4 +53,5 @@ type UseCase interface {
 	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
 	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 	UpdateUserProfilePic(fileName string, userID entity.ID) error
+	UpdateShowPicture(userID entity.ID, index int, fileName string) error
 }
