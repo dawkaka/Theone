@@ -3,6 +3,7 @@ package validator
 import (
 	"net/mail"
 	"strings"
+	"time"
 )
 
 func IsEmail(email string) bool {
@@ -68,5 +69,9 @@ func IsWebsite(website string) bool {
 }
 
 func IsPronouns(pronouns string) bool {
+	return true
+}
+
+func IsValidPastDate(date time.Time) bool {
 	return true
 }

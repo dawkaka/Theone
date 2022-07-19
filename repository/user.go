@@ -180,6 +180,7 @@ func (u *UserMongo) Update(userID entity.ID, update entity.UpdateUser) error {
 			{Key: "bio", Value: update.Bio},
 			{Key: "updated_at", Value: update.UpdatedAt},
 			{Key: "pronouns", Value: update.Pronouns},
+			{Key: "website", Value: update.Website},
 		}}},
 	)
 	return err

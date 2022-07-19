@@ -234,7 +234,27 @@ func updateCoupleCoverPic(service couple.UseCase) gin.HandlerFunc {
 
 func updateCouple(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		var update entity.UpdateCouple
+		err := ctx.ShouldBindJSON(&update)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		update.Lang = lang
+		update.Sanitize()
+		errs := update.Validate()
+		if len(errs) > 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"type": "error", "errors": errs})
+			return
+		}
+		err = service.UpdateCouple(user.CoupleID, update)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "CoupleUpdated"))
 	}
 }
 

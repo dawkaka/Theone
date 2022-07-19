@@ -116,6 +116,7 @@ type UpdateUser struct {
 	Bio       string    `json:"bio"`
 	Pronouns  string    `json:"pronouns"`
 	UpdatedAt time.Time `bson:"updated_at"`
+	Website   string    `json:"website"`
 	Lang      string    `json:"lang"`
 }
 
@@ -128,9 +129,11 @@ func (u UpdateUser) Validate() []string {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidBio"))
 	}
 	if !validator.IsPronouns(u.Pronouns) {
-		errs = append(errs, inter.Localize(u.Lang, "InvalidWebiste"))
+		errs = append(errs, inter.Localize(u.Lang, "InvalidPronouns"))
 	}
-
+	if !validator.IsWebsite(u.Website) {
+		errs = append(errs, inter.Localize(u.Lang, "InvalidWebsite"))
+	}
 	return errs
 }
 
@@ -139,6 +142,7 @@ func (u *UpdateUser) Sanitize() {
 	u.LastName = strings.TrimSpace(u.LastName)
 	u.Bio = strings.TrimSpace(u.Bio)
 	u.Pronouns = strings.TrimSpace(u.Pronouns)
+	u.Website = strings.TrimSpace(u.Website)
 }
 
 func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) *User {

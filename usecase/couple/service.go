@@ -69,9 +69,9 @@ func (s *Service) RemoveFollower(userID, coupleID entity.ID) error {
 	return s.repo.Unfollow(userID, coupleID)
 }
 
-func (s *Service) UpdateCouple(couple entity.Couple) error {
-
-	return s.repo.Update(couple)
+func (s *Service) UpdateCouple(coupleID entity.ID, update entity.UpdateCouple) error {
+	update.UpdatedAt = time.Now()
+	return s.repo.Update(coupleID, update)
 }
 
 func (s *Service) UpdateCoupleProfilePic(fileName string, coupleID entity.ID) error {

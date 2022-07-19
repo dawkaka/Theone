@@ -169,17 +169,19 @@ func (c *CoupleMongo) Create(couple entity.Couple) (entity.ID, error) {
 	return id, err
 }
 
-func (c *CoupleMongo) Update(couple entity.Couple) error {
+func (u *CoupleMongo) Update(coupleID entity.ID, update entity.UpdateCouple) error {
 
-	result, err := c.collection.UpdateOne(
+	_, err := u.collection.UpdateByID(
 		context.TODO(),
-		bson.D{{Key: "couple_name", Value: couple.CoupleName}},
-		bson.D{{Key: "$set", Value: couple}},
+		coupleID,
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: "bio", Value: update.Bio},
+			{Key: "updated_at", Value: update.UpdatedAt},
+			{Key: "pronouns", Value: update.Pronouns},
+			{Key: "website", Value: update.Website},
+			{Key: "date_commenced", Value: update.DateCommenced},
+		}}},
 	)
-
-	if result.ModifiedCount != 1 {
-		return entity.ErrNotFound
-	}
 	return err
 }
 
