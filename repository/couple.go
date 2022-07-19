@@ -182,3 +182,27 @@ func (c *CoupleMongo) Update(couple entity.Couple) error {
 	}
 	return err
 }
+
+func (c *CoupleMongo) UpdateProfilePic(fileName string, coupleID entity.ID) error {
+	result, err := c.collection.UpdateByID(
+		context.TODO(),
+		coupleID,
+		bson.D{{Key: "$set", Value: bson.D{{Key: "profile_picture", Value: fileName}}}},
+	)
+	if result.MatchedCount == 0 {
+		return errors.New("no match")
+	}
+	return err
+}
+
+func (c *CoupleMongo) UpdateCoverPic(fileName string, coupleID entity.ID) error {
+	result, err := c.collection.UpdateByID(
+		context.TODO(),
+		coupleID,
+		bson.D{{Key: "$set", Value: bson.D{{Key: "cover_picture", Value: fileName}}}},
+	)
+	if result.MatchedCount == 0 {
+		return errors.New("no match")
+	}
+	return err
+}

@@ -226,3 +226,15 @@ func (u *UserMongo) NewCouple(c [2]entity.ID, coupleId entity.ID) error {
 
 	return err
 }
+
+func (u *UserMongo) UpdateProfilePic(fileName string, userID entity.ID) error {
+	result, err := u.collection.UpdateByID(
+		context.TODO(),
+		userID,
+		bson.D{{Key: "$set", Value: bson.D{{Key: "profile_picture", Value: fileName}}}},
+	)
+	if result.MatchedCount == 0 {
+		return errors.New("no match")
+	}
+	return err
+}

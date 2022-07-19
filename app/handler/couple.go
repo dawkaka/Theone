@@ -9,6 +9,7 @@ import (
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/inter"
+	"github.com/dawkaka/theone/pkg/aws"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/dawkaka/theone/usecase/couple"
@@ -185,6 +186,52 @@ func getFollowers(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
+func updateCoupleProfilePic(service couple.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		fileHeader, err := ctx.FormFile("profile-picture")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		fileName, err := aws.UploadProfile(fileHeader)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
+			return
+		}
+		err = service.UpdateCoupleProfilePic(fileName, user.CoupleID)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+			return
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicSuccess"))
+	}
+}
+
+func updateCoupleCoverPic(service couple.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		fileHeader, err := ctx.FormFile("cover-picture")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		fileName, err := aws.UploadProfile(fileHeader)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
+			return
+		}
+		err = service.UpdateCoupleCoverPic(fileName, user.CoupleID)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+			return
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicUpdated"))
+	}
+}
+
 func updateCouple(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -197,5 +244,7 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/:coupleName/followers/:skip", getFollowers(service))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))
+	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service))
+	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))
 	r.PUT("/couple/update", updateCouple(service))
 }

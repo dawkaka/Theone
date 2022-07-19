@@ -91,3 +91,7 @@ func (s *Service) NotifyCouple(couple [2]entity.ID, notif entity.Notification) e
 func (s *Service) NewCouple(couple [2]entity.ID, coupleID entity.ID) error {
 	return s.repo.NewCouple(couple, coupleID)
 }
+
+func (s *Service) UpdateUserProfilePic(fileName string, userID entity.ID) error {
+	return s.repo.UpdateProfilePic(fileName, userID)
+}

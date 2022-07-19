@@ -12,10 +12,10 @@ import (
 )
 
 // The session the S3 Uploader will use
-func UploadProfile(fileHeader *multipart.FileHeader) error {
+func UploadProfile(fileHeader *multipart.FileHeader) (string, error) {
 	f, err := fileHeader.Open()
 	if err != nil {
-		return err
+		return "", err
 	}
 	var re = regexp.MustCompile(`\W\_`)
 	s := fmt.Sprintf("%s%d", re.ReplaceAllString(fileHeader.Filename, ""), time.Now().UnixMilli())
@@ -31,5 +31,5 @@ func UploadProfile(fileHeader *multipart.FileHeader) error {
 		Key:    aws.String(s),
 		Body:   f,
 	})
-	return err
+	return s, err
 }

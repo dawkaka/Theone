@@ -6,4 +6,6 @@ const (
 	DB_DATABASE = "test"
 	DB_HOST     = "mongodb://127.0.0.1:27017"
 	API_PORT    = 8080
+	s3Id        = "AKIAZKM5T2L3K6SKXDIJ"
+	s3Key       = "PwuoKmk582oLneT3HPT9OvS+hOkR44rkgDJJhClX"
 )

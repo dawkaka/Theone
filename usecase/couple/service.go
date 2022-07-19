@@ -73,3 +73,11 @@ func (s *Service) UpdateCouple(couple entity.Couple) error {
 
 	return s.repo.Update(couple)
 }
+
+func (s *Service) UpdateCoupleProfilePic(fileName string, coupleID entity.ID) error {
+	return s.repo.UpdateProfilePic(fileName, coupleID)
+}
+
+func (s *Service) UpdateCoupleCoverPic(fileName string, coupleID entity.ID) error {
+	return s.repo.UpdateCoverPic(fileName, coupleID)
+}

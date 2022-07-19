@@ -8,6 +8,7 @@ import (
 
 //ID entity ID
 type ID = primitive.ObjectID
+
 type Comment struct {
 	UserID    string    `json:"user_id"`
 	Comment   string    `json:"comment"`
@@ -28,3 +29,8 @@ var (
 	Limit  = 30
 	LimitP = 15
 )
+
+type PhotoMetaData struct {
+	Name string `json:"file_name" bson:"file_name"`
+	Size int64  `json:"file_size" bson:"file_size"`
+}
