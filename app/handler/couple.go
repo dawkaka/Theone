@@ -9,7 +9,7 @@ import (
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/inter"
-	myaws "github.com/dawkaka/theone/pkg/aws"
+	"github.com/dawkaka/theone/pkg/myaws"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/dawkaka/theone/usecase/couple"
