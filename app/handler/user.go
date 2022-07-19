@@ -10,7 +10,7 @@ import (
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/inter"
-	"github.com/dawkaka/theone/pkg/aws"
+	myaws "github.com/dawkaka/theone/pkg/aws"
 	"github.com/dawkaka/theone/pkg/password"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
@@ -358,7 +358,7 @@ func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		fileName, err := aws.UploadProfile(fileHeader)
+		fileName, err := myaws.UploadImageFile(fileHeader, "toonjimages")
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
 			return

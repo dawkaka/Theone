@@ -1,4 +1,4 @@
-package aws
+package myaws
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 )
 
 // The session the S3 Uploader will use
-func UploadProfile(fileHeader *multipart.FileHeader) (string, error) {
+func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, error) {
 	f, err := fileHeader.Open()
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func UploadProfile(fileHeader *multipart.FileHeader) (string, error) {
 
 	uploader := s3manager.NewUploader(sess)
 	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String("toonjimages"),
+		Bucket: aws.String(bucket),
 		Key:    aws.String(s),
 		Body:   f,
 	})
