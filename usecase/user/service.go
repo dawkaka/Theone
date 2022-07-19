@@ -54,9 +54,9 @@ func (s *Service) DeleteUser(id entity.ID) error {
 }
 
 //UpdateUser Update an user
-func (s *Service) UpdateUser(e *entity.User) error {
-	e.UpdatedAt = time.Now()
-	return s.repo.Update(e)
+func (s *Service) UpdateUser(userID entity.ID, update entity.UpdateUser) error {
+	update.UpdatedAt = time.Now()
+	return s.repo.Update(userID, update)
 }
 
 func (s *Service) Follow(coupleID, userID entity.ID) error {

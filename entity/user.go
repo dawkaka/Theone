@@ -2,8 +2,10 @@ package entity
 
 import (
 	"errors"
+	"strings"
 	"time"
 
+	"github.com/dawkaka/theone/inter"
 	"github.com/dawkaka/theone/pkg/validator"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -103,9 +105,40 @@ type Login struct {
 }
 
 type NotifyRequest struct {
-	UserName string `json:"user_name"`
+	UserName string `json:"user_name" bons:"user_name"`
 	Type     string `json:"type"`
 	Message  string `json:"message"`
+}
+
+type UpdateUser struct {
+	FirstName string    `json:"first_name" bson:"first_name"`
+	LastName  string    `json:"last_name" bson:"last_name"`
+	Bio       string    `json:"bio"`
+	Pronouns  string    `json:"pronouns"`
+	UpdatedAt time.Time `bson:"updated_at"`
+	Lang      string    `json:"lang"`
+}
+
+func (u UpdateUser) Validate() []string {
+	errs := []string{}
+	if !validator.IsRealName(u.FirstName) || !validator.IsRealName(u.LastName) {
+		errs = append(errs, inter.Localize(u.Lang, "InvalidFirstNameOrLastName"))
+	}
+	if !validator.IsBio(u.Bio) {
+		errs = append(errs, inter.Localize(u.Lang, "InvalidBio"))
+	}
+	if !validator.IsPronouns(u.Pronouns) {
+		errs = append(errs, inter.Localize(u.Lang, "InvalidWebiste"))
+	}
+
+	return errs
+}
+
+func (u *UpdateUser) Sanitize() {
+	u.FirstName = strings.TrimSpace(u.FirstName)
+	u.LastName = strings.TrimSpace(u.LastName)
+	u.Bio = strings.TrimSpace(u.Bio)
+	u.Pronouns = strings.TrimSpace(u.Pronouns)
 }
 
 func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) *User {

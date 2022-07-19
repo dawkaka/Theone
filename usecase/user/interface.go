@@ -18,7 +18,7 @@ type Reader interface {
 //Writer user writer
 type Writer interface {
 	Create(e *entity.User) (entity.ID, error)
-	Update(e *entity.User) error
+	Update(userID entity.ID, update entity.UpdateUser) error
 	Delete(id entity.ID) error
 	Request(from, to entity.ID) error
 	Follow(coupleId, userID entity.ID) error
@@ -43,7 +43,7 @@ type UseCase interface {
 	UserFollowing(userName string, skip int) ([]entity.Following, error)
 	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) (entity.ID, error)
 	CreateRequest(from, to entity.ID) error
-	UpdateUser(e *entity.User) error
+	UpdateUser(userID entity.ID, update entity.UpdateUser) error
 	DeleteUser(id entity.ID) error
 	ConfirmCouple(userID, partnerID string) (bool, error)
 	Follow(coupleID, userID entity.ID) error

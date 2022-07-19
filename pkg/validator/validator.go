@@ -58,3 +58,15 @@ func IsPassword(password string) bool {
 	password = strings.TrimSpace(password)
 	return len(password) > 7
 }
+
+func IsBio(bio string) bool {
+	return len(bio) < 256
+}
+
+func IsWebsite(website string) bool {
+	return true
+}
+
+func IsPronouns(pronouns string) bool {
+	return true
+}

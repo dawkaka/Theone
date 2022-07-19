@@ -330,7 +330,27 @@ func unfollow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFun
 func updateUser(service user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		var update entity.UpdateUser
+		err := ctx.ShouldBindJSON(&update)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		update.Lang = lang
+		update.Sanitize()
+		errs := update.Validate()
+		if len(errs) > 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"type": "error", "errors": errs})
+			return
+		}
+		err = service.UpdateUser(user.ID, update)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "UserUpdated"))
 	}
 }
 
@@ -381,7 +401,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
 	r.PATCH("/user/couple-request/:userName", initiateRequest(service))
 	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
+	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))
 	r.PUT("/user/update", updateUser(service))
-	r.PUT("/user/update/profile", updateUserProfilePic(service))
 	r.DELETE("/user/delete-account", deleteUser(service))
 }

@@ -169,12 +169,18 @@ func (u *UserMongo) Create(e *entity.User) (entity.ID, error) {
 	return result.InsertedID.(entity.ID), err
 }
 
-func (u *UserMongo) Update(e *entity.User) error {
+func (u *UserMongo) Update(userID entity.ID, update entity.UpdateUser) error {
 
 	_, err := u.collection.UpdateOne(
 		context.TODO(),
-		bson.D{{Key: "user_name", Value: e.UserName}},
-		bson.D{{Key: "$set", Value: e}},
+		bson.D{{Key: "_id", Value: userID}},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: "first_name", Value: update.FirstName},
+			{Key: "last_name", Value: update.LastName},
+			{Key: "bio", Value: update.Bio},
+			{Key: "updated_at", Value: update.UpdatedAt},
+			{Key: "pronouns", Value: update.Pronouns},
+		}}},
 	)
 	return err
 }
