@@ -99,3 +99,7 @@ func (s *Service) UpdateUserProfilePic(fileName string, userID entity.ID) error 
 func (s *Service) UpdateShowPicture(userID entity.ID, index int, fileName string) error {
 	return s.repo.UpdateShowPicture(userID, index, fileName)
 }
+
+func (s *Service) ChangeUserRequestStatus(userID entity.ID, status string) error {
+	return s.repo.ChangeRequestStatus(userID, status)
+}

@@ -233,6 +233,10 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(lang, "PartnerHasPartnerOrPendingRequest"))
 			return
 		}
+		if !partner.OpenToRequests {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "PartnerNotOpen"))
+			return
+		}
 		err = service.CreateRequest(thisUser.ID, partner.ID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
@@ -426,6 +430,24 @@ func updateShowPicture(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func changeRequestStatus(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		status := ctx.Param("status")
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if status != "ON" && status != "OFF" {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		err := service.ChangeUserRequestStatus(user.ID, status)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		ctx.JSON(http.StatusAccepted, presentation.Success(lang, "RequestStatus"+status))
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
@@ -433,8 +455,9 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
 	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
-	r.PATCH("/user/couple-request/:userName", initiateRequest(service))
+	r.POST("/user/couple-request/:userName", initiateRequest(service))
 	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
+	r.PUT("/user/request-status/:status", changeRequestStatus(service))
 	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))
 	r.PUT("/user/update", updateUser(service))
 	r.PUT("/user/show-pictures/:index", updateShowPicture(service))

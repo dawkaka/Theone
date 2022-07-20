@@ -28,6 +28,7 @@ type Writer interface {
 	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 	UpdateProfilePic(fileName string, userID entity.ID) error
 	UpdateShowPicture(userID entity.ID, index int, fileName string) error
+	ChangeRequestStatus(userId entity.ID, status string) error
 }
 
 //Repository interface
@@ -54,4 +55,5 @@ type UseCase interface {
 	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 	UpdateUserProfilePic(fileName string, userID entity.ID) error
 	UpdateShowPicture(userID entity.ID, index int, fileName string) error
+	ChangeUserRequestStatus(userID entity.ID, status string) error
 }

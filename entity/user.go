@@ -27,6 +27,7 @@ type User struct {
 	CoupleID             ID        `json:"couple_id" bson:"couple_id"`
 	Bio                  string    `json:"bio"`
 	Website              string    `json:"website"`
+	OpenToRequests       bool      `json:"open_to_requests" bson:"open_to_request"`
 	HasPartner           bool      `json:"has_partner" bson:"has_partner"`
 	HasPendingRequest    bool      `json:"has_pending_request" bson:"has_pending_request"`
 	CreatedAt            time.Time `json:"created_at" bson:"created_at"`
@@ -157,6 +158,7 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		DateOfBirth:          dateOfBirth,
 		CoupleID:             [12]byte{},
 		Bio:                  "-",
+		OpenToRequests:       true,
 		HasPartner:           false,
 		HasPendingRequest:    false,
 		CreatedAt:            time.Now(),

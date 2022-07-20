@@ -150,7 +150,6 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 }
 
 //Write Methods
-
 func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) error {
 	result, err := u.collection.UpdateMany(
 		context.TODO(),
@@ -264,5 +263,14 @@ func (u *UserMongo) UpdateShowPicture(userID entity.ID, index int, fileName stri
 		return entity.ErrNoMatch
 	}
 
+	return err
+}
+
+func (u *UserMongo) ChangeRequestStatus(userID entity.ID, status string) error {
+	_, err := u.collection.UpdateByID(
+		context.TODO(),
+		userID,
+		bson.D{{Key: "open_to_request", Value: status == "OFF"}},
+	)
 	return err
 }
