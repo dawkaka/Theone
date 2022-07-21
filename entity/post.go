@@ -1,6 +1,11 @@
 package entity
 
-import "time"
+import (
+	"strings"
+	"time"
+
+	"github.com/dawkaka/theone/pkg/validator"
+)
 
 //Post data
 type Post struct {
@@ -12,10 +17,23 @@ type Post struct {
 	PostedBy      ID        `json:"posted_by" bson:"posted_by"`
 	FileName      string    `json:"file_name" bson:"file_name"`
 	Caption       string    `json:"caption"`
+	Mentioned     []string  `json:"mentioned"`
 	Likes         []ID      `json:"likes"`
 	LikesCount    int64     `json:"likes_count" bson:"likes_count"`
 	Comments      []Comment `json:"comment"`
 	CommentsCount int64     `json:"comments_count" bson:"comments_count"`
 	CreatedAt     time.Time `json:"created_at" bson:"created_at"`
 	Type          string    `json:"type"`
+}
+
+func (p *Post) Sanitize() {
+	p.Caption = strings.TrimSpace(p.Caption)
+}
+
+func (p Post) Validate() []error {
+	errs := []error{}
+	if !validator.IsCaption(p.Caption) {
+		errs = append(errs, ErrInvalidCaption)
+	}
+	return errs
 }

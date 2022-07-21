@@ -150,7 +150,7 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 }
 
 //Write Methods
-func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) error {
+func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif any) error {
 	result, err := u.collection.UpdateMany(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: c}}}},
@@ -159,6 +159,16 @@ func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) erro
 	if result.ModifiedCount < 2 {
 		return errors.New("notify: couldn't update user notifications")
 	}
+	return err
+}
+
+func (u *UserMongo) NotifyUsers(users []string, notif any) error {
+	_, err := u.collection.UpdateMany(
+		context.TODO(),
+		bson.D{{Key: "user_name", Value: bson.D{{Key: "$in", Value: users}}}},
+		bson.D{{Key: "$push", Value: bson.D{{Key: "notifications", Value: notif}}}},
+	)
+
 	return err
 }
 
@@ -270,7 +280,7 @@ func (u *UserMongo) ChangeRequestStatus(userID entity.ID, status string) error {
 	_, err := u.collection.UpdateByID(
 		context.TODO(),
 		userID,
-		bson.D{{Key: "open_to_request", Value: status == "OFF"}},
+		bson.D{{Key: "open_to_request", Value: status == "ON"}},
 	)
 	return err
 }

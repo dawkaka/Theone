@@ -24,7 +24,8 @@ type Writer interface {
 	Follow(coupleId, userID entity.ID) error
 	Unfollow(coupleId, userId entity.ID) error
 	Notify(userToNotify string, notification any) error
-	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
+	NotifyUsers(users []string, notif any) error
+	NotifyCouple(c [2]entity.ID, notif any) error
 	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 	UpdateProfilePic(fileName string, userID entity.ID) error
 	UpdateShowPicture(userID entity.ID, index int, fileName string) error
@@ -51,7 +52,8 @@ type UseCase interface {
 	Follow(coupleID, userID entity.ID) error
 	Unfollow(coupleID, userID entity.ID) error
 	NotifyUser(userToNotify string, notification any) error
-	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
+	NotifyCouple(c [2]entity.ID, notif any) error
+	NotifyMultipleUsers(users []string, notif any) error
 	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 	UpdateUserProfilePic(fileName string, userID entity.ID) error
 	UpdateShowPicture(userID entity.ID, index int, fileName string) error

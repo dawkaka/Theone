@@ -9,6 +9,7 @@ import (
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/inter"
+	"github.com/dawkaka/theone/pkg/myaws"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/dawkaka/theone/usecase/couple"
@@ -16,13 +17,68 @@ import (
 	"github.com/dawkaka/theone/usecase/user"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func newPost(service post.UseCase) gin.HandlerFunc {
+func newPost(service post.UseCase, coupleService couple.UseCase, userService user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		caption := strings.TrimSpace(ctx.PostForm("caption"))
+		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
+		fileHeader, err := ctx.FormFile("image")
+		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		mentions := utils.ExtracMentions(caption)
+		fileName, err := myaws.UploadImageFile(fileHeader, "posts")
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
 
+		post := entity.Post{
+			PostID:      utils.GenerateID(),
+			CoupleID:    user.CoupleID,
+			InitiatedID: user.ID,
+			AcceptedID:  user.PartnerID,
+			PostedBy:    user.ID,
+			FileName:    fileName,
+			Caption:     caption,
+			Mentioned:   mentions,
+			CreatedAt:   time.Now(),
+			Type:        "image/jpg",
+		}
+		_, err = service.CreatePost(&post)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		//Post error created, whether notifications are successful or not user does't need to know
+		go func(ctx *gin.Context) {
+			notif := entity.MentionedNotif{
+				Type:       "PostMentioned",
+				Message:    inter.LocalizeWithUserName(lang, coupleName, "PostMentionedNotif"),
+				PostID:     post.PostID,
+				CoupleName: coupleName,
+			}
+			partnerNotif := entity.MentionedNotif{
+				Type:       "PartnerPosted",
+				Message:    inter.LocalizeWithUserName(lang, user.Name, "PartnerNewPostNotif"),
+				PostID:     post.PostID,
+				CoupleName: coupleName,
+			}
+			userService.NotifyCouple([2]entity.ID{user.PartnerID, primitive.NewObjectID()}, partnerNotif)
+			if len(mentions) > 0 {
+				userService.NotifyMultipleUsers(mentions, notif)
+			}
+
+		}(ctx.Copy())
+
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "NewPostAdded"))
 	}
 
 }
@@ -49,7 +105,7 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"video": post})
+		ctx.JSON(http.StatusOK, gin.H{"post": post})
 	}
 }
 
@@ -225,7 +281,7 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase) {
 	r.GET("/post/:coupleName/:postID", getPost(service, coupleService))
 	r.GET("/post/comments/:postID/:skip", postComments(service))
-	r.POST("/post/new", newPost(service))
+	r.POST("/post/new", newPost(service, coupleService, userService))
 	r.POST("/post/new-comment/:postID", newComment(service, userService))
 	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service))
 	r.PATCH("/post/like/:postID", like(service, userService))

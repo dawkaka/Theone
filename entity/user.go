@@ -15,6 +15,13 @@ type Notification struct {
 	Message string `json:"message"`
 }
 
+type MentionedNotif struct {
+	Type       string `json:"type"`
+	Message    string `json:"message"`
+	PostID     string `json:"post_id" bson:"post_id"`
+	CoupleName string `json:"couple_name" bson:"couple_name"`
+}
+
 //User data
 type User struct {
 	ID                   ID        `json:"id" bson:"_id"`

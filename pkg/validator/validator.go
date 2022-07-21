@@ -75,3 +75,7 @@ func IsPronouns(pronouns string) bool {
 func IsValidPastDate(date time.Time) bool {
 	return true
 }
+
+func IsCaption(caption string) bool {
+	return len(caption) < 256
+}

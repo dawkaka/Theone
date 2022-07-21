@@ -33,12 +33,9 @@ func (s *Service) GetComments(postid string, skip int) ([]entity.Comment, error)
 	return s.repo.Comments(postid, skip)
 }
 
-func (s *Service) CreatePost(e *entity.Post) (entity.ID, error) {
-	id, err := s.repo.Create(e)
-	if err != nil {
-		return id, err
-	}
-	return id, nil
+func (s *Service) CreatePost(p *entity.Post) (entity.ID, error) {
+	id, err := s.repo.Create(p)
+	return id, err
 }
 
 func (s *Service) NewComment(postID string, comment entity.Comment) error {
