@@ -12,4 +12,5 @@ var (
 	ErrSomethingWentWrong = errors.New("something went wrong")
 	ErrNoMatch            = errors.New("no match found")
 	ErrInvalidCaption     = errors.New("invalid caption")
+	ErrImageProcessing    = errors.New("image processing failed")
 )

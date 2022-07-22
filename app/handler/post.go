@@ -28,13 +28,14 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		caption := strings.TrimSpace(ctx.PostForm("caption"))
 		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
-		fileHeader, err := ctx.FormFile("image")
+		form, err := ctx.MultipartForm()
+		files := form.File["post_image"]
 		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
+		filesMetadata, err := myaws.UploadMultipleFiles(files, "posts")
 		mentions := utils.ExtracMentions(caption)
-		fileName, err := myaws.UploadImageFile(fileHeader, "posts")
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -46,11 +47,10 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			InitiatedID: user.ID,
 			AcceptedID:  user.PartnerID,
 			PostedBy:    user.ID,
-			FileName:    fileName,
+			Files:       filesMetadata,
 			Caption:     caption,
 			Mentioned:   mentions,
 			CreatedAt:   time.Now(),
-			Type:        "image/jpg",
 		}
 		_, err = service.CreatePost(&post)
 		if err != nil {
@@ -58,7 +58,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			return
 		}
 		//Post error created, whether notifications are successful or not user does't need to know
-		go func(ctx *gin.Context) {
+		go func() {
 			notif := entity.MentionedNotif{
 				Type:       "PostMentioned",
 				Message:    inter.LocalizeWithUserName(lang, coupleName, "PostMentionedNotif"),
@@ -76,7 +76,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				userService.NotifyMultipleUsers(mentions, notif)
 			}
 
-		}(ctx.Copy())
+		}()
 
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "NewPostAdded"))
 	}
