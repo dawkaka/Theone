@@ -284,3 +284,12 @@ func (u *UserMongo) ChangeRequestStatus(userID entity.ID, status string) error {
 	)
 	return err
 }
+
+func (u *UserMongo) ChangeName(userID entity.ID, userName string) error {
+	_, err := u.collection.UpdateByID(
+		context.TODO(),
+		userID,
+		bson.D{{Key: "$set", Value: bson.D{{Key: "user_name", Value: userName}}}},
+	)
+	return err
+}

@@ -448,12 +448,45 @@ func changeRequestStatus(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func changeUserName(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		newUserName := ctx.PostForm("user_name")
+		session := sessions.Default(ctx)
+		user := session.Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if !validator.IsUserName(newUserName) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, ""))
+		}
+		if newUserName == user.Name {
+			ctx.AbortWithStatusJSON(http.StatusAccepted, presentation.Success(lang, "ChangedUserName"))
+		}
+		_, err := service.GetUser(newUserName)
+		if err == nil {
+			ctx.AbortWithStatusJSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
+		} else {
+			if err != mongo.ErrNoDocuments {
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			}
+		}
+		err = service.ChangeUserName(user.ID, newUserName)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
+		user.Name = newUserName
+		gob.Register(user)
+		session.Set("user", user)
+		session.Save()
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ChangedUserName"))
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
 	r.GET("/user/following/:skip", getFollowing(service))
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
+	r.PUT("/user/change-name", changeUserName(service))
 	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
 	r.POST("/user/couple-request/:userName", initiateRequest(service))
 	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))

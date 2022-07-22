@@ -107,3 +107,7 @@ func (s *Service) UpdateShowPicture(userID entity.ID, index int, fileName string
 func (s *Service) ChangeUserRequestStatus(userID entity.ID, status string) error {
 	return s.repo.ChangeRequestStatus(userID, status)
 }
+
+func (s *Service) ChangeUserName(userID entity.ID, userName string) error {
+	return s.repo.ChangeName(userID, userName)
+}
