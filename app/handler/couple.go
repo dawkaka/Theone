@@ -284,7 +284,7 @@ func changeCoupleName(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
-func lastLastEdonCast(service couple.UseCase) gin.HandlerFunc { //Na everybody go chop breakfast
+func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.HandlerFunc { //Na everybody go chop breakfast
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 		user := session.Get("user").(entity.UserSession)
@@ -296,6 +296,16 @@ func lastLastEdonCast(service couple.UseCase) gin.HandlerFunc { //Na everybody g
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 		}
+
+		go func() {
+			notif := entity.Notification{
+				Type:    "breakUp",
+				Message: inter.Localize(lang, "YourPartnerBrokeUpWithYou"),
+			}
+
+			err = userService.NotifyCouple([2]entity.ID{user.PartnerID, primitive.NewObjectID()}, notif)
+		}()
+
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "BreakedUp"))
 	}
 }
@@ -306,7 +316,7 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/:coupleName/followers/:skip", getFollowers(service))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))
-	r.POST("/couple/break-up", lastLastEdonCast(service))
+	r.POST("/couple/break-up", lastLastEdonCast(service, userService))
 	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service))
 	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))
 	r.PUT("/couple/update", updateCouple(service))
