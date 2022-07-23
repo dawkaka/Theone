@@ -208,3 +208,12 @@ func (c *CoupleMongo) UpdateCoverPic(fileName string, coupleID entity.ID) error 
 	}
 	return err
 }
+
+func (c *CoupleMongo) ChangeName(coupleID entity.ID, coupleName string) error {
+	_, err := c.collection.UpdateByID(
+		context.TODO(),
+		coupleID,
+		bson.D{{Key: "$set", Value: bson.D{{Key: "couple_name", Value: coupleName}}}},
+	)
+	return err
+}

@@ -17,6 +17,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
@@ -258,6 +259,31 @@ func updateCouple(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
+func changeCoupleName(service couple.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		newCoupleName := ctx.PostForm("couple_name")
+		session := sessions.Default(ctx)
+		user := session.Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if !validator.IsCoupleName(newCoupleName) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, ""))
+		}
+		_, err := service.GetCouple(newCoupleName)
+		if err == nil {
+			ctx.AbortWithStatusJSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
+		} else {
+			if err != mongo.ErrNoDocuments {
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			}
+		}
+		err = service.ChangeCoupleName(user.CoupleID, newCoupleName)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ChangedCoupleName"))
+	}
+}
+
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase) {
 	r.GET("/:coupleName", getCouple(service))
 	r.GET("/:coupleName/posts/:skip", getCouplePosts(service))
@@ -267,4 +293,5 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service))
 	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))
 	r.PUT("/couple/update", updateCouple(service))
+	r.PUT("/couple/change-name", changeCoupleName(service))
 }

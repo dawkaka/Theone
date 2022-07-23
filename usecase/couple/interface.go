@@ -18,6 +18,7 @@ type Reader interface {
 	Followers(coupleName string, skip int) ([]entity.Follower, error)
 	UpdateProfilePic(fileName string, coupleID entity.ID) error
 	UpdateCoverPic(fileName string, coupleID entity.ID) error
+	ChangeName(coupleID entity.ID, coupleName string) error
 }
 
 //Repository all couple methods
@@ -38,4 +39,5 @@ type UseCase interface {
 	RemoveFollower(userID, coupleID entity.ID) error
 	UpdateCoupleProfilePic(fileName string, coupleID entity.ID) error
 	UpdateCoupleCoverPic(fileName string, coupleID entity.ID) error
+	ChangeCoupleName(coupleID entity.ID, coupleName string) error
 }

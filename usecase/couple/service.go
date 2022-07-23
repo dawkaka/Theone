@@ -81,3 +81,7 @@ func (s *Service) UpdateCoupleProfilePic(fileName string, coupleID entity.ID) er
 func (s *Service) UpdateCoupleCoverPic(fileName string, coupleID entity.ID) error {
 	return s.repo.UpdateCoverPic(fileName, coupleID)
 }
+
+func (s *Service) ChangeCoupleName(coupleID entity.ID, coupleName string) error {
+	return s.repo.ChangeName(coupleID, coupleName)
+}
