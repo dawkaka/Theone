@@ -2,6 +2,7 @@ package validator
 
 import (
 	"net/mail"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -16,16 +17,16 @@ func IsRealName(name string) bool {
 	if len(name) < 2 || len(name) > 50 {
 		return false
 	}
-	if strings.ContainsAny(name, ".#@/][*)(&^%$!~`\"\\{}<>,_+=1234567890|?") {
+	reg := regexp.MustCompile(`[0-9]|\W|_`)
+	if reg.MatchString(name) {
 		return false
 	}
 	if string(name[0]) != strings.ToUpper(string(name[0])) {
 		return false
 	}
-	if name[1:] != strings.ToLower(name) {
+	if name[1:] != strings.ToLower(name[1:]) {
 		return false
 	}
-
 	return true
 }
 
@@ -34,12 +35,8 @@ func IsUserName(userName string) bool {
 	if len(userName) < 4 || len(userName) > 15 {
 		return false
 	}
-
-	if strings.ContainsAny(userName, ".#@/][*)(&^%$!~`'\"\\{}<>,-+=|?") {
-		return false
-	}
-
-	return true
+	reg := regexp.MustCompile(`\W`)
+	return !reg.MatchString(userName)
 }
 
 func IsCoupleName(coupleName string) bool {
@@ -48,11 +45,8 @@ func IsCoupleName(coupleName string) bool {
 		return false
 	}
 
-	if strings.ContainsAny(coupleName, ".#@/][*)(^%$!~`'\"\\{}<>,-+=|?") {
-		return false
-	}
-
-	return true
+	reg := regexp.MustCompile(`\w|\&`)
+	return reg.MatchString(coupleName)
 }
 
 func IsPassword(password string) bool {
@@ -73,7 +67,7 @@ func IsPronouns(pronouns string) bool {
 }
 
 func IsValidPastDate(date time.Time) bool {
-	return true
+	return time.Now().After(date)
 }
 
 func IsCaption(caption string) bool {

@@ -217,3 +217,17 @@ func (c *CoupleMongo) ChangeName(coupleID entity.ID, coupleName string) error {
 	)
 	return err
 }
+
+func (c *CoupleMongo) BreakUp(coupleId entity.ID) error {
+	_, err := c.collection.UpdateByID(
+		context.TODO(),
+		coupleId,
+		bson.D{
+			{
+				Key:   "$set",
+				Value: bson.D{{Key: "separated", Value: true}},
+			},
+		},
+	)
+	return err
+}

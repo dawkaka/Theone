@@ -85,3 +85,7 @@ func (s *Service) UpdateCoupleCoverPic(fileName string, coupleID entity.ID) erro
 func (s *Service) ChangeCoupleName(coupleID entity.ID, coupleName string) error {
 	return s.repo.ChangeName(coupleID, coupleName)
 }
+
+func (s *Service) BreakUp(coupleID entity.ID) error {
+	return s.repo.BreakUp(coupleID)
+}

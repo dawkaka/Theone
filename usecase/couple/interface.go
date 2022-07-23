@@ -8,6 +8,7 @@ type Writer interface {
 	Follower(userID, coupleID entity.ID) error
 	Unfollow(userID, coupleID entity.ID) error
 	Update(coupleID entity.ID, update entity.UpdateCouple) error
+	BreakUp(coupleID entity.ID) error
 }
 
 //Reader couple reader methods
@@ -40,4 +41,5 @@ type UseCase interface {
 	UpdateCoupleProfilePic(fileName string, coupleID entity.ID) error
 	UpdateCoupleCoverPic(fileName string, coupleID entity.ID) error
 	ChangeCoupleName(coupleID entity.ID, coupleName string) error
+	BreakUp(coupleID entity.ID) error
 }
