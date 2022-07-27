@@ -70,6 +70,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		gob.Register(userSession)
 		session.Set("user", userSession)
 		_ = session.Save()
+		ctx.SetCookie("user_ID", insertedID.Hex(), 500, "/", "", false, true)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "Signup successfull"))
 	}
 }
@@ -110,6 +111,10 @@ func login(service user.UseCase) gin.HandlerFunc {
 			Lang:              lang,
 			DateOfBirth:       user.DateOfBirth,
 		}
+		if user.HasPartner {
+			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", "", false, true)
+		}
+		ctx.SetCookie("user_ID", user.ID.Hex(), 500, "/", "", false, true)
 		gob.Register(userSession)
 		session.Set("user", userSession)
 		_ = session.Save()
@@ -484,6 +489,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
 	r.GET("/user/following/:skip", getFollowing(service))
+	r.GET("/user/session")
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
 	r.PUT("/user/change-name", changeUserName(service))
@@ -492,7 +498,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
 	r.PUT("/user/request-status/:status", changeRequestStatus(service))
 	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))
-	r.PUT("/user/update", updateUser(service))
+	r.PUT("/user", updateUser(service))
 	r.PUT("/user/show-pictures/:index", updateShowPicture(service))
-	r.DELETE("/user/delete-account", deleteUser(service))
+	r.DELETE("/user", deleteUser(service))
 }

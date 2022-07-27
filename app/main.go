@@ -26,6 +26,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	r.Use(sessions.Sessions("session", store))
 
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.DB_HOST))
@@ -38,6 +39,23 @@ func main() {
 			panic(err)
 		}
 	}()
+
+	r.Use(sessions.Sessions("session", store))
+	//r.Use(middlewares.Authenticate())
+	r.GET("/incr", func(ctx *gin.Context) {
+		session := sessions.Default(ctx)
+		var count int
+		v := session.Get("count")
+		if v == nil {
+			count = 0
+		} else {
+			count = v.(int)
+			count++
+		}
+		session.Set("count", count)
+		session.Save()
+		ctx.JSON(200, gin.H{"count": count})
+	})
 
 	usersRepo := repository.NewUserMongo(client.Database(config.DB_DATABASE).Collection("users"))
 	couplesRepo := repository.NewCoupleMongo(client.Database(config.DB_DATABASE).Collection("couples"))
@@ -53,5 +71,5 @@ func main() {
 	handler.MakeCoupleHandlers(r, coupleService, userService)
 	handler.MakePostHandlers(r, postService, coupleService, userService)
 	handler.MakeVideoHandlers(r, videoService, coupleService, userService)
-	r.Run(fmt.Sprintf(":%d", config.API_PORT)) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run(fmt.Sprintf(":%d", config.API_PORT))
 }

@@ -75,8 +75,11 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 				"RequestAccepted",
 			),
 		}
-		_ = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, Id)
-		_ = userService.NotifyUser(partner.UserName, notif)
+		go func() {
+			_ = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, Id)
+			_ = userService.NotifyUser(partner.UserName, notif)
+		}()
+		ctx.SetCookie("couple_ID", Id.Hex(), 500, "/", "", false, true)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CoupleCreated"))
 	}
 
@@ -305,7 +308,7 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 
 			err = userService.NotifyCouple([2]entity.ID{user.PartnerID, primitive.NewObjectID()}, notif)
 		}()
-
+		ctx.SetCookie("couple_ID", "", -33, "/", "", false, true)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "BreakedUp"))
 	}
 }
