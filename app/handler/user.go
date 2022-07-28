@@ -497,6 +497,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/session", userSession)
 	r.GET("/user/following/:skip", getFollowing(service))
 	r.GET("/user/session")
+	//	r.GET("/user/messages/:skip", userMessages(service))
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
 	r.PUT("/user/change-name", changeUserName(service))

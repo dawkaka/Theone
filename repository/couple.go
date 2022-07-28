@@ -14,7 +14,7 @@ type CoupleMongo struct {
 	collection *mongo.Collection
 }
 
-//NewUserMySQL create new repository
+//NewUserMongo create new repository
 func NewCoupleMongo(col *mongo.Collection) *CoupleMongo {
 	return &CoupleMongo{
 		collection: col,

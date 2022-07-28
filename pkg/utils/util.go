@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dawkaka/theone/pkg/validator"
@@ -42,15 +43,12 @@ func GenerateID() string {
 //ExtractMentions extracts all users mention (@) so that they can be notified
 func ExtracMentions(caption string) []string {
 	mentions := []string{}
-	for i := 0; i < len(caption); i++ {
-		if caption[i] == '@' {
-			j := i + 1
-			for j < len(caption) && caption[j] != ' ' {
-				j++
-			}
-			isValidUserName := validator.IsUserName(caption[i+1 : j+1])
-			if isValidUserName {
-				mentions = append(mentions, caption[i+1:j+1])
+	captionWords := strings.Split(caption, " ")
+	for _, val := range captionWords {
+		if val[0] == '@' {
+			userName := val[1:]
+			if validator.IsUserName(userName) {
+				mentions = append(mentions, userName)
 			}
 		}
 	}
