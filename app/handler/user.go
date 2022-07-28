@@ -485,9 +485,16 @@ func changeUserName(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func userSession(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	user := session.Get("user").(entity.UserSession)
+	ctx.JSON(http.StatusOK, gin.H{"session": user})
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
+	r.GET("/user/session", userSession)
 	r.GET("/user/following/:skip", getFollowing(service))
 	r.GET("/user/session")
 	r.POST("/user/signup", signup(service))
