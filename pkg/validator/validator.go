@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
 )
 
 func IsEmail(email string) bool {
@@ -17,9 +18,10 @@ func IsRealName(name string) bool {
 	if len(name) < 2 || len(name) > 50 {
 		return false
 	}
-	reg := regexp.MustCompile(`[0-9]|\W|_`)
-	if reg.MatchString(name) {
-		return false
+	for _, val := range name {
+		if !unicode.IsLetter(val) && val != '\'' {
+			return false
+		}
 	}
 	if string(name[0]) != strings.ToUpper(string(name[0])) {
 		return false
@@ -35,7 +37,7 @@ func IsUserName(userName string) bool {
 	if len(userName) < 4 || len(userName) > 15 {
 		return false
 	}
-	reg := regexp.MustCompile(`\W`)
+	reg := regexp.MustCompile(`/^[a-zA-Z0-9]([._]?(![._])|[a-zA-Z0-9]){2,19}[a-zA-Z0-9]$/`)
 	return !reg.MatchString(userName)
 }
 
@@ -44,8 +46,7 @@ func IsCoupleName(coupleName string) bool {
 	if len(coupleName) < 5 || len(coupleName) > 30 {
 		return false
 	}
-
-	reg := regexp.MustCompile(`\w|\&`)
+	reg := regexp.MustCompile(`/^[a-zA-Z0-9]([._&]?(![._&])|[a-zA-Z0-9]){2,29}[a-zA-Z0-9]$/`)
 	return reg.MatchString(coupleName)
 }
 
@@ -59,7 +60,8 @@ func IsBio(bio string) bool {
 }
 
 func IsWebsite(website string) bool {
-	return true
+	r := regexp.MustCompile(`/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g`)
+	return r.MatchString(website)
 }
 
 func IsPronouns(pronouns string) bool {
