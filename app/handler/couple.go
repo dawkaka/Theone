@@ -12,6 +12,7 @@ import (
 	"github.com/dawkaka/theone/pkg/myaws"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
+	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/dawkaka/theone/usecase/user"
 	"github.com/gin-contrib/sessions"
@@ -313,11 +314,86 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 	}
 }
 
-func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase) {
+//Messages between partners
+func coupleMessages(coupleMessage repository.CoupleMessage) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+		}
+		messages, err := coupleMessage.Get(user.CoupleID, skip)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(messages) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"messages": messages, "page": page})
+	}
+}
+
+//All users couple interected with
+func usersCoupleMessages(userMessage repository.UserCoupleMessage) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+		}
+		messages, err := userMessage.Get(user.CoupleID, skip)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(messages) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"messages": messages, "page": page})
+	}
+}
+
+//Messages btn couple and specific user
+func userCoupleMessages(service couple.UseCase, userService user.UseCase, messageService repository.UserCoupleMessage) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userName := ctx.Param("userName")
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+		}
+		couple, err := userService.GetUser(userName)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				ctx.AbortWithStatusJSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
+			} else {
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			}
+		}
+		messages, err := messageService.GetToCouple(user.ID, couple.ID, skip)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(messages) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"messages": messages, "page": page})
+	}
+}
+
+func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage) {
 	r.GET("/:coupleName", getCouple(service))
 	r.GET("/:coupleName/posts/:skip", getCouplePosts(service))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/:coupleName/followers/:skip", getFollowers(service))
+	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))
+	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
+	r.GET("/couple/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))
 	r.POST("/couple/break-up", lastLastEdonCast(service, userService))
 	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service))

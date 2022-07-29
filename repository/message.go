@@ -70,14 +70,14 @@ func (m *CoupleMessage) Get(coupleID entity.ID, skip int) ([]entity.CoupleMessag
 	return res, nil
 }
 
-func NewUserCoupleMessageRepo(col *mongo.Collection) *UserCoupleMessage {
-	return &UserCoupleMessage{
+func NewUserCoupleMessageRepo(col *mongo.Collection) UserCoupleMessage {
+	return UserCoupleMessage{
 		col: col,
 	}
 }
 
-func NewCoupleMessageRepo(col *mongo.Collection) *CoupleMessage {
-	return &CoupleMessage{
+func NewCoupleMessageRepo(col *mongo.Collection) CoupleMessage {
+	return CoupleMessage{
 		col: col,
 	}
 }

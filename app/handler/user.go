@@ -14,6 +14,7 @@ import (
 	"github.com/dawkaka/theone/pkg/password"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
+	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/dawkaka/theone/usecase/user"
 	"github.com/gin-contrib/sessions"
@@ -485,19 +486,71 @@ func changeUserName(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+//Get messages a user send to a particular couple for main inbox
+func userToACoupleMessages(service user.UseCase, coupleService couple.UseCase, messageService repository.UserCoupleMessage) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		coupleName := ctx.Param("coupleName")
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+		}
+		couple, err := coupleService.GetCouple(coupleName)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				ctx.AbortWithStatusJSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
+			} else {
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			}
+		}
+		messages, err := messageService.GetToCouple(user.ID, couple.ID, skip)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(messages) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"messages": messages, "page": page})
+	}
+}
+
+//Get all messages user sent to unique couple
+func userMessages(service user.UseCase, userMessage repository.UserCoupleMessage) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+		}
+		messages, err := userMessage.Get(user.ID, skip)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(messages) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"messages": messages, "page": page})
+	}
+}
+
 func userSession(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	user := session.Get("user").(entity.UserSession)
 	ctx.JSON(http.StatusOK, gin.H{"session": user})
 }
 
-func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase) {
+func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
 	r.GET("/user/session", userSession)
 	r.GET("/user/following/:skip", getFollowing(service))
 	r.GET("/user/session")
-	//	r.GET("/user/messages/:skip", userMessages(service))
+	r.GET("/user/messages/:skip", userMessages(service, userMessage))
+	r.GET("/user/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
 	r.PUT("/user/change-name", changeUserName(service))
