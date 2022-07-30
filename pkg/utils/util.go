@@ -15,14 +15,12 @@ func GetLang(userLang string, header http.Header) string {
 	if userLang != "" {
 		return userLang
 	}
-	langArr := header["Accept-Language"]
-	var lang string
-	if len(langArr) > 0 {
-		lang = langArr[0]
-	} else {
-		lang = "en"
+	lang := header.Get("Accept-Language")
+
+	if lang != "" {
+		return lang
 	}
-	return lang
+	return "en"
 }
 
 //GenerateId short ids for couple post
