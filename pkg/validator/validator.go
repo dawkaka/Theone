@@ -18,36 +18,79 @@ func IsRealName(name string) bool {
 	if len(name) < 2 || len(name) > 50 {
 		return false
 	}
-	for _, val := range name {
-		if !unicode.IsLetter(val) && val != '\'' {
+	if isASCII(name) {
+
+		for _, val := range name {
+			if !unicode.IsLetter(val) && val != '\'' {
+				return false
+			}
+		}
+		if string(name[0]) != strings.ToUpper(string(name[0])) {
 			return false
 		}
+		if name[1:] != strings.ToLower(name[1:]) {
+			return false
+		}
+		return true
 	}
-	if string(name[0]) != strings.ToUpper(string(name[0])) {
-		return false
-	}
-	if name[1:] != strings.ToLower(name[1:]) {
-		return false
+	return true
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
 	}
 	return true
 }
 
 func IsUserName(userName string) bool {
 	userName = strings.TrimSpace(userName)
-	if len(userName) < 4 || len(userName) > 15 {
+	nameLength := len(userName)
+	if nameLength < 4 || nameLength > 15 {
 		return false
 	}
-	reg := regexp.MustCompile(`/^[a-zA-Z0-9]([._]?(![._])|[a-zA-Z0-9]){2,19}[a-zA-Z0-9]$/`)
-	return !reg.MatchString(userName)
+	reg := regexp.MustCompile(`^[a-zA-Z0-9_.]+$`)
+	if !reg.MatchString(userName) {
+		return false
+	}
+	//User name should not start or end with a special char
+	if userName[0] == '_' || userName[0] == '.' || userName[nameLength-1] == '_' || userName[nameLength-1] == '.' {
+		return false
+	}
+	for i := 0; i < len(userName)-1; i++ {
+		if userName[i] == '_' || userName[i] == '.' {
+			if userName[i+1] == '_' || userName[i+1] == '.' {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func IsCoupleName(coupleName string) bool {
 	coupleName = strings.TrimSpace(coupleName)
-	if len(coupleName) < 5 || len(coupleName) > 30 {
+	nameLength := len(coupleName)
+	if nameLength < 5 || nameLength > 30 {
 		return false
 	}
-	reg := regexp.MustCompile(`/^[a-zA-Z0-9]([._&]?(![._&])|[a-zA-Z0-9]){2,29}[a-zA-Z0-9]$/`)
-	return reg.MatchString(coupleName)
+	reg := regexp.MustCompile(`^[a-zA-Z0-9_.&]+$`)
+	if !reg.MatchString(coupleName) {
+		return false
+	}
+	spec := "._&"
+	if strings.Contains(spec, string(coupleName[0])) || strings.Contains(spec, string(coupleName[nameLength-1])) {
+		return false
+	}
+	for i := 0; i < len(coupleName)-1; i++ {
+		if coupleName[i] == '_' || coupleName[i] == '.' {
+			if coupleName[i+1] == '_' || coupleName[i+1] == '.' {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func IsPassword(password string) bool {
@@ -60,8 +103,7 @@ func IsBio(bio string) bool {
 }
 
 func IsWebsite(website string) bool {
-	r := regexp.MustCompile(`/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g`)
-	return r.MatchString(website)
+	return len(website) < 100
 }
 
 func IsPronouns(pronouns string) bool {
