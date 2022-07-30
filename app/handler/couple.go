@@ -393,7 +393,7 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/:coupleName/followers/:skip", getFollowers(service))
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
-	r.GET("/couple/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
+	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))
 	r.POST("/couple/break-up", lastLastEdonCast(service, userService))
 	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service))
