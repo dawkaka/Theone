@@ -266,12 +266,6 @@ func editPostCaption(service post.UseCase) gin.HandlerFunc {
 	}
 }
 
-func updatePost(service post.UseCase) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-
-	}
-}
-
 func deletePost(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -287,6 +281,5 @@ func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.
 	r.PATCH("/post/like/:postID", like(service, userService))
 	r.PATCH("/post/unlike/:postID", unLikePost(service))
 	r.PATCH("/post/edit/:postID", editPostCaption(service))
-	r.PUT("/post/update", updatePost(service))
 	r.DELETE("/post/delete", deletePost(service))
 }

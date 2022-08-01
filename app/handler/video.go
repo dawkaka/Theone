@@ -215,7 +215,7 @@ func editVideoCaption(service video.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Forbidden"))
 			return
 		}
-		ctx.JSON(http.StatusOK, presentation.Success(lang, "PostEdited"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "VideoEdited"))
 	}
 }
 

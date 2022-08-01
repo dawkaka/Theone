@@ -56,11 +56,11 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		}
 
 		if !partner.HasPendingRequest || user.ID != partner.PartnerID {
-			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "NotAllowed"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
 
-		coupleName := fmt.Sprintf("%s&%s_%d", partner.FirstName, user.FirstName, time.Now())
+		coupleName := fmt.Sprintf("%s&%s_%d", partner.FirstName, user.FirstName, time.Now().Unix())
 
 		Id, err := service.CreateCouple(userb.ID.String(), partnerID.String(), coupleName)
 		if err != nil {
@@ -93,14 +93,14 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Invalid couple name"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
 			return
 		}
 
 		couple, err := service.GetCouple(coupleName)
 
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Something went wrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		pCouple := presentation.CoupleProfile{
@@ -270,11 +270,11 @@ func changeCoupleName(service couple.UseCase) gin.HandlerFunc {
 		user := session.Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(newCoupleName) {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, ""))
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
 		}
 		_, err := service.GetCouple(newCoupleName)
 		if err == nil {
-			ctx.AbortWithStatusJSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
+			ctx.AbortWithStatusJSON(http.StatusConflict, presentation.Error(lang, "CoupleAlreadyExists"))
 		} else {
 			if err != mongo.ErrNoDocuments {
 				ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
@@ -304,7 +304,7 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 		go func() {
 			notif := entity.Notification{
 				Type:    "breakUp",
-				Message: inter.Localize(lang, "YourPartnerBrokeUpWithYou"),
+				Message: inter.LocalizeWithFullName(lang, user.FirstName, user.LastName, "YourPartnerBrokeUpWithYou"),
 			}
 
 			err = userService.NotifyCouple([2]entity.ID{user.PartnerID, primitive.NewObjectID()}, notif)
