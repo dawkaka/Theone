@@ -110,7 +110,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 			HasPendingRequest: user.HasPendingRequest,
 			FirstName:         user.FirstName,
 			LastName:          user.LastName,
-			Lang:              user.Lang,
+			Lang:              lang,
 			DateOfBirth:       user.DateOfBirth,
 		}
 		if user.HasPartner {
