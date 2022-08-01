@@ -45,7 +45,7 @@ type UseCase interface {
 	SearchUsers(query string) ([]*entity.User, error)
 	ListUsers([]entity.ID) ([]entity.User, error)
 	UserFollowing(userName string, skip int) ([]entity.Following, error)
-	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) (entity.ID, error)
+	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) (entity.ID, error)
 	CreateRequest(from, to entity.ID) error
 	UpdateUser(userID entity.ID, update entity.UpdateUser) error
 	DeleteUser(id entity.ID) error

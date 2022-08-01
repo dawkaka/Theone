@@ -12,7 +12,7 @@
     "other": "Necesario iniciar sesión"
   },
   "SomethingWentWrong": {
-    "description": "Message for unkown errors or error that can't detailed to user",
+    "description": "Message for unkown errors or error that can't detailed to the user",
     "one": "Algo salió mal, por favor vuelva a intentarlo.",
     "other": "Algo salió mal, por favor vuelva a intentarlo."
   }

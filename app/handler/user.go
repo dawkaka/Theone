@@ -42,9 +42,9 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		firstName, lastName, userName, email, dateOfBirth, userPassword :=
+		firstName, lastName, userName, email, dateOfBirth, userPassword, lang :=
 			newUser.FirstName, newUser.LastName, newUser.UserName,
-			newUser.Email, newUser.DateOfBirth, newUser.Password
+			newUser.Email, newUser.DateOfBirth, newUser.Password, utils.GetLang("", ctx.Request.Header)
 
 		hashedPassword, err := password.Generate(userPassword)
 		if err != nil {
@@ -52,7 +52,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		insertedID, err := service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBirth)
+		insertedID, err := service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBirth, lang)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, err.Error()))
 			return
@@ -67,6 +67,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			HasPartner:        false,
 			HasPendingRequest: false,
 			DateOfBirth:       dateOfBirth,
+			Lang:              lang,
 		}
 		gob.Register(userSession)
 		session.Set("user", userSession)
@@ -109,7 +110,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 			HasPendingRequest: user.HasPendingRequest,
 			FirstName:         user.FirstName,
 			LastName:          user.LastName,
-			Lang:              lang,
+			Lang:              user.Lang,
 			DateOfBirth:       user.DateOfBirth,
 		}
 		if user.HasPartner {

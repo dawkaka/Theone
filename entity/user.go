@@ -155,7 +155,7 @@ func (u *UpdateUser) Sanitize() {
 	u.Website = strings.TrimSpace(u.Website)
 }
 
-func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time) *User {
+func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) *User {
 	return &User{
 		Email:                email,
 		UserName:             userName,
@@ -182,5 +182,6 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		LastVisited:          time.Now(),
 		LoginIPs:             []string{},
 		ContentPriorityQueue: []primitive.ObjectID{},
+		Lang:                 lang,
 	}
 }

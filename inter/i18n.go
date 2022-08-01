@@ -20,7 +20,6 @@ func Localize(lang, messageId string) string {
 	translation := loc.MustLocalize(&i18n.LocalizeConfig{
 		MessageID: messageId,
 	})
-
 	return translation
 }
 
