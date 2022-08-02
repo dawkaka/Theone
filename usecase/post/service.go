@@ -90,6 +90,10 @@ func (s *Service) UpdatePost(e *entity.Post) error {
 	return s.repo.Update(e)
 }
 
-func (s *Service) DeletePost(id entity.ID) error {
-	return s.repo.Delete(id)
+func (s *Service) DeletePost(coupleID entity.ID, postID string) error {
+	newPostID, err := entity.StringToID(postID)
+	if err != nil {
+		return err
+	}
+	return s.repo.Delete(coupleID, newPostID)
 }

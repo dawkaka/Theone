@@ -268,18 +268,31 @@ func editPostCaption(service post.UseCase) gin.HandlerFunc {
 
 func deletePost(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		postID := ctx.Param("postID")
+		lang := user.Lang
+		if postID == "" {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+		}
+		err := service.DeletePost(user.CoupleID, postID)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				ctx.AbortWithStatusJSON(http.StatusForbidden, "Forbidden")
+			}
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, "SomethingWentWrongInternal")
+		}
+		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "PostDeleted"))
 	}
 }
 
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase) {
 	r.GET("/post/:coupleName/:postID", getPost(service, coupleService))
 	r.GET("/post/comments/:postID/:skip", postComments(service))
-	r.POST("/post/new", newPost(service, coupleService, userService))
+	r.POST("/post", newPost(service, coupleService, userService))
 	r.POST("/post/new-comment/:postID", newComment(service, userService))
 	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service))
 	r.PATCH("/post/like/:postID", like(service, userService))
 	r.PATCH("/post/unlike/:postID", unLikePost(service))
 	r.PATCH("/post/edit/:postID", editPostCaption(service))
-	r.DELETE("/post/delete", deletePost(service))
+	r.DELETE("/post/:postID", deletePost(service))
 }

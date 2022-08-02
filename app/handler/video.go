@@ -57,11 +57,6 @@ func newVideo(service video.UseCase) gin.HandlerFunc {
 
 }
 
-func updateVideo(service video.UseCase) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-
-	}
-}
 func videoComment(service video.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		videoID := ctx.Param("videoID")
@@ -234,7 +229,6 @@ func MakeVideoHandlers(r *gin.Engine, service video.UseCase, coupleService coupl
 	r.PATCH("/video/like/:videoID", likeVideo(service, userService))
 	r.PATCH("/video/unlike/:videoID", unLikeVideo(service))
 	r.PATCH("/video/edit/:videoID", editVideoCaption(service))
-	r.POST("/video/new", newVideo(service))
-	r.PUT("/video/update", updateVideo(service))
-	r.DELETE("/video/delete", deleteVideo(service))
+	r.POST("/video", newVideo(service))
+	r.DELETE("/video", deleteVideo(service))
 }

@@ -14,7 +14,7 @@ type Reader interface {
 type Writer interface {
 	Create(e *entity.Post) (entity.ID, error)
 	Update(e *entity.Post) error
-	Delete(id entity.ID) error
+	Delete(coupleID, postID entity.ID) error
 	AddComment(postID entity.ID, comment entity.Comment) error
 	DeleteComment(postID, commentId string, userID entity.ID) error
 	Like(postID, userID entity.ID) error
@@ -36,7 +36,7 @@ type UseCase interface {
 	CreatePost(e *entity.Post) (entity.ID, error)
 	ListPosts(id []entity.ID) ([]*entity.Post, error)
 	UpdatePost(e *entity.Post) error
-	DeletePost(id entity.ID) error
+	DeletePost(coupleID entity.ID, postID string) error
 	NewComment(postID string, comment entity.Comment) error
 	DeleteComment(postID, commentID string, userID entity.ID) error
 	LikePost(postID, userID string) error

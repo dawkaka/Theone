@@ -194,17 +194,16 @@ func (p *PostMongo) Edit(postID, coupleID entity.ID, newCaption string) error {
 	return err
 }
 
-func (p *PostMongo) Delete(id entity.ID) error {
+func (p *PostMongo) Delete(coupleID, postID entity.ID) error {
 	result, err := p.collection.DeleteOne(
 		context.TODO(),
-		bson.D{{Key: "_id", Value: id}},
+		bson.D{{Key: "_id", Value: postID}, {Key: "couple_id", Value: coupleID}},
 	)
 	if err != nil {
 		return err
 	}
-	if result.DeletedCount < 1 {
+	if result.DeletedCount == 0 {
 		return entity.ErrNotFound
 	}
-
 	return nil
 }
