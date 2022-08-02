@@ -216,7 +216,23 @@ func editVideoCaption(service video.UseCase) gin.HandlerFunc {
 
 func deleteVideo(service video.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		videoID := ctx.Param("videoID")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := user.Lang
+		if videoID == "" {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+		}
+		err := service.DeleteVideo(user.CoupleID, videoID)
+		if err != nil {
+			if err == entity.ErrInvalidID {
+				ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			}
+			if err == entity.ErrNotFound {
+				ctx.AbortWithStatusJSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+			}
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
+		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "VideoDeleted"))
 	}
 }
 
@@ -230,5 +246,5 @@ func MakeVideoHandlers(r *gin.Engine, service video.UseCase, coupleService coupl
 	r.PATCH("/video/unlike/:videoID", unLikeVideo(service))
 	r.PATCH("/video/edit/:videoID", editVideoCaption(service))
 	r.POST("/video", newVideo(service))
-	r.DELETE("/video", deleteVideo(service))
+	r.DELETE("/video/:videoID", deleteVideo(service))
 }

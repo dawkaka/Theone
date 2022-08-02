@@ -13,4 +13,5 @@ var (
 	ErrNoMatch            = errors.New("no match found")
 	ErrInvalidCaption     = errors.New("invalid caption")
 	ErrImageProcessing    = errors.New("image processing failed")
+	ErrInvalidID          = errors.New("invalid bson id")
 )

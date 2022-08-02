@@ -117,8 +117,11 @@ func (v *VideoMongo) Update(video *entity.Video) error {
 	return nil
 }
 
-func (v *VideoMongo) Delete(id entity.ID) error {
-	result, err := v.collection.DeleteOne(context.TODO(), bson.D{{Key: "_id", Value: id}})
+func (v *VideoMongo) Delete(coupleID, videoID entity.ID) error {
+	result, err := v.collection.DeleteOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: videoID}, {Key: "couple_id", Value: coupleID}},
+	)
 	if err != nil {
 		return err
 	}

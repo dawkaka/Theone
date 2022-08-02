@@ -13,7 +13,6 @@ import (
 	"github.com/h2non/bimg"
 )
 
-// The session the S3 Uploader will use
 func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, error) {
 	f, err := fileHeader.Open()
 	var s string

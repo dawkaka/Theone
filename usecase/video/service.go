@@ -39,12 +39,12 @@ func (s *Service) CreateVideo(e *entity.Video) (entity.ID, error) {
 	return id, nil
 }
 
-func (s *Service) UpdateVideo(e *entity.Video) error {
-	return s.repo.Update(e)
-}
-
-func (s *Service) DeleteVideo(id entity.ID) error {
-	return s.repo.Delete(id)
+func (s *Service) DeleteVideo(coupleID entity.ID, videoID string) error {
+	newVideoID, err := entity.StringToID(videoID)
+	if err != nil {
+		return entity.ErrInvalidID
+	}
+	return s.repo.Delete(coupleID, newVideoID)
 }
 
 func (s *Service) NewComment(videoID string, comment entity.Comment) error {
