@@ -35,7 +35,6 @@ type UseCase interface {
 	GetVideoByID(id string) (entity.Video, error)
 	ListVideos(ids []entity.ID) ([]*entity.Video, error)
 	CreateVideo(video *entity.Video) (entity.ID, error)
-	UpdateVideo(e *entity.Video) error
 	DeleteVideo(coulpeID entity.ID, videoID string) error
 	NewComment(videoID string, comment entity.Comment) error
 	DeleteComment(videoID, commentID string, userID entity.ID) error

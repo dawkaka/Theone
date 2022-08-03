@@ -243,5 +243,10 @@
     "description":"breakup message",
     "one": "You are no longer in a relationship",
     "other": "You are no longer in a relationship"
+  },
+  "LogedOut": {
+    "description": "user logged out message",
+    "one": "Signed out",
+    "other": "Signed out"
   }
 }

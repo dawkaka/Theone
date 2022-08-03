@@ -544,6 +544,13 @@ func userSession(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"session": user})
 }
 
+func logout(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	user := session.Get("user").(entity.UserSession)
+	session.Clear()
+	ctx.JSON(http.StatusNoContent, presentation.Success(user.Lang, "LogedOut"))
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
@@ -553,6 +560,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
 	r.POST("/user/signup", signup(service))
 	r.POST("/user/login", login(service))
+	r.POST("/user/logout", logout)
 	r.PUT("/user/change-name", changeUserName(service))
 	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
 	r.POST("/user/couple-request/:userName", initiateRequest(service))
