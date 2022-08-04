@@ -3,24 +3,30 @@ package myaws
 import (
 	"bytes"
 	"mime/multipart"
-	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/dawkaka/theone/entity"
+	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/google/uuid"
 	"github.com/h2non/bimg"
 )
 
 func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, error) {
 	f, err := fileHeader.Open()
-	var s string
+	var fileName string
 	if err != nil {
-		return s, err
+		return fileName, err
 	}
-	extName := path.Ext(fileHeader.Filename)
-	s = uuid.New().String() + extName
+	image := make([]byte, 512)
+	f.Read(image)
+	imgType, isValid := validator.IsSupportedImageType(image)
+	if !isValid {
+		return fileName, entity.ErrUnsupportedImage
+	}
+
+	fileName = uuid.New().String() + "." + imgType[len(imgType)-3:]
 
 	var sess = session.Must(session.NewSession(&aws.Config{
 		Region:     aws.String("eu-central-1"),
@@ -30,11 +36,11 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 	uploader := s3manager.NewUploader(sess)
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket:      aws.String(bucket),
-		Key:         aws.String(s),
+		Key:         aws.String(fileName),
 		Body:        f,
-		ContentType: aws.String("image/" + extName[1:]),
+		ContentType: aws.String(imgType),
 	})
-	return s, err
+	return fileName, err
 }
 
 func UploadMultipleFiles(files []*multipart.FileHeader, bucket string) ([]entity.PostMetadata, error) {
@@ -44,12 +50,14 @@ func UploadMultipleFiles(files []*multipart.FileHeader, bucket string) ([]entity
 	}
 	filesMeta := []entity.PostMetadata{}
 	for val := range ch {
-		if val == entity.ErrImageProcessing {
-			return nil, entity.ErrImageProcessing
-		}
-		filesMeta = append(filesMeta, val.(entity.PostMetadata))
-		if len(filesMeta) == len(files) {
-			return filesMeta, nil
+		switch v := val.(type) {
+		case error:
+			return nil, v
+		case entity.PostMetadata:
+			filesMeta = append(filesMeta, v)
+			if len(filesMeta) == len(files) {
+				return filesMeta, nil
+			}
 		}
 	}
 	return filesMeta, nil
@@ -63,6 +71,10 @@ func upload(file *multipart.FileHeader, ch chan any) {
 
 	image := []byte{}
 	f.Read(image)
+	imgType, isValid := validator.IsSupportedImageType(image)
+	if !isValid {
+		ch <- entity.ErrUnsupportedImage
+	}
 	size, err := bimg.NewImage(image).Size()
 	if err != nil {
 		ch <- entity.ErrImageProcessing
@@ -75,7 +87,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 		Width:     height,
 		Height:    width,
 		Crop:      false,
-		Quality:   95,
+		Quality:   100,
 		Interlace: true,
 	}
 	newImage, err := bimg.NewImage(image).Process(options)
@@ -83,9 +95,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 		ch <- entity.ErrImageProcessing
 	}
 
-	extName := path.Ext(file.Filename)
-	s := uuid.New().String() + extName
-
+	fileName := uuid.New().String() + "." + imgType[len(imgType)-3:]
 	var sess = session.Must(session.NewSession(&aws.Config{
 		Region:     aws.String("eu-central-1"),
 		MaxRetries: aws.Int(3),
@@ -96,15 +106,15 @@ func upload(file *multipart.FileHeader, ch chan any) {
 	uploader := s3manager.NewUploader(sess)
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket:      aws.String("postimages"),
-		Key:         aws.String(s),
+		Key:         aws.String(fileName),
 		Body:        imageReader,
-		ContentType: aws.String("image/" + extName[1:]),
+		ContentType: aws.String(imgType),
 	})
 
 	if err != nil {
 		ch <- entity.ErrImageProcessing
 	}
-	ch <- entity.PostMetadata{Name: s, Height: int64(height), Width: int64(width), Type: extName[1:]}
+	ch <- entity.PostMetadata{Name: fileName, Height: int64(height), Width: int64(width), Type: imgType}
 }
 
 func getPrefDimention(curr int, d string) int {
