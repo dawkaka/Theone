@@ -1,11 +1,17 @@
 package validator
 
 import (
+	"net/http"
 	"net/mail"
 	"regexp"
 	"strings"
 	"time"
 	"unicode"
+)
+
+var (
+	SUPPORTED_LANGUAGES = []string{"en", "es", "ch", "fr", "ar", "ru"}
+	Settings            = map[string][]string{"Language": SUPPORTED_LANGUAGES}
 )
 
 func IsEmail(email string) bool {
@@ -116,4 +122,27 @@ func IsValidPastDate(date time.Time) bool {
 
 func IsCaption(caption string) bool {
 	return len(caption) < 256
+}
+
+func IsSupportedImageType(content []byte) (imageType string, supported bool) {
+	imageType = http.DetectContentType(content)
+	for _, val := range []string{"image/gif", "image/jpeg", "image/jpg", "image/png"} {
+		if val == imageType {
+			supported = true
+		}
+	}
+	supported = false
+	return
+}
+
+func IsValidSetting(setting, value string) bool {
+
+	if settings, ok := Settings[setting]; ok {
+		for _, val := range settings {
+			if val == value {
+				return true
+			}
+		}
+	}
+	return false
 }

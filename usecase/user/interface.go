@@ -31,6 +31,7 @@ type Writer interface {
 	UpdateShowPicture(userID entity.ID, index int, fileName string) error
 	ChangeRequestStatus(userId entity.ID, status string) error
 	ChangeName(userID entity.ID, userName string) error
+	ChangeSettings(userID entity.ID, setting, value string) error
 }
 
 //Repository interface
@@ -60,4 +61,5 @@ type UseCase interface {
 	UpdateShowPicture(userID entity.ID, index int, fileName string) error
 	ChangeUserRequestStatus(userID entity.ID, status string) error
 	ChangeUserName(userID entity.ID, userName string) error
+	ChangeSettings(userID entity.ID, setting, value string) error
 }

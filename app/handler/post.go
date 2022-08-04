@@ -34,13 +34,13 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
+
 		filesMetadata, err := myaws.UploadMultipleFiles(files, "posts")
-		mentions := utils.ExtracMentions(caption)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-
+		mentions := utils.ExtracMentions(caption)
 		post := entity.Post{
 			PostID:      utils.GenerateID(),
 			CoupleID:    user.CoupleID,

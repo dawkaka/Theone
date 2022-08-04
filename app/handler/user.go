@@ -551,10 +551,26 @@ func logout(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, presentation.Success(user.Lang, "LogedOut"))
 }
 
+func changeSettings(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		setting, value := ctx.Param("settings"), ctx.Param("newValue")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		if !validator.IsValidSetting(setting, value) {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, presentation.Error(user.Lang, "InvalidSetting"))
+		}
+		err := service.ChangeSettings(user.ID, setting, value)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+		}
+		ctx.JSON(http.StatusAccepted, presentation.Success(user.Lang, setting+"Updated"))
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
 	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
 	r.GET("/user/search/:query", searchUsers(service))
 	r.GET("/user/session", userSession)
+	r.GET("/user/settings/:setting/:newValue", changeSettings(service))
 	r.GET("/user/following/:skip", getFollowing(service))
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))

@@ -111,3 +111,7 @@ func (s *Service) ChangeUserRequestStatus(userID entity.ID, status string) error
 func (s *Service) ChangeUserName(userID entity.ID, userName string) error {
 	return s.repo.ChangeName(userID, userName)
 }
+
+func (s *Service) ChangeSettings(userID entity.ID, setting, value string) error {
+	return s.repo.ChangeSettings(userID, setting, value)
+}

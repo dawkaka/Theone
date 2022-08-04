@@ -12,6 +12,7 @@ var (
 	ErrSomethingWentWrong = errors.New("something went wrong")
 	ErrNoMatch            = errors.New("no match found")
 	ErrInvalidCaption     = errors.New("invalid caption")
-	ErrImageProcessing    = errors.New("image processing failed")
+	ErrImageProcessing    = errors.New("ImageProcessingFailed")
 	ErrInvalidID          = errors.New("invalid bson id")
+	ErrUnsupportedImage   = errors.New("UnsupportedImage")
 )

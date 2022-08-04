@@ -293,3 +293,15 @@ func (u *UserMongo) ChangeName(userID entity.ID, userName string) error {
 	)
 	return err
 }
+
+func (u *UserMongo) ChangeSettings(userID entity.ID, setting, value string) error {
+	result, err := u.collection.UpdateByID(
+		context.TODO(),
+		userID,
+		bson.D{{Key: setting, Value: value}},
+	)
+	if result.MatchedCount == 0 {
+		return entity.ErrNotFound
+	}
+	return err
+}
