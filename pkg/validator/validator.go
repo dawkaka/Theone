@@ -11,7 +11,7 @@ import (
 
 var (
 	SUPPORTED_LANGUAGES = []string{"en", "es", "ch", "fr", "ar", "ru"}
-	Settings            = map[string][]string{"Language": SUPPORTED_LANGUAGES}
+	Settings            = map[string][]string{"language": SUPPORTED_LANGUAGES}
 )
 
 func IsEmail(email string) bool {
@@ -113,7 +113,15 @@ func IsWebsite(website string) bool {
 }
 
 func IsPronouns(pronouns string) bool {
-	return true
+	pronouns = strings.TrimSpace(pronouns)
+	ps := strings.Split(pronouns, "/")
+	l := len(ps)
+	for _, val := range ps {
+		if val == "" {
+			return false
+		}
+	}
+	return l < 3 && l > 1
 }
 
 func IsValidPastDate(date time.Time) bool {
@@ -129,6 +137,7 @@ func IsSupportedImageType(content []byte) (imageType string, supported bool) {
 	for _, val := range []string{"image/gif", "image/jpeg", "image/jpg", "image/png"} {
 		if val == imageType {
 			supported = true
+			return
 		}
 	}
 	supported = false

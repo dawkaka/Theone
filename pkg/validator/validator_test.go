@@ -1,12 +1,14 @@
 package validator
 
 import (
+	"os"
 	"testing"
+	"time"
 )
 
 func TestIsRealName(t *testing.T) {
 	validTest := []string{"Yussif", "Marcos", "D'angelo", "李", "静", "राजेश", "يوسف"}
-	inValidTest := []string{"yUssif", "Brown45", "Ruben_", " "}
+	inValidTest := []string{"yUssif", "Brown45", "Ruben_", " ", "Sharp Brown", "ShaTta"}
 
 	for _, value := range validTest {
 		if !IsRealName(value) {
@@ -54,8 +56,8 @@ func TestIsCoupleName(t *testing.T) {
 }
 
 func TestIsEmail(t *testing.T) {
-	validTest := []string{}
-	inValidTest := []string{}
+	validTest := []string{"yousiph77@gmail.com", "what@blue.com", "somethign@outlook.com", "see@yahoo.net"}
+	inValidTest := []string{"youiosw!gmail.com", "youi djlfsf@brown.com", "shit.@gmail.com", "al;a@gmail.com"}
 	for _, value := range validTest {
 		if !IsEmail(value) {
 			t.Fatalf("IsEmail: testing %s. Expected %t got %t", value, true, false)
@@ -128,5 +130,84 @@ func TestIsWebsite(t *testing.T) {
 		if IsWebsite(value) {
 			t.Fatalf("Testing %s. Expected %t got %t", value, false, true)
 		}
+	}
+}
+
+func TestIsValidPastDate(t *testing.T) {
+	pastDate := time.Date(2006, time.March, 16, 0, 0, 0, 0, time.Local)
+	futureDate := time.Date(2025, time.January, 33, 3, 3, 3, 3, time.Local)
+
+	if !IsValidPastDate(pastDate) {
+		t.Fatalf("Testing %s. Expected %t got %t", pastDate, true, false)
+	}
+
+	if IsValidPastDate(futureDate) {
+		t.Fatalf("Testing %s. Expected %t got %t", futureDate, true, false)
+	}
+}
+
+func TestIsPronouns(t *testing.T) {
+	valid := []string{"she/her", "he/him", "they/them", "water/fire", "blue/green"}
+	inValid := []string{"she.her", "he", "/him", "they/", "sometthing/ "}
+
+	for _, val := range valid {
+		if !IsPronouns(val) {
+			t.Fatalf("Testing %s. Expected %t got %t", val, true, false)
+		}
+	}
+	for _, val := range inValid {
+		if IsPronouns(val) {
+			t.Fatalf("Testing %s. Expected %t got %t", val, false, true)
+		}
+	}
+}
+
+func TestIsValidSetting(t *testing.T) {
+	setting := "language"
+	for _, val := range SUPPORTED_LANGUAGES {
+		if !IsValidSetting(setting, val) {
+			t.Fatalf("Testing %s and %s. Expected %t got %t", setting, val, true, false)
+		}
+	}
+
+	setting = "language"
+	value := "jp"
+	if IsValidSetting(setting, value) {
+		t.Fatalf("Testing %s and %s. Expected %t got %t", setting, value, false, true)
+	}
+	setting = "language"
+	value = "en_US"
+	if IsValidSetting(setting, value) {
+		t.Fatalf("Testing %s and %s. Expected %t got %t", setting, value, false, true)
+	}
+	setting = "Occupation"
+	value = "ar"
+	if IsValidSetting(setting, value) {
+		t.Fatalf("Testing %s and %s. Expected %t got %t", setting, value, false, true)
+	}
+
+}
+
+func TestIsSupportedImageType(t *testing.T) {
+	image, err := os.Open("/home/dawkaka/Pictures/yz series.jpg")
+	if err != nil {
+		panic(err)
+	}
+	pdf, err := os.Open("/home/dawkaka/Documents/Data-Structures-and-Algorithms-in-Java-6th-Edition.pdf")
+	if err != nil {
+		panic(err)
+	}
+	pdfBuffer := make([]byte, 512)
+	imgBuffer := make([]byte, 512)
+
+	pdf.Read(pdfBuffer)
+	image.Read(imgBuffer)
+
+	if i, val := IsSupportedImageType(imgBuffer); !val {
+		t.Fatalf("Testing %s. Expected %t got %t", i, true, false)
+	}
+
+	if i, val := IsSupportedImageType(pdfBuffer); val {
+		t.Fatalf("Testing %s. Expected %t got %t", i, false, true)
 	}
 }
