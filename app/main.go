@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/dawkaka/theone/app/handler"
+	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/config"
-	"github.com/dawkaka/theone/inter"
 	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/dawkaka/theone/usecase/post"
@@ -22,7 +22,6 @@ import (
 
 func main() {
 
-	fmt.Println(inter.Localize("es", "SomethingWentWrong"))
 	r := gin.Default()
 
 	store, err := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
@@ -44,7 +43,8 @@ func main() {
 	}()
 
 	r.Use(sessions.Sessions("session", store))
-	//r.Use(middlewares.Authenticate())
+	r.Use(middlewares.Authenticate())
+
 	r.GET("/incr", func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 		var count int

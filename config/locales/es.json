@@ -246,7 +246,37 @@
   },
   "LogedOut": {
     "description": "user logged out message",
-    "one": "Signed out",
-    "other": "Signed out"
+    "one": "cerró sesión",
+    "other": "cerró sesión"
+  },
+  "SignupSuccessfull": {
+    "description": "user logged in message",
+    "one": "registrado",
+    "other": "registrado"
+  },
+  "WrongEmailFormat": {
+    "description": "User enters a wrong email format",
+    "one": "No es un formato de correo electrónico válido",
+    "other": "No es un formato de correo electrónico válido"
+  },
+  "WrongFirstNameFormat": {
+    "description": "User enters a wrong first name format",
+    "one": "No es un formato de nombre válido",
+    "other": "No es un formato de nombre válido"
+  },
+  "WrongLastNameFormat": {
+    "description": "User enters a wrong last name format",
+    "one": "No es un formato de apellido válido",
+    "other": "No es un formato de apellido válido"
+  },
+  "WrongUserNameFormat": {
+    "description": "User enters a wrong user name format",
+    "one": "No es un formato de nombre de usuario válido",
+    "other": "No es un formato de nombre de usuario válido"
+  },
+  "WrongPasswordFormat": {
+    "description": "User enters a wrong password format",
+    "one": "No es un formato de contraseña válido",
+    "other": "No es un formato de contraseña válido"
   }
 }

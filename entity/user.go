@@ -24,27 +24,27 @@ type MentionedNotif struct {
 
 //User data
 type User struct {
-	ID                   ID        `json:"id" bson:"_id"`
-	Email                string    `json:"email"`
+	ID                   ID        `json:"id,omitempty" bson:"_id, ommitempty"`
+	Email                string    `json:"email" bson:"required"`
 	UserName             string    `json:"user_name" bson:"user_name"`
 	FirstName            string    `json:"first_name" bson:"first_name"`
 	LastName             string    `json:"last_name" bson:"last_name"`
 	Password             string    `json:"password"`
-	DateOfBirth          time.Time `json:"date_of_birth" bson:"date_of_birth"`
-	CoupleID             ID        `json:"couple_id" bson:"couple_id"`
-	Bio                  string    `json:"bio"`
-	Website              string    `json:"website"`
+	DateOfBirth          time.Time `json:"date_of_birth" bson:"date_of_birt, omitempty"`
+	CoupleID             ID        `json:"couple_id" bson:"couple_id, ommitempty"`
+	Bio                  string    `json:"bio" bson:"ommitempty"`
+	Website              string    `json:"website" bson:"ommitempty"`
 	OpenToRequests       bool      `json:"open_to_requests" bson:"open_to_request"`
 	HasPartner           bool      `json:"has_partner" bson:"has_partner"`
 	HasPendingRequest    bool      `json:"has_pending_request" bson:"has_pending_request"`
 	CreatedAt            time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at" bson:"updated_at"`
+	UpdatedAt            time.Time `json:"updated_at" bson:"updated_at,ommitempty"`
 	ProfilePicture       string    `json:"profile_picture" bson:"profile_picture"`
 	ShowPictures         [6]string `json:"show_pictures" bson:"show_pictures"`
-	Likes                []string  `json:"likes"`
+	Likes                []ID      `json:"likes"`
 	LikesCount           int64     `json:"likes_count" bson:"likes_count"`
 	EmailVerified        bool      `json:"email_verified" bson:"email_verified"`
-	PartnerID            ID        `json:"partner_id" bson:"partner_id"`
+	PartnerID            ID        `json:"partner_id" bson:"partner_id,ommitempty"`
 	Following            []ID      `json:"following"`
 	FollowingCount       uint64    `json:"following_count" bson:"following_count"`
 	Notifications        []any     `json:"notifications"`
@@ -91,21 +91,32 @@ type Signup struct {
 	DateOfBirth time.Time `json:"date_of_birth" bson:"date_of_birth"`
 }
 
-func (s *Signup) Validate() []error {
+func (s Signup) Validate() []error {
 	errs := []error{}
 	if !validator.IsEmail(s.Email) {
-		errs = append(errs, errors.New("wrong email format"))
+		errs = append(errs, errors.New("WrongEmailFormat"))
 	}
 	if !validator.IsRealName(s.FirstName) {
-		errs = append(errs, errors.New("wrong first name format"))
+		errs = append(errs, errors.New("WrongFirstNameFormat"))
 	}
 	if !validator.IsRealName(s.FirstName) {
-		errs = append(errs, errors.New("wrong last name format"))
+		errs = append(errs, errors.New("WrongLastNameFormat"))
 	}
 	if !validator.IsPassword(s.Password) {
-		errs = append(errs, errors.New("wrong password format"))
+		errs = append(errs, errors.New("WrongPasswordFormat"))
+	}
+	if !validator.IsUserName(s.UserName) {
+		errs = append(errs, errors.New("WrongUserNameFormat"))
 	}
 	return errs
+}
+
+func (s *Signup) Sanitize() {
+	s.FirstName = strings.TrimSpace(s.FirstName)
+	s.LastName = strings.TrimSpace(s.LastName)
+	s.UserName = strings.TrimSpace(s.UserName)
+	s.Password = strings.TrimSpace(s.Password)
+	s.Email = strings.TrimSpace(s.Password)
 }
 
 type Login struct {
@@ -163,7 +174,6 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		LastName:             lastName,
 		Password:             password,
 		DateOfBirth:          dateOfBirth,
-		CoupleID:             [12]byte{},
 		Bio:                  "-",
 		OpenToRequests:       true,
 		HasPartner:           false,
@@ -172,10 +182,9 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		UpdatedAt:            time.Now(),
 		ProfilePicture:       "defaultProfile.jpg",
 		ShowPictures:         [6]string{"defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg"},
-		Likes:                []string{},
+		Likes:                []primitive.ObjectID{},
 		LikesCount:           0,
 		EmailVerified:        false,
-		PartnerID:            [12]byte{},
 		Following:            []primitive.ObjectID{},
 		FollowingCount:       0,
 		Notifications:        []any{},

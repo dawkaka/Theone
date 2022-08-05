@@ -6,6 +6,7 @@ import (
 
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -36,10 +37,10 @@ func (u *UserMongo) Search(query string) ([]*entity.User, error) {
 	cursor, err := u.collection.Find(
 		context.TODO(),
 		bson.D{
-			{Key: "$or", Value: bson.D{
-				{Key: "user_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}},
-				{Key: "first_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}},
-				{Key: "last_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}},
+			{Key: "$or", Value: bson.A{
+				bson.D{{Key: "user_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}}},
+				bson.D{{Key: "first_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}}},
+				bson.D{{Key: "last_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}}},
 			}}},
 	)
 	if err != nil {
@@ -175,7 +176,10 @@ func (u *UserMongo) NotifyUsers(users []string, notif any) error {
 func (u *UserMongo) Create(e *entity.User) (entity.ID, error) {
 
 	result, err := u.collection.InsertOne(context.TODO(), e)
-	return result.InsertedID.(entity.ID), err
+	if err != nil {
+		return primitive.NewObjectID(), err
+	}
+	return result.InsertedID.(entity.ID), nil
 }
 
 func (u *UserMongo) Update(userID entity.ID, update entity.UpdateUser) error {

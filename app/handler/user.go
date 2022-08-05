@@ -28,17 +28,20 @@ const EIGHTEEN_YEARS = 157680 //number of hours in 18 years
 func signup(service user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var newUser *entity.Signup
-		err := ctx.ShouldBind(newUser)
+		var newUser entity.Signup
+		err := ctx.ShouldBindJSON(&newUser)
 		lang := utils.GetLang("", ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, entity.ErrNotFound.Error()))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-
 		errs := newUser.Validate()
 		if len(errs) > 0 {
-			ctx.JSON(http.StatusBadRequest, gin.H{"type": "ERROR", "errors": errs})
+			strArr := []string{}
+			for _, val := range errs {
+				strArr = append(strArr, inter.Localize(lang, val.Error()))
+			}
+			ctx.JSON(http.StatusBadRequest, gin.H{"type": "ERROR", "errors": strArr})
 			return
 		}
 
@@ -54,7 +57,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 
 		insertedID, err := service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBirth, lang)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		session := sessions.Default(ctx)
@@ -159,17 +162,19 @@ func searchUsers(service user.UseCase) gin.HandlerFunc {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsUserName(query) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "WrongUserNameFormat"))
 			return
 		}
 		users, err := service.SearchUsers(query)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-
+		if users == nil {
+			ctx.JSON(http.StatusOK, gin.H{"users": []string{}})
+			return
+		}
 		ctx.JSON(http.StatusOK, gin.H{"users": users})
-
 	}
 }
 

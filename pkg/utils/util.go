@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -32,7 +31,6 @@ func GenerateID() string {
 	for i := 0; i < 12; i++ {
 		rand.Seed(time.Now().UnixNano())
 		ind := rand.Intn(61)
-		fmt.Println(ind)
 		id += string(alphabets[ind])
 	}
 	return id

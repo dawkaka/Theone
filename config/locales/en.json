@@ -247,5 +247,35 @@
     "description": "user logged out message",
     "one": "Signed out",
     "other": "Signed out"
+  },
+  "SignupSuccessfull": {
+    "description": "user logged in message",
+    "one": "Signed in",
+    "other": "Signed in"
+  },
+  "WrongEmailFormat": {
+    "description": "User enters a wrong email format",
+    "one": "Not a valid email, change it and try again",
+    "other": "Not a valid email, change it and try again"
+  },
+  "WrongFirstNameFormat": {
+    "description": "User enters a wrong first name format",
+    "one": "Not a valid first name, change it and try again",
+    "other": "Not a valid first name, change it and try again"
+  },
+  "WrongLastNameFormat": {
+    "description": "User enters a wrong last name format",
+    "one": "Not a valid last name, change it and try again",
+    "other": "Not a valid last name, change it and try again"
+  },
+  "WrongUserNameFormat": {
+    "description": "User enters a wrong user name format",
+    "one": "Not a valid user name, change it and try again",
+    "other": "Not a valid user name, change it and try again"
+  },
+  "WrongPasswordFormat": {
+    "description": "User enters a wrong password format",
+    "one": "Not a valid password, change it and try again",
+    "other": "Not a valid password, change it and try again"
   }
 }
