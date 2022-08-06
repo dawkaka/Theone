@@ -24,34 +24,34 @@ type MentionedNotif struct {
 
 //User data
 type User struct {
-	ID                   ID        `json:"id,omitempty" bson:"_id"`
-	Email                string    `json:"email" bson:"required"`
-	UserName             string    `json:"user_name" bson:"user_name"`
-	FirstName            string    `json:"first_name" bson:"first_name"`
-	LastName             string    `json:"last_name" bson:"last_name"`
-	Password             string    `json:"password"`
-	DateOfBirth          time.Time `json:"date_of_birth" bson:"date_of_birth"`
-	CoupleID             ID        `json:"couple_id" bson:"couple_id,omitempty"`
-	Bio                  string    `json:"bio" bson:"bio"`
-	Website              string    `json:"website" bson:"website"`
-	OpenToRequests       bool      `json:"open_to_requests" bson:"open_to_request"`
-	HasPartner           bool      `json:"has_partner" bson:"has_partner"`
-	HasPendingRequest    bool      `json:"has_pending_request" bson:"has_pending_request"`
-	CreatedAt            time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at" bson:"updated_at"`
-	ProfilePicture       string    `json:"profile_picture" bson:"profile_picture"`
-	ShowPictures         [6]string `json:"show_pictures" bson:"show_pictures"`
-	Likes                []ID      `json:"likes"`
-	LikesCount           int64     `json:"likes_count" bson:"likes_count"`
-	EmailVerified        bool      `json:"email_verified" bson:"email_verified,omitempty"`
-	PartnerID            ID        `json:"partner_id" bson:"partner_id,omitempty"`
-	Following            []ID      `json:"following"`
-	FollowingCount       uint64    `json:"following_count" bson:"following_count"`
-	Notifications        []any     `json:"notifications"`
-	Lang                 string    `json:"lang"`
-	LastVisited          time.Time `json:"last_visited"`
-	LoginIPs             []string  `json:"login_ips" bson:"loging_ips"`
-	ContentPriorityQueue []ID      `json:"content_priority_queue" bson:"content_priority_queue"`
+	ID                   ID        `json:"id,omitempty" bson:"_id,,omitempty"`
+	Email                string    `json:"email,omitempty" bson:"required,omitempty"`
+	UserName             string    `json:"user_name,omitempty" bson:"user_name,omitempty"`
+	FirstName            string    `json:"first_name,omitempty" bson:"first_name,omitempty"`
+	LastName             string    `json:"last_name,omitempty" bson:"last_name,omitempty"`
+	Password             string    `json:"password,omitempty"`
+	DateOfBirth          time.Time `json:"date_of_birth,omitempty" bson:"date_of_birth,omitempty"`
+	CoupleID             ID        `json:"couple_id,omitempty" bson:"couple_id,omitempty"`
+	Bio                  string    `json:"bio,omitempty" bson:"bio"`
+	Website              string    `json:"website,omitempty" bson:"website,omitempty"`
+	OpenToRequests       bool      `json:"open_to_requests,omitempty" bson:"open_to_request,omitempty"`
+	HasPartner           bool      `json:"has_partner,omitempty" bson:"has_partner,omitempty"`
+	HasPendingRequest    bool      `json:"has_pending_request,omitempty" bson:"has_pending_request,omitempty"`
+	CreatedAt            time.Time `json:"created_at,omitempty" bson:"created_at,omitempty"`
+	UpdatedAt            time.Time `json:"updated_at,omitempty" bson:"updated_at,omitempty"`
+	ProfilePicture       string    `json:"profile_picture,omitempty" bson:"profile_picture,omitempty"`
+	ShowPictures         [6]string `json:"show_pictures,omitempty" bson:"show_pictures,omitempty"`
+	Likes                []ID      `json:"likes,omitempty"`
+	LikesCount           int64     `json:"likes_count,omitempty" bson:"likes_count,omitempty"`
+	EmailVerified        bool      `json:"email_verified,omitempty" bson:"email_verified,omitempty"`
+	PartnerID            ID        `json:"partner_id,omitempty" bson:"partner_id,omitempty"`
+	Following            []ID      `json:"following,omitempty"`
+	FollowingCount       uint64    `json:"following_count,omitempty" bson:"following_count,omitempty"`
+	Notifications        []any     `json:"notifications,omitempty"`
+	Lang                 string    `json:"lang,omitempty"`
+	LastVisited          time.Time `json:"last_visited,omitempty"`
+	LoginIPs             []string  `json:"login_ips,omitempty" bson:"loging_ips",omitempty`
+	ContentPriorityQueue []ID      `json:"content_priority_queue,omitempty" bson:"content_priority_queue,omitempty"`
 }
 
 type Follower struct {

@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 
 	"github.com/dawkaka/theone/app/handler"
 	"github.com/dawkaka/theone/config"
+	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/dawkaka/theone/usecase/post"
@@ -57,6 +59,7 @@ func main() {
 	userService := user.NewService(usersRepo)
 	postService := post.NewService(postsRepo)
 	coupleService := couple.NewService(couplesRepo)
+	gob.Register(entity.UserSession{})
 
 	handler.MakeUserHandlers(r, userService, coupleService, userMessageRepo)
 	handler.MakeCoupleHandlers(r, coupleService, userService, coupleMessageReop, userMessageRepo)

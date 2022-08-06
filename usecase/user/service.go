@@ -35,7 +35,7 @@ func (s *Service) GetUser(userName string) (entity.User, error) {
 }
 
 //SearchUsers Search users
-func (s *Service) SearchUsers(query string) ([]*entity.User, error) {
+func (s *Service) SearchUsers(query string) ([]entity.User, error) {
 	return s.repo.Search(query)
 }
 

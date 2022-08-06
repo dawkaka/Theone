@@ -3,11 +3,13 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type UserMongo struct {
@@ -24,9 +26,17 @@ func NewUserMongo(col *mongo.Collection) *UserMongo {
 //Read Methods
 func (u *UserMongo) Get(userName string) (entity.User, error) {
 	result := entity.User{}
+	opts := options.FindOne().SetProjection(
+		bson.D{
+			{Key: "first_name", Value: 1}, {Key: "last_name", Value: 1},
+			{Key: "user_name", Value: 1}, {Key: "profile_picture", Value: 1},
+			{Key: "has_partner", Value: 1}, {Key: "show_pictures", Value: 1},
+			{Key: "following_count", Value: 1}, {Key: "likes_count", Value: 1},
+		})
 	err := u.collection.FindOne(
 		context.TODO(),
 		bson.D{{Key: "user_name", Value: userName}},
+		opts,
 	).Decode(&result)
 	if err == mongo.ErrNoDocuments {
 		return result, entity.ErrUserNotFound
@@ -34,26 +44,43 @@ func (u *UserMongo) Get(userName string) (entity.User, error) {
 	return result, err
 }
 
-func (u *UserMongo) Search(query string) ([]*entity.User, error) {
-
+func (u *UserMongo) Search(query string) ([]entity.User, error) {
+	opts := options.Find().SetProjection(
+		bson.D{
+			{Key: "first_name", Value: 1}, {Key: "last_name", Value: 1},
+			{Key: "user_name", Value: 1}, {Key: "profile_picture", Value: 1},
+			{Key: "has_partner", Value: 1},
+		})
 	cursor, err := u.collection.Find(
 		context.TODO(),
 		bson.D{
-			{Key: "$or", Value: bson.A{
-				bson.D{{Key: "user_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}}},
-				bson.D{{Key: "first_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}}},
-				bson.D{{Key: "last_name", Value: bson.D{{Key: "$regex", Value: "/^" + query + "/i"}}}},
-			}}},
+			{
+				Key: "$or",
+				Value: bson.A{
+					bson.D{
+						{Key: "user_name", Value: bson.M{"$regex": primitive.Regex{Pattern: "^" + query, Options: "i"}}},
+					},
+					bson.D{
+						{Key: "first_name", Value: bson.M{"$regex": primitive.Regex{Pattern: "^" + query, Options: "i"}}},
+					},
+					bson.D{
+						{Key: "last_name", Value: bson.M{"$regex": primitive.Regex{Pattern: "^" + query, Options: "i"}}},
+					},
+				},
+			},
+		},
+		opts,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	var results []*entity.User
+	results := []entity.User{}
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		return nil, err
 	}
+	fmt.Printf("%#v", results[0])
 	return results, nil
 }
 

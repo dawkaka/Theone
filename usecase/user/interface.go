@@ -9,7 +9,7 @@ import (
 //Reader interface
 type Reader interface {
 	Get(userName string) (entity.User, error)
-	Search(query string) ([]*entity.User, error)
+	Search(query string) ([]entity.User, error)
 	List(users []entity.ID) ([]entity.User, error)
 	ConfirmCouple(userID, partnerID entity.ID) bool
 	Following(userName string, skip int) ([]entity.Following, error)
@@ -43,7 +43,7 @@ type Repository interface {
 //UseCase interface
 type UseCase interface {
 	GetUser(userName string) (entity.User, error)
-	SearchUsers(query string) ([]*entity.User, error)
+	SearchUsers(query string) ([]entity.User, error)
 	ListUsers([]entity.ID) ([]entity.User, error)
 	UserFollowing(userName string, skip int) ([]entity.Following, error)
 	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) (entity.ID, error)

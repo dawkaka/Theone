@@ -149,16 +149,17 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 		user, err := service.GetUser(userName)
 
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, entity.ErrNotFound.Error()))
+			ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
 			return
 		}
 		pUser := presentation.UserProfile{
-			FirstName:      user.UserName,
+			FirstName:      user.FirstName,
 			LastName:       user.LastName,
 			UserName:       user.UserName,
 			ProfilePicture: user.ProfilePicture,
 			Bio:            user.Bio,
 			FollowingCount: user.FollowingCount,
+			ShowPictures:   user.ShowPictures,
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{"user": pUser})
@@ -169,14 +170,13 @@ func searchUsers(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		query := ctx.Param("query")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsUserName(query) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "WrongUserNameFormat"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "WrongUserNameFormat"))
 			return
 		}
 		users, err := service.SearchUsers(query)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
 			return
 		}
 		if users == nil {
