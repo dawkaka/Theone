@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/dawkaka/theone/app/handler"
-	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/config"
 	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
@@ -43,22 +42,8 @@ func main() {
 	}()
 
 	r.Use(sessions.Sessions("session", store))
-	r.Use(middlewares.Authenticate())
+	//	r.Use(middlewares.Authenticate())
 
-	r.GET("/incr", func(ctx *gin.Context) {
-		session := sessions.Default(ctx)
-		var count int
-		v := session.Get("count")
-		if v == nil {
-			count = 0
-		} else {
-			count = v.(int)
-			count++
-		}
-		session.Set("count", count)
-		session.Save()
-		ctx.JSON(200, gin.H{"count": count})
-	})
 	db := client.Database(config.DB_DATABASE)
 
 	usersRepo := repository.NewUserMongo(db.Collection("users"))

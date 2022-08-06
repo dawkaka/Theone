@@ -14,8 +14,8 @@ func Generate(raw string) (string, error) {
 }
 
 //Compare compare two passwords
-func Compare(p1, p2 string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(p1), []byte(p2))
+func Compare(hashedPassword, password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		return err
 	}

@@ -22,14 +22,16 @@ func NewUserMongo(col *mongo.Collection) *UserMongo {
 }
 
 //Read Methods
-func (u *UserMongo) Get(userName string) (*entity.User, error) {
-	var result entity.User
-
-	err := u.collection.FindOne(context.TODO(), bson.D{{Key: "user_name", Value: userName}}).Decode(&result)
-	if err != nil {
-		return nil, err
+func (u *UserMongo) Get(userName string) (entity.User, error) {
+	result := entity.User{}
+	err := u.collection.FindOne(
+		context.TODO(),
+		bson.D{{Key: "user_name", Value: userName}},
+	).Decode(&result)
+	if err == mongo.ErrNoDocuments {
+		return result, entity.ErrUserNotFound
 	}
-	return &result, nil
+	return result, err
 }
 
 func (u *UserMongo) Search(query string) ([]*entity.User, error) {
@@ -139,10 +141,7 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 	result, err := u.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "user_name", Value: userName}},
-		bson.D{{Key: "$push", Value: bson.D{
-			{Key: "notifications", Value: notif},
-		}},
-		},
+		bson.D{{Key: "$push", Value: bson.D{{Key: "notifications", Value: notif}}}},
 	)
 	if result.ModifiedCount != 1 {
 		return errors.New("notify: couldn't update user notifications")

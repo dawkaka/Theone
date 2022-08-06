@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/gob"
+	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -71,6 +73,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			HasPendingRequest: false,
 			DateOfBirth:       dateOfBirth,
 			Lang:              lang,
+			LastVisited:       time.Now(),
 		}
 		gob.Register(userSession)
 		session.Set("user", userSession)
@@ -83,20 +86,25 @@ func signup(service user.UseCase) gin.HandlerFunc {
 func login(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var login *entity.Login
-		err := ctx.ShouldBind(login)
+		err := json.NewDecoder(ctx.Request.Body).Decode(&login)
 		lang := utils.GetLang("", ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
 			return
 		}
 		user, err := service.GetUser(login.UserName)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
+			log.Println(err.Error())
+			if err == entity.ErrUserNotFound {
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
+			}
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
 			return
 		}
+		log.Println(user)
 		err = password.Compare(user.Password, login.Password)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "LoginFailed"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "LoginFailed"))
 			return
 		}
 		if user.Lang != "" {
@@ -115,6 +123,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 			LastName:          user.LastName,
 			Lang:              lang,
 			DateOfBirth:       user.DateOfBirth,
+			LastVisited:       user.LastVisited,
 		}
 		if user.HasPartner {
 			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", "", false, true)

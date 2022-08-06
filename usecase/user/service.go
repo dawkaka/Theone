@@ -30,7 +30,7 @@ func (s *Service) CreateRequest(from, to entity.ID) error {
 }
 
 //GetUser Get an user
-func (s *Service) GetUser(userName string) (*entity.User, error) {
+func (s *Service) GetUser(userName string) (entity.User, error) {
 	return s.repo.Get(userName)
 }
 

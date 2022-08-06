@@ -253,6 +253,16 @@
     "one": "Signed in",
     "other": "Signed in"
   },
+  "LoginFailed": {
+    "description": "user tried to login but it wasn't successfull",
+    "one": "Sign in failed, incorrect user name or password",
+    "other": "Sign in failed, incorrect user name or password"
+  },
+  "LoginSuccessfull":{
+    "description": "user tried to login and it  was successfull",
+    "one": "Signed in",
+    "other": "Signed in"
+  },
   "WrongEmailFormat": {
     "description": "User enters a wrong email format",
     "one": "Not a valid email, change it and try again",

@@ -24,27 +24,27 @@ type MentionedNotif struct {
 
 //User data
 type User struct {
-	ID                   ID        `json:"id,omitempty" bson:"_id, ommitempty"`
+	ID                   ID        `json:"id,omitempty" bson:"_id"`
 	Email                string    `json:"email" bson:"required"`
 	UserName             string    `json:"user_name" bson:"user_name"`
 	FirstName            string    `json:"first_name" bson:"first_name"`
 	LastName             string    `json:"last_name" bson:"last_name"`
 	Password             string    `json:"password"`
-	DateOfBirth          time.Time `json:"date_of_birth" bson:"date_of_birt, omitempty"`
-	CoupleID             ID        `json:"couple_id" bson:"couple_id, ommitempty"`
-	Bio                  string    `json:"bio" bson:"ommitempty"`
-	Website              string    `json:"website" bson:"ommitempty"`
+	DateOfBirth          time.Time `json:"date_of_birth" bson:"date_of_birth"`
+	CoupleID             ID        `json:"couple_id" bson:"couple_id,omitempty"`
+	Bio                  string    `json:"bio" bson:"bio"`
+	Website              string    `json:"website" bson:"website"`
 	OpenToRequests       bool      `json:"open_to_requests" bson:"open_to_request"`
 	HasPartner           bool      `json:"has_partner" bson:"has_partner"`
 	HasPendingRequest    bool      `json:"has_pending_request" bson:"has_pending_request"`
 	CreatedAt            time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at" bson:"updated_at,ommitempty"`
+	UpdatedAt            time.Time `json:"updated_at" bson:"updated_at"`
 	ProfilePicture       string    `json:"profile_picture" bson:"profile_picture"`
 	ShowPictures         [6]string `json:"show_pictures" bson:"show_pictures"`
 	Likes                []ID      `json:"likes"`
 	LikesCount           int64     `json:"likes_count" bson:"likes_count"`
-	EmailVerified        bool      `json:"email_verified" bson:"email_verified"`
-	PartnerID            ID        `json:"partner_id" bson:"partner_id,ommitempty"`
+	EmailVerified        bool      `json:"email_verified" bson:"email_verified,omitempty"`
+	PartnerID            ID        `json:"partner_id" bson:"partner_id,omitempty"`
 	Following            []ID      `json:"following"`
 	FollowingCount       uint64    `json:"following_count" bson:"following_count"`
 	Notifications        []any     `json:"notifications"`
@@ -80,6 +80,7 @@ type UserSession struct {
 	LastName          string    `json:"last_name" bson:"last_name"`
 	Lang              string    `json:"lang" bson:"lang"`
 	DateOfBirth       time.Time `json:"date_of_birth" bson:"date_of_birth"`
+	LastVisited       time.Time `json:"last_visited" bson:"last_visited"`
 }
 
 type Signup struct {
@@ -168,6 +169,7 @@ func (u *UpdateUser) Sanitize() {
 
 func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) *User {
 	return &User{
+		ID:                   primitive.NewObjectID(),
 		Email:                email,
 		UserName:             userName,
 		FirstName:            firstName,

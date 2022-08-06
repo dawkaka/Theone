@@ -251,8 +251,18 @@
   },
   "SignupSuccessfull": {
     "description": "user logged in message",
-    "one": "registrado",
-    "other": "registrado"
+    "one": "Registrado",
+    "other": "Registrado"
+  },
+  "LoginFailed": {
+    "description": "user tried to login but it wasn't successfull",
+    "one": "Error de inicio de sesión, nombre de usuario o contraseña incorrectos",
+    "other": "Error de inicio de sesión, nombre de usuario o contraseña incorrectos"
+  },
+  "LoginSuccessfull":{
+    "description": "user tried to login and it  was successfull",
+    "one": "Conectado",
+    "other": "Conectado"
   },
   "WrongEmailFormat": {
     "description": "User enters a wrong email format",
