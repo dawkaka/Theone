@@ -2,291 +2,236 @@
 {
   "LoginRequired": {
     "description": "User is required to login",
-    "one": "Necesario iniciar sesión",
     "other": "Necesario iniciar sesión"
   },
   "SomethingWentWrong": {
     "description": "Message for unkown errors or error that can't detailed to the user",
-    "one": "Algo salió mal, por favor vuelva a intentarlo.",
     "other": "Algo salió mal, por favor vuelva a intentarlo."
   },
   "UserHasPartnerOrPendingRequest": {
     "description": "Can not send request because the user either is already in a relation or has a pending request",
-    "one": "User is already in a relationship or has a pending request",
-    "other": "User is already in a relationship or has a pending request"
+    "other": "El usuario ya está en una relación o tiene una solicitud pendiente"
   },
   "UserNotFound": {
     "description": "The user in reference doesn't exist, maybe due to a typo",
-    "one": "User not found",
-    "other": "User not found"
+    "other": "Usuario no encontrado"
   },
   "InvalidUserName": {
     "description": "The user name is not a valid one, because it breaks some of our rules",
-    "one": "Invalid user name",
-    "other": "Invalid user name"
+    "other": "No es un nombre de usuario válido"
   },
   "UserLessThan18": {
     "description": "When user is trying to performs actions not allowed for minors",
-    "one": "Only users 18 years or older can perform this action",
-    "other": "Only users 18 yeras or older can perform this action"
+    "other": "Solo los usuarios mayores de 18 años pueden realizar esta acción."
   },
   "ParntnerLessThan18": {
     "description": "Sending relationship request to user under 18",
-    "one": "Can not complete your request because the person you're sending this request to is not of age",
-    "other": "Can not complete your request because the person you're sending this request to is not of age"
+    "other": "No se puede completar su solicitud porque la persona a la que le envía esta solicitud no es mayor de edad"
   },
   "ParnterNotOpenToRequest": {
     "description": "Sending relationship request to user that is not open to relationships",
-    "one": "Can not complete your request because the user is not open to a relationship",
-    "other": "Can not complete your request because the user is not open to a relationship"
+    "other": "El usuario no está abierto a tener un perfil de pareja."
   },
   "SomethingWentWrongInternal": {
     "description": "Message for internal server errors",
-    "one": "Soemthing went wrong, it's our fault, give it some time and try again.",
-    "other": "Something went wrong, it's our fault, give it some time and try again."
+    "other": "Algo salió mal, es culpa nuestra, dale un poco de tiempo e inténtalo de nuevo."
   },
   "BadRequest": {
     "description":"Bad request message",
-    "one": "Something is wrong with your request, check it and try again.",
-    "other": "Something is wrong with your request, check it and try again."
+    "other": "Algo está mal con su solicitud, compruébelo y vuelva a intentarlo."
   },
   "RequestCreated": {
     "description": "Successfully sent a relationship request",
-    "one": "Relationship request sent, you'll be notified when the person accepts your request",
-    "other": "Relationship request sent, you'll be notified when the person accepts your request"
+    "other": "Solicitud de relación enviada, se le notificará cuando la persona acepte su solicitud"
   },
   "RequestAccepted": {
     "description": "Notify user when partner accepts their request",
-    "one": "{{.FirstName}} {{.LastName}} just accepted your relationship request",
-    "other": "{{.FirstName}} {{.LastName}} just accepted your relationship request"
+    "other": "{{.FirstName}} {{.LastName}} aceptado su solicitud de relación"
   },
   "NewCoupleRequest":{
     "description": "Notify user when the get a couple request",
-    "one": "{{.FirstName}} {{.LastName}} just sent you relationship request",
-    "other": "{{.FirstName}} {{.LastName}} just sent you relationship request"
+    "other": "{{.FirstName}} {{.LastName}} te envié una solicitud de relación"
   },
   "CoupleNotFound": {
     "description": "The couple in reference don't exist, maybe due to a typo",
-    "one": "couple not found",
-    "other": "couple not found"
+    "other": "Paraeja no econtrada"
   },
   "ProfilePicFailed": {
     "description": "When user tries to update/change their profile picture but it wasn't successfull",
-    "one": "Update profile picture failed",
-    "other": "Update profile picture failed"
+    "other": "No se ha podido cambiar la foto de perfil"
   },
   "RequestStatusOFF": {
     "description": "Successfully turned off relationship requests",
-    "one": "Done, you will no longer get relationship requests",
-    "other": "Done, you will no longer get relationship requests"
+    "other": "Listo, ya no recibirás solicitudes de relación."
   },
   "RequestStatusON": {
     "description": "Successfully turned on relationship requests",
-    "one": "Done, you will now be able to recieve relationship requests",
-    "other": "Done, you will now be able to recieve relationship requests"
+    "other": "Listo, ahora puede recibir solicitudes de relación."
   },
   "UserAlreadyExists": {
     "description": "When user tries to change name but the name already exists",
-    "one": "User name not available",
-    "other": "User name not available"
+    "other": "Nombre de usuario no esta desponible"
   },
   "ChangedUserName": {
     "description": "When user name change is successfull",
-    "one": "User name changed successfully",
-    "other": "User name changed successfully"
+    "other": "Nombre de usuario cambiada con éxito"
   },
   "Forbidden": {
     "description": "forbidden action",
-    "one": "You can't perform this action",
-    "other": "You can't perofrm this action"
+    "other": "No puedes realizar esta acción."
   },
   "Followed": {
     "description": "follow successfull",
-    "one": "You are now following this couple",
-    "other": "You are now following this couple"
+    "other": "Ahora estás siguiendo a esta pareja."
   },
   "ShowPictureChanged": {
     "description": "Successfully updated show picture",
-    "one": "Display picture updated",
-    "other": "Display picture updated"
+    "other": "Foto subida con éxito"
   },
   "UserUpdated": {
     "description": "edit profile Changes reflected",
-    "one": "Profile updated successfully",
-    "other": "Profile updated successfully"
+    "other": "Foto de perfil subida con éxito"
   },
-  "AccountDeleted": {},
+  "AccountDeleted": {
+
+  },
   "ProfilePicUpdated": {
     "description": "Change profile picture",
-    "one": "Profile picture changed",
-    "other": "Profile picture changed"
+    "other": "Foto de perfil cambiada"
   },
   "NewFollower": {
     "description": "New follower message",
-    "one": "{{.UserName}} just followed you",
-    "other": "{{.UserName}} just followed you"
+    "other": "{{.UserName}} te siguió"
   },
   "Unfollowed": {
     "description": "When users unfollows a couple",
-    "one": "You are no longer following this couple",
-    "other": "You are no longer follwoing this couple"
+    "other": "Ya no sigues a esta pareja."
   },
   "PostMentionedNotif": {
     "description": "When user is tagged in a post or video",
-    "one": "{{.UserName}} tagged you in a post",
-    "other":"{{.UserName}} tagged you in a post"
+    "other":"{{.UserName}} te mencione en una publicacion"
   },
   "PartnerNewPostNotif": {
     "description": "Notify user when partner makes a new post",
-    "one": "Your partner {{.UserName}} just made a new post",
-    "other": "Your partner {{.UserName}} just made new post"
+    "other": "Tu compañero {{.UserName}} hizo una nueva publicación"
   },
   "NewPostAdded": {
     "description": "New post successfull",
-    "one": "New post successfull",
-    "other": "New post succesfull"
+    "other": "Nueva publicación subido con éxito"
   },
   "NotFoundComment": {
     "description":"Comment not found",
-    "one":"Comment not found",
-    "other": "Comment not found"
+    "other": "comentario no encontrado"
   },
   "PostCommentNotif": {
     "description": "Post comment notif",
-    "one": "{{.UserName}} commented on your post",
     "other": "{{.UserName}} commented on your post"
   },
   "CommentAdded": {
     "description": "comment was successfull",
-    "one": "Comment added",
-    "other":"comment added"
+    "other":"Comentario añadido"
   },
   "PostLikeNotif": {
     "description": "Post like notif",
-    "one": "{{.UserName}} liked post",
-    "other": "{{.UserName}} liked post"
+    "other": "{{.UserName}} le gustó tu publicación"
   },
   "PostLiked": {
     "description": "post like success",
-    "one": "liked",
-    "other": "liked"
+    "other": "me gusta"
   },
   "UnlikePost": {
     "description": "post unlike success",
-    "one": "unliked",
-    "other": "unliked"
+    "other": "disgustado"
   },
   "PostEdited": {
     "description": "Edit post caption message",
-    "one": "Caption edited successfully",
-    "other": "Caption edited successfully"
+    "other": "Subtítulo editado con éxito"
   },
   "VideoCommentNotif": {
 
   },
   "VideoLiked": {
     "description": "Post comment notif",
-    "one": "{{.UserName}} commented on your post",
-    "other": "{{.UserName}} commented on your post"
+    "other": "{{.UserName}} respondió a tu publicación."
   },
   "VideoLikeNotif": {
     "description": "Post like notif",
-    "one": "{{.UserName}} liked post",
-    "other": "{{.UserName}} liked post"
+    "other": "{{.UserName}} le gustó tu publicación"
   },
   "CommentDeleted": {
     "description": "delete comment",
-    "one": "Comment deleted",
-    "other": "Comment deleted"
+    "other": "Comentario borrado"
   },
   "VideoEdited": {
     "description": "Edit post caption message",
-    "one": "Caption edited successfully",
-    "other": "Caption edited successfully"
+    "other": "Subtítulo editado con éxito"
   },
   "InvalidCoupleName": {
     "description": "Invalid coule name message",
-    "one": "Invalid couple name",
-    "other": "Invalid couple name"
+    "other": "Nombre de pareja inválido"
   },
   "CoupleCreated": {
     "description": "New couple message",
-    "one": "Couple created. Visit your couple page and setup your profile",
-    "other": "Couple created. Visite your couple page and setup your profile"
+    "other": "Pareja creada. Visita tu página de pareja y configura tu perfil"
   },
   "CoupleUpdated": {
     "description": "Edit profile update",
-    "one": "Profile changees upated successfully",
-    "other": "Profile changees upated successfull"
+    "other": "Cambios de perfil actualizados con éxito"
   },
   "CoupleAlreadyExists": {
     "description": "When couple try to change name but the name already exists",
-    "one": "Couple name not available",
-    "other": "User name not available"
+    "other": "Nombre de pareja no esta desponible"
   },
   "ChangedCoupleName": {
     "description":"change couple name",
-    "one": "Name changed",
-    "other": "Name changed"
+    "other": "Nombre cambiado"
   },
   "IsSingle": {
     "description":"You are single already",
-    "one": "Already not in a relationship",
-    "other": "Already not in a relationship"
+    "other": "No en una relación"
   },
   "YourPartnerBrokeUpWithYou": {
     "description":"Your ass has been dumped",
-    "one": "{{.FirstName}} {{.LastName}} no longer want's to have a couple profile",
-    "other": "{{.FirstName}} {{.LastName}} no longer want's to have a couple profile"
+    "other": "{{.FirstName}} {{.LastName}} ya no quiere tener un perfil de pareja"
   },
   "BreakedUp": {
     "description":"breakup message",
-    "one": "You are no longer in a relationship",
     "other": "You are no longer in a relationship"
   },
   "LogedOut": {
     "description": "user logged out message",
-    "one": "cerró sesión",
     "other": "cerró sesión"
   },
   "SignupSuccessfull": {
     "description": "user logged in message",
-    "one": "Registrado",
     "other": "Registrado"
   },
   "LoginFailed": {
     "description": "user tried to login but it wasn't successfull",
-    "one": "Error de inicio de sesión, nombre de usuario o contraseña incorrectos",
     "other": "Error de inicio de sesión, nombre de usuario o contraseña incorrectos"
   },
   "LoginSuccessfull":{
     "description": "user tried to login and it  was successfull",
-    "one": "Conectado",
     "other": "Conectado"
   },
   "WrongEmailFormat": {
     "description": "User enters a wrong email format",
-    "one": "No es un formato de correo electrónico válido",
     "other": "No es un formato de correo electrónico válido"
   },
   "WrongFirstNameFormat": {
     "description": "User enters a wrong first name format",
-    "one": "No es un formato de nombre válido",
     "other": "No es un formato de nombre válido"
   },
   "WrongLastNameFormat": {
     "description": "User enters a wrong last name format",
-    "one": "No es un formato de apellido válido",
     "other": "No es un formato de apellido válido"
   },
   "WrongUserNameFormat": {
     "description": "User enters a wrong user name format",
-    "one": "No es un formato de nombre de usuario válido",
     "other": "No es un formato de nombre de usuario válido"
   },
   "WrongPasswordFormat": {
     "description": "User enters a wrong password format",
-    "one": "No es un formato de contraseña válido",
     "other": "No es un formato de contraseña válido"
   }
 }
