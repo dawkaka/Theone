@@ -44,8 +44,8 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			return
 		}
 		var (
-			partner entity.User
-			user    entity.User
+			partner presentation.UserPreview
+			user    presentation.UserPreview
 		)
 		for i := 0; i < len(users); i++ {
 			if users[i].ID == userId {

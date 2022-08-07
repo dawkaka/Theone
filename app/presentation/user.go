@@ -1,5 +1,7 @@
 package presentation
 
+import "github.com/dawkaka/theone/entity"
+
 type UserProfile struct {
 	FirstName      string    `json:"first_name"`
 	LastName       string    `json:"last_name"`
@@ -12,9 +14,12 @@ type UserProfile struct {
 }
 
 type UserPreview struct {
-	FirstName      string `json:"first_name" bson:"first_name"`
-	LastName       string `json:"Last_naem" bson:"last_name"`
-	UserName       string `json:"user_naame" bson:"user_name"`
-	HasPartener    bool   `json:"has_partner" bson:"hast_partner"`
-	ProfilePicture string `json:"profile_picture" bson:"profile_picture"`
+	ID                entity.ID `json:"id" bson:"_id"`
+	FirstName         string    `json:"first_name" bson:"first_name"`
+	LastName          string    `json:"Last_naem" bson:"last_name"`
+	UserName          string    `json:"user_naame" bson:"user_name"`
+	HasPartener       bool      `json:"has_partner" bson:"hast_partner"`
+	ProfilePicture    string    `json:"profile_picture" bson:"profile_picture"`
+	HasPendingRequest bool      `json:"has_pending_request" bson:"has_pending_request"`
+	PartnerID         entity.ID `json:"partner_id" bson:"partner_id"`
 }
