@@ -3,14 +3,15 @@ package user
 import (
 	"time"
 
+	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 )
 
 //Reader interface
 type Reader interface {
 	Get(userName string) (entity.User, error)
-	Search(query string) ([]entity.User, error)
-	List(users []entity.ID) ([]entity.User, error)
+	Search(query string) ([]presentation.UserPreview, error)
+	List(users []entity.ID) ([]presentation.UserPreview, error)
 	ConfirmCouple(userID, partnerID entity.ID) bool
 	Following(userName string, skip int) ([]entity.Following, error)
 }
@@ -43,8 +44,8 @@ type Repository interface {
 //UseCase interface
 type UseCase interface {
 	GetUser(userName string) (entity.User, error)
-	SearchUsers(query string) ([]entity.User, error)
-	ListUsers([]entity.ID) ([]entity.User, error)
+	SearchUsers(query string) ([]presentation.UserPreview, error)
+	ListUsers([]entity.ID) ([]presentation.UserPreview, error)
 	UserFollowing(userName string, skip int) ([]entity.Following, error)
 	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) (entity.ID, error)
 	CreateRequest(from, to entity.ID) error

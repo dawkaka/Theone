@@ -3,6 +3,7 @@ package user
 import (
 	"time"
 
+	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 )
 
@@ -35,12 +36,12 @@ func (s *Service) GetUser(userName string) (entity.User, error) {
 }
 
 //SearchUsers Search users
-func (s *Service) SearchUsers(query string) ([]entity.User, error) {
+func (s *Service) SearchUsers(query string) ([]presentation.UserPreview, error) {
 	return s.repo.Search(query)
 }
 
 //ListUsers List users
-func (s *Service) ListUsers(users []entity.ID) ([]entity.User, error) {
+func (s *Service) ListUsers(users []entity.ID) ([]presentation.UserPreview, error) {
 	return s.repo.List(users)
 }
 

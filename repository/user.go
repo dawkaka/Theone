@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
+	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -44,7 +44,7 @@ func (u *UserMongo) Get(userName string) (entity.User, error) {
 	return result, err
 }
 
-func (u *UserMongo) Search(query string) ([]entity.User, error) {
+func (u *UserMongo) Search(query string) ([]presentation.UserPreview, error) {
 	opts := options.Find().SetProjection(
 		bson.D{
 			{Key: "first_name", Value: 1}, {Key: "last_name", Value: 1},
@@ -75,24 +75,24 @@ func (u *UserMongo) Search(query string) ([]entity.User, error) {
 		return nil, err
 	}
 
-	results := []entity.User{}
+	results := []presentation.UserPreview{}
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		return nil, err
 	}
-	fmt.Printf("%#v", results[0])
+
 	return results, nil
 }
 
-func (u *UserMongo) List(users []entity.ID) ([]entity.User, error) {
+func (u *UserMongo) List(users []entity.ID) ([]presentation.UserPreview, error) {
 	cursor, err := u.collection.Find(context.TODO(),
-		bson.D{{Key: "id", Value: bson.D{{Key: "$in", Value: users}}}},
+		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: users}}}},
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	var results []entity.User
+	results := []presentation.UserPreview{}
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		return nil, err
