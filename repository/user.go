@@ -28,10 +28,7 @@ func (u *UserMongo) Get(userName string) (entity.User, error) {
 	result := entity.User{}
 	opts := options.FindOne().SetProjection(
 		bson.D{
-			{Key: "first_name", Value: 1}, {Key: "last_name", Value: 1},
-			{Key: "user_name", Value: 1}, {Key: "profile_picture", Value: 1},
-			{Key: "has_partner", Value: 1}, {Key: "show_pictures", Value: 1},
-			{Key: "following_count", Value: 1}, {Key: "likes_count", Value: 1},
+			{Key: "following", Value: 0}, {Key: "likes", Value: 0},
 		})
 	err := u.collection.FindOne(
 		context.TODO(),

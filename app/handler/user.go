@@ -94,14 +94,12 @@ func login(service user.UseCase) gin.HandlerFunc {
 		}
 		user, err := service.GetUser(login.UserName)
 		if err != nil {
-			log.Println(err.Error())
 			if err == entity.ErrUserNotFound {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
 			}
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
 			return
 		}
-		log.Println(user)
 		err = password.Compare(user.Password, login.Password)
 		if err != nil {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "LoginFailed"))
@@ -142,6 +140,7 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 		userName := ctx.Param("userName")
 		thisUser := sessions.Default(ctx).Get("user").(entity.UserSession)
 		lang := utils.GetLang(thisUser.Lang, ctx.Request.Header)
+		log.Println(lang)
 		if !validator.IsUserName(userName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidUserName"))
 			return
