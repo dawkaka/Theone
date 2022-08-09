@@ -43,9 +43,6 @@ func main() {
 		}
 	}()
 
-	r.Use(sessions.Sessions("session", store))
-	//	r.Use(middlewares.Authenticate())
-
 	db := client.Database(config.DB_DATABASE)
 
 	usersRepo := repository.NewUserMongo(db.Collection("users"))
@@ -60,7 +57,7 @@ func main() {
 	postService := post.NewService(postsRepo)
 	coupleService := couple.NewService(couplesRepo)
 	gob.Register(entity.UserSession{})
-
+	r.Use(sessions.Sessions("session", store))
 	handler.MakeUserHandlers(r, userService, coupleService, userMessageRepo)
 	handler.MakeCoupleHandlers(r, coupleService, userService, coupleMessageReop, userMessageRepo)
 	handler.MakePostHandlers(r, postService, coupleService, userService)

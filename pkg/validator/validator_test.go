@@ -164,18 +164,15 @@ func TestIsPronouns(t *testing.T) {
 
 func TestIsValidSetting(t *testing.T) {
 	setting := "language"
-	for _, val := range SUPPORTED_LANGUAGES {
+	for _, val := range Settings[setting] {
 		if !IsValidSetting(setting, val) {
 			t.Fatalf("Testing %s and %s. Expected %t got %t", setting, val, true, false)
 		}
 	}
-
-	setting = "language"
 	value := "jp"
 	if IsValidSetting(setting, value) {
 		t.Fatalf("Testing %s and %s. Expected %t got %t", setting, value, false, true)
 	}
-	setting = "language"
 	value = "en_US"
 	if IsValidSetting(setting, value) {
 		t.Fatalf("Testing %s and %s. Expected %t got %t", setting, value, false, true)

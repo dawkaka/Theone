@@ -26,8 +26,9 @@ type Pagination struct {
 }
 
 var (
-	Limit  = 30
-	LimitP = 15
+	Limit          = 30
+	LimitP         = 15
+	EIGHTEEN_YEARS = 18
 )
 
 type PhotoMetaData struct {

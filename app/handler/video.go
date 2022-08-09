@@ -232,7 +232,7 @@ func deleteVideo(service video.UseCase) gin.HandlerFunc {
 			}
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 		}
-		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "VideoDeleted"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "VideoDeleted"))
 	}
 }
 

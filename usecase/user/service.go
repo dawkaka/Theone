@@ -116,3 +116,11 @@ func (s *Service) ChangeUserName(userID entity.ID, userName string) error {
 func (s *Service) ChangeSettings(userID entity.ID, setting, value string) error {
 	return s.repo.ChangeSettings(userID, setting, value)
 }
+
+func (s *Service) Login(param string) (entity.User, error) {
+	return s.repo.Login(param)
+}
+
+func (s *Service) CheckSignup(userName, email string) (entity.User, error) {
+	return s.repo.CheckSignup(userName, email)
+}

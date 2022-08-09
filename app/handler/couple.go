@@ -259,7 +259,7 @@ func updateCouple(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "CoupleUpdated"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "CoupleUpdated"))
 	}
 }
 

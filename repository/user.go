@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -109,6 +110,50 @@ func (u *UserMongo) ConfirmCouple(userID, partnerID entity.ID) bool {
 	return err == nil
 }
 
+func (u *UserMongo) Login(param string) (entity.User, error) {
+	opts := options.FindOne().SetProjection(
+		bson.D{
+			{Key: "following", Value: 0}, {Key: "likes", Value: 0},
+		})
+
+	user := entity.User{}
+	err := u.collection.FindOne(
+		context.TODO(),
+		bson.D{{Key: "$or", Value: bson.A{bson.D{{Key: "user_name", Value: param}}, bson.D{{Key: "email", Value: param}}}}},
+		opts,
+	).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return user, entity.ErrUserNotFound
+		}
+		fmt.Println(err)
+
+		return user, entity.ErrSomethingWentWrong
+	}
+	return user, nil
+}
+
+func (u *UserMongo) CheckSignup(userName, email string) (entity.User, error) {
+	opts := options.FindOne().SetProjection(
+		bson.D{
+			{Key: "user_name", Value: 1}, {Key: "email", Value: 1},
+		})
+
+	user := entity.User{}
+	err := u.collection.FindOne(
+		context.TODO(),
+		bson.D{{Key: "$or", Value: bson.A{bson.M{"user_name": userName}, bson.M{"email": email}}}},
+		opts,
+	).Decode(&user)
+
+	if err == mongo.ErrNoDocuments {
+		return user, entity.ErrUserNotFound
+	}
+
+	return user, entity.ErrSomethingWentWrong
+
+}
+
 func (u *UserMongo) Following(userName string, skip int) ([]entity.Following, error) {
 	var following []entity.Following
 
@@ -144,7 +189,7 @@ func (u *UserMongo) Following(userName string, skip int) ([]entity.Following, er
 func (u *UserMongo) Request(from, to entity.ID) error {
 	result, err := u.collection.UpdateOne(
 		context.TODO(),
-		bson.D{{Key: "_id", Value: "from"}},
+		bson.D{{Key: "_id", Value: from}},
 		bson.D{
 			{
 				Key: "$set",
@@ -155,6 +200,7 @@ func (u *UserMongo) Request(from, to entity.ID) error {
 			},
 		},
 	)
+	fmt.Println(result)
 	if result.ModifiedCount != 1 {
 		return errors.New("something went wrong")
 	}
@@ -307,7 +353,7 @@ func (u *UserMongo) ChangeRequestStatus(userID entity.ID, status string) error {
 	_, err := u.collection.UpdateByID(
 		context.TODO(),
 		userID,
-		bson.D{{Key: "open_to_request", Value: status == "ON"}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "open_to_request", Value: status == "ON"}}}},
 	)
 	return err
 }
@@ -325,7 +371,7 @@ func (u *UserMongo) ChangeSettings(userID entity.ID, setting, value string) erro
 	result, err := u.collection.UpdateByID(
 		context.TODO(),
 		userID,
-		bson.D{{Key: setting, Value: value}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: setting, Value: value}}}},
 	)
 	if result.MatchedCount == 0 {
 		return entity.ErrNotFound

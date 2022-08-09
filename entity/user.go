@@ -24,8 +24,8 @@ type MentionedNotif struct {
 
 //User data
 type User struct {
-	ID                   ID        `json:"id,omitempty" bson:"_id,,omitempty"`
-	Email                string    `json:"email,omitempty" bson:"required,omitempty"`
+	ID                   ID        `json:"id,omitempty" bson:"_id,omitempty"`
+	Email                string    `json:"email,omitempty" bson:"email,omitempty"`
 	UserName             string    `json:"user_name,omitempty" bson:"user_name,omitempty"`
 	FirstName            string    `json:"first_name,omitempty" bson:"first_name,omitempty"`
 	LastName             string    `json:"last_name,omitempty" bson:"last_name,omitempty"`
@@ -35,23 +35,23 @@ type User struct {
 	Bio                  string    `json:"bio,omitempty" bson:"bio"`
 	Website              string    `json:"website,omitempty" bson:"website,omitempty"`
 	OpenToRequests       bool      `json:"open_to_requests,omitempty" bson:"open_to_request,omitempty"`
-	HasPartner           bool      `json:"has_partner,omitempty" bson:"has_partner,omitempty"`
-	HasPendingRequest    bool      `json:"has_pending_request,omitempty" bson:"has_pending_request,omitempty"`
-	CreatedAt            time.Time `json:"created_at,omitempty" bson:"created_at,omitempty"`
-	UpdatedAt            time.Time `json:"updated_at,omitempty" bson:"updated_at,omitempty"`
-	ProfilePicture       string    `json:"profile_picture,omitempty" bson:"profile_picture,omitempty"`
-	ShowPictures         [6]string `json:"show_pictures,omitempty" bson:"show_pictures,omitempty"`
+	HasPartner           bool      `json:"has_partner,omitempty" bson:"has_partner"`
+	HasPendingRequest    bool      `json:"has_pending_request,omitempty" bson:"has_pending_request"`
+	CreatedAt            time.Time `json:"created_at,omitempty" bson:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at,omitempty" bson:"updated_at"`
+	ProfilePicture       string    `json:"profile_picture,omitempty" bson:"profile_picture"`
+	ShowPictures         [6]string `json:"show_pictures,omitempty" bson:"show_pictures"`
 	Likes                []ID      `json:"likes,omitempty"`
-	LikesCount           int64     `json:"likes_count,omitempty" bson:"likes_count,omitempty"`
-	EmailVerified        bool      `json:"email_verified,omitempty" bson:"email_verified,omitempty"`
+	LikesCount           int64     `json:"likes_count,omitempty" bson:"likes_count"`
+	EmailVerified        bool      `json:"email_verified,omitempty" bson:"email_verified"`
 	PartnerID            ID        `json:"partner_id,omitempty" bson:"partner_id,omitempty"`
 	Following            []ID      `json:"following,omitempty"`
-	FollowingCount       uint64    `json:"following_count,omitempty" bson:"following_count,omitempty"`
+	FollowingCount       uint64    `json:"following_count,omitempty" bson:"following_count"`
 	Notifications        []any     `json:"notifications,omitempty"`
 	Lang                 string    `json:"lang,omitempty"`
 	LastVisited          time.Time `json:"last_visited,omitempty"`
-	LoginIPs             []string  `json:"login_ips,omitempty" bson:"loging_ips",omitempty`
-	ContentPriorityQueue []ID      `json:"content_priority_queue,omitempty" bson:"content_priority_queue,omitempty"`
+	LoginIPs             []string  `json:"login_ips,omitempty" bson:"loging_ips"`
+	ContentPriorityQueue []ID      `json:"content_priority_queue,omitempty" bson:"content_priority_queue"`
 }
 
 type Follower struct {
@@ -100,7 +100,7 @@ func (s Signup) Validate() []error {
 	if !validator.IsRealName(s.FirstName) {
 		errs = append(errs, errors.New("WrongFirstNameFormat"))
 	}
-	if !validator.IsRealName(s.FirstName) {
+	if !validator.IsRealName(s.LastName) {
 		errs = append(errs, errors.New("WrongLastNameFormat"))
 	}
 	if !validator.IsPassword(s.Password) {
@@ -108,6 +108,9 @@ func (s Signup) Validate() []error {
 	}
 	if !validator.IsUserName(s.UserName) {
 		errs = append(errs, errors.New("WrongUserNameFormat"))
+	}
+	if ok, msg := validator.IsValidDateOfBirth(s.DateOfBirth); !ok {
+		errs = append(errs, errors.New(msg))
 	}
 	return errs
 }
@@ -117,7 +120,7 @@ func (s *Signup) Sanitize() {
 	s.LastName = strings.TrimSpace(s.LastName)
 	s.UserName = strings.TrimSpace(s.UserName)
 	s.Password = strings.TrimSpace(s.Password)
-	s.Email = strings.TrimSpace(s.Password)
+	s.Email = strings.ToLower(strings.TrimSpace(s.Password))
 }
 
 type Login struct {
@@ -133,13 +136,14 @@ type NotifyRequest struct {
 }
 
 type UpdateUser struct {
-	FirstName string    `json:"first_name" bson:"first_name"`
-	LastName  string    `json:"last_name" bson:"last_name"`
-	Bio       string    `json:"bio"`
-	Pronouns  string    `json:"pronouns"`
-	UpdatedAt time.Time `bson:"updated_at"`
-	Website   string    `json:"website"`
-	Lang      string    `json:"lang"`
+	FirstName   string    `json:"first_name" bson:"first_name"`
+	LastName    string    `json:"last_name" bson:"last_name"`
+	Bio         string    `json:"bio"`
+	Pronouns    string    `json:"pronouns"`
+	UpdatedAt   time.Time `bson:"updated_at"`
+	Website     string    `json:"website"`
+	Lang        string    `json:"lang"` //for error messages
+	DateOfBirth time.Time `json:"date_of_birth" bson:"date_of_birth"`
 }
 
 func (u UpdateUser) Validate() []string {
@@ -183,7 +187,7 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		CreatedAt:            time.Now(),
 		UpdatedAt:            time.Now(),
 		ProfilePicture:       "defaultProfile.jpg",
-		ShowPictures:         [6]string{"defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg", "defaultshow.jpg"},
+		ShowPictures:         [6]string{"defaultshow1.jpg", "defaultshow2.jpg", "defaultshow3.jpg", "defaultshow4.jpg", "defaultshow5.jpg", "defaultshow6.jpg"},
 		Likes:                []primitive.ObjectID{},
 		LikesCount:           0,
 		EmailVerified:        false,

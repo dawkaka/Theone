@@ -23,11 +23,11 @@
     "description": "When user is trying to performs actions not allowed for minors",
     "other": "Only users 18 yeras or older can perform this action"
   },
-  "ParntnerLessThan18": {
+  "PartnerLessThan18": {
     "description": "Sending relationship request to user under 18",
     "other": "Can not complete your request because the person you're sending this request to is not of age"
   },
-  "ParnterNotOpenToRequest": {
+  "PartnerNotOpenToRequest": {
     "description": "Sending relationship request to user that is not open to relationships",
     "other": "Can not complete your request because the user is not open to a relationship"
   },
@@ -215,6 +215,10 @@
     "description": "User enters a wrong email format",
     "other": "Not a valid email, change it and try again"
   },
+  "EmailAlreadyExists": {
+     "description": "duplicate email",
+     "other": "Email already exists"
+  },
   "WrongFirstNameFormat": {
     "description": "User enters a wrong first name format",
     "other": "Not a valid first name, change it and try again"
@@ -230,5 +234,25 @@
   "WrongPasswordFormat": {
     "description": "User enters a wrong password format",
     "other": "Not a valid password, change it and try again"
-  }
+  },
+  "DateOfBirthRequired": {
+    "description": "No date of birth entered during signup",
+    "other": "Date of birth is required. It won't appear on your profile"
+  },
+  "BelowAgeLimit": {
+    "description": "User younger than 13",
+    "other": "Only people older than 13 years of age are allowed on the platform."
+  },
+  "AboveAgeLimit": {
+    "description": "User is above age limilt",
+    "other": "People above 150 years of age are not allowed on the platform."
+  },
+  "InvalidSetting": {
+    "description": "user tries to set something not found in settings",
+    "other": "Not a valid setting"
+  },
+  "LanguageUpdated": {
+    "description": "user changed their preffered langauge",
+    "other": "Language changed successfully"
+ }
 }

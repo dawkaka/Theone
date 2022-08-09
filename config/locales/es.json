@@ -24,11 +24,11 @@
     "description": "When user is trying to performs actions not allowed for minors",
     "other": "Solo los usuarios mayores de 18 años pueden realizar esta acción."
   },
-  "ParntnerLessThan18": {
+  "PartnerLessThan18": {
     "description": "Sending relationship request to user under 18",
     "other": "No se puede completar su solicitud porque la persona a la que le envía esta solicitud no es mayor de edad"
   },
-  "ParnterNotOpenToRequest": {
+  "PartnerNotOpenToRequest": {
     "description": "Sending relationship request to user that is not open to relationships",
     "other": "El usuario no está abierto a tener un perfil de pareja."
   },
@@ -54,7 +54,7 @@
   },
   "CoupleNotFound": {
     "description": "The couple in reference don't exist, maybe due to a typo",
-    "other": "Paraeja no econtrada"
+    "other": "Pareja no econtrada"
   },
   "ProfilePicFailed": {
     "description": "When user tries to update/change their profile picture but it wasn't successfull",
@@ -233,5 +233,29 @@
   "WrongPasswordFormat": {
     "description": "User enters a wrong password format",
     "other": "No es un formato de contraseña válido"
-  }
+  },
+  "DateOfBirthRequired": {
+    "description": "No date of birth entered during signup",
+    "other": "Date of birth is required. It won't appear on your profile"
+  },
+  "BelowAgeLimit": {
+    "description": "User younger than 13",
+    "other": "Only people older than 13 years of age are allowed on the platform."
+  },
+  "AboveAgeLimit": {
+    "description": "User is above age limilt",
+    "other": "People above 150 years of age are not allowed on the platform."
+  },
+  "EmailAlreadyExists": {
+    "description": "duplicate email",
+    "other": "Email already exists"
+  },
+  "InvalidSetting": {
+    "description": "user tries to set something not found in settings",
+    "other": "Not a valid setting"
+  },
+  "LanguageUpdated": {
+    "description": "user changed their preffered langauge",
+    "other": "Idioma cambiado con exito"
+ }
 }

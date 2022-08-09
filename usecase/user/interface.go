@@ -14,6 +14,8 @@ type Reader interface {
 	List(users []entity.ID) ([]presentation.UserPreview, error)
 	ConfirmCouple(userID, partnerID entity.ID) bool
 	Following(userName string, skip int) ([]entity.Following, error)
+	Login(param string) (entity.User, error)
+	CheckSignup(userName, email string) (entity.User, error)
 }
 
 //Writer user writer
@@ -63,4 +65,6 @@ type UseCase interface {
 	ChangeUserRequestStatus(userID entity.ID, status string) error
 	ChangeUserName(userID entity.ID, userName string) error
 	ChangeSettings(userID entity.ID, setting, value string) error
+	Login(param string) (entity.User, error)
+	CheckSignup(userName, email string) (entity.User, error)
 }

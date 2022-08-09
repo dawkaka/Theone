@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dawkaka/theone/app/middlewares"
@@ -24,8 +25,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-const EIGHTEEN_YEARS = 157680 //number of hours in 18 years
 
 func signup(service user.UseCase) gin.HandlerFunc {
 
@@ -50,6 +49,21 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		firstName, lastName, userName, email, dateOfBirth, userPassword, lang :=
 			newUser.FirstName, newUser.LastName, newUser.UserName,
 			newUser.Email, newUser.DateOfBirth, newUser.Password, utils.GetLang("", ctx.Request.Header)
+		user, err := service.CheckSignup(userName, email)
+		if user.UserName == userName {
+			ctx.JSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
+			return
+		}
+
+		if user.Email == email {
+			ctx.JSON(http.StatusConflict, presentation.Error(lang, "EmailAlreadyExists"))
+			return
+		}
+
+		if err == entity.ErrSomethingWentWrong {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
 
 		hashedPassword, err := password.Generate(userPassword)
 		if err != nil {
@@ -75,7 +89,6 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			Lang:              lang,
 			LastVisited:       time.Now(),
 		}
-		gob.Register(userSession)
 		session.Set("user", userSession)
 		_ = session.Save()
 		ctx.SetCookie("user_ID", insertedID.Hex(), 500, "/", "", false, true)
@@ -92,7 +105,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
 			return
 		}
-		user, err := service.GetUser(login.UserName)
+		user, err := service.Login(login.UserName)
 		if err != nil {
 			if err == entity.ErrUserNotFound {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
@@ -169,10 +182,12 @@ func searchUsers(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		query := ctx.Param("query")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		if !validator.IsUserName(query) {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "WrongUserNameFormat"))
-			return
-		}
+
+		//TODO:
+		// if !validator.IsUserName(query) && !validator.IsRealName(query) {
+		// 	ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "WrongUserNameFormat"))
+		// 	return
+		// }
 		users, err := service.SearchUsers(query)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
@@ -225,8 +240,8 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidUserName"))
 			return
 		}
-		userAge := time.Since(thisUser.DateOfBirth)
-		if userAge.Hours() < EIGHTEEN_YEARS {
+		userAge := time.Now().Year() - thisUser.DateOfBirth.Year()
+		if userAge < entity.EIGHTEEN_YEARS {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "UserLessThan18"))
 			return
 		}
@@ -244,8 +259,8 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		partnerAge := time.Since(partner.DateOfBirth)
-		if partnerAge.Hours() < EIGHTEEN_YEARS {
+		partnerAge := time.Now().Year() - partner.DateOfBirth.Year()
+		if partnerAge < entity.EIGHTEEN_YEARS {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "PartnerLessThan18"))
 			return
 		}
@@ -316,7 +331,7 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			Message: inter.LocalizeWithUserName(lang, userName, "NewFollower"),
 		}
 		_ = service.NotifyCouple([2]primitive.ObjectID{couple.Accepted, couple.Initiated}, notif)
-		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "Followed"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "Followed"))
 	}
 }
 
@@ -341,13 +356,12 @@ func unfollow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFun
 			return
 		}
 		err = service.Unfollow(couple.ID, userID)
-
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		_ = coupleService.RemoveFollower(userID, couple.ID)
-		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "Unfollowed"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "Unfollowed"))
 	}
 }
 
@@ -374,7 +388,7 @@ func updateUser(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "UserUpdated"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "UserUpdated"))
 	}
 }
 
@@ -470,30 +484,43 @@ func changeRequestStatus(service user.UseCase) gin.HandlerFunc {
 
 func changeUserName(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		newUserName := ctx.PostForm("user_name")
+
 		session := sessions.Default(ctx)
 		user := session.Get("user").(entity.UserSession)
-		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		lang := user.Lang
+		var newName struct {
+			UserName string `json:"user_name"`
+		}
+		err := ctx.ShouldBindJSON(&newName)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		newUserName := newName.UserName
 		if !validator.IsUserName(newUserName) {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, ""))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidUserName"))
+			return
 		}
 		if newUserName == user.Name {
-			ctx.AbortWithStatusJSON(http.StatusAccepted, presentation.Success(lang, "ChangedUserName"))
+			ctx.JSON(http.StatusAccepted, presentation.Success(lang, "ChangedUserName"))
+			return
 		}
-		_, err := service.GetUser(newUserName)
+		_, err = service.GetUser(newUserName)
 		if err == nil {
-			ctx.AbortWithStatusJSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
+			ctx.JSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
+			return
 		} else {
-			if err != mongo.ErrNoDocuments {
-				ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			if err != entity.ErrUserNotFound {
+				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+				return
 			}
 		}
 		err = service.ChangeUserName(user.ID, newUserName)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
 		}
 		user.Name = newUserName
-		gob.Register(user)
 		session.Set("user", user)
 		session.Save()
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ChangedUserName"))
@@ -508,19 +535,23 @@ func userToACoupleMessages(service user.UseCase, coupleService couple.UseCase, m
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
 		}
 		couple, err := coupleService.GetCouple(coupleName)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				ctx.AbortWithStatusJSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
+				return
 			} else {
-				ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+				return
 			}
 		}
 		messages, err := messageService.GetToCouple(user.ID, couple.ID, skip)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
 		}
 		page := entity.Pagination{
 			Next: skip + entity.Limit,
@@ -537,11 +568,13 @@ func userMessages(service user.UseCase, userMessage repository.UserCoupleMessage
 		skip, err := strconv.Atoi(ctx.Param("skip"))
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
 		}
 		messages, err := userMessage.Get(user.ID, skip)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
 		}
 		page := entity.Pagination{
 			Next: skip + entity.Limit,
@@ -561,42 +594,52 @@ func logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	user := session.Get("user").(entity.UserSession)
 	session.Clear()
-	ctx.JSON(http.StatusNoContent, presentation.Success(user.Lang, "LogedOut"))
+	ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "LogedOut"))
 }
 
 func changeSettings(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		setting, value := ctx.Param("settings"), ctx.Param("newValue")
+		setting, value := ctx.Param("setting"), ctx.Param("newValue")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := user.Lang
 		if !validator.IsValidSetting(setting, value) {
-			ctx.AbortWithStatusJSON(http.StatusForbidden, presentation.Error(user.Lang, "InvalidSetting"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "InvalidSetting"))
+			return
 		}
 		err := service.ChangeSettings(user.ID, setting, value)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
 		}
-		ctx.JSON(http.StatusAccepted, presentation.Success(user.Lang, setting+"Updated"))
+		if setting == "language" {
+			lang = value
+		}
+		setting = strings.ToUpper(string(setting[0])) + setting[1:]
+		ctx.JSON(http.StatusOK, presentation.Success(lang, setting+"Updated"))
 	}
 }
 
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
-	r.GET("/user/:userName", middlewares.Authenticate(), getUser(service))
-	r.GET("/user/search/:query", searchUsers(service))
+	r.POST("/user/signup", signup(service))
+	r.POST("/user/login", login(service))
+
+	r.Use(middlewares.Authenticate())
+
 	r.GET("/user/session", userSession)
-	r.GET("/user/settings/:setting/:newValue", changeSettings(service))
+	r.GET("/user/:userName", getUser(service))
+	r.GET("/user/search/:query", searchUsers(service))
 	r.GET("/user/following/:skip", getFollowing(service))
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.POST("/user/signup", signup(service))
-	r.POST("/user/login", login(service))
 	r.POST("/user/logout", logout)
-	r.PUT("/user/change-name", changeUserName(service))
-	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
 	r.POST("/user/couple-request/:userName", initiateRequest(service))
-	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
+	r.POST("/user/change-name", changeUserName(service))
 	r.PUT("/user/request-status/:status", changeRequestStatus(service))
-	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))
 	r.PUT("/user", updateUser(service))
 	r.PUT("/user/show-pictures/:index", updateShowPicture(service))
+	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))
+	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
+	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
+	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))
 	r.DELETE("/user", deleteUser(service))
 }

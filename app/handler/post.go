@@ -281,7 +281,7 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 			}
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, "SomethingWentWrongInternal")
 		}
-		ctx.JSON(http.StatusNoContent, presentation.Success(lang, "PostDeleted"))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "PostDeleted"))
 	}
 }
 

@@ -132,6 +132,24 @@ func IsCaption(caption string) bool {
 	return len(caption) < 256
 }
 
+func IsValidDateOfBirth(date time.Time) (bool, string) {
+	t := struct {
+		T time.Time
+	}{}
+
+	if date == t.T {
+		return false, "DateOfBirthRequired"
+	}
+
+	if time.Now().Year()-date.Year() < 13 {
+		return false, "BelowAgeLimit"
+	}
+	if time.Now().Year()-date.Year() > 150 {
+		return false, "AboveAgeLimit"
+	}
+	return true, ""
+}
+
 func IsSupportedImageType(content []byte) (imageType string, supported bool) {
 	imageType = http.DetectContentType(content)
 	for _, val := range []string{"image/gif", "image/jpeg", "image/jpg", "image/png"} {
@@ -145,7 +163,6 @@ func IsSupportedImageType(content []byte) (imageType string, supported bool) {
 }
 
 func IsValidSetting(setting, value string) bool {
-
 	if settings, ok := Settings[setting]; ok {
 		for _, val := range settings {
 			if val == value {
