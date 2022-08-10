@@ -11,7 +11,7 @@ import (
 //Couple data
 
 type Couple struct {
-	ID             ID        `json:"id"`
+	ID             ID        `json:"id" bson:"_id"`
 	Initiated      ID        `json:"iniated"`
 	Accepted       ID        `json:"accepted"`
 	AcceptedAt     time.Time `json:"accepted_at" bson:"accepted_at"`

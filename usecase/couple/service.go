@@ -40,6 +40,7 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID,
 	}
 
 	couple := entity.Couple{
+		ID:             primitive.NewObjectID(),
 		Initiated:      initiated,
 		Accepted:       accepted,
 		AcceptedAt:     time.Now(),
@@ -52,7 +53,7 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID,
 		Followers:      []primitive.ObjectID{},
 		FollowersCount: 0,
 		PostCount:      0,
-		Status:         "In a relationship",
+		Status:         "Dating",
 	}
 	return s.repo.Create(couple)
 }

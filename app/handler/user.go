@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/gob"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -140,7 +139,6 @@ func login(service user.UseCase) gin.HandlerFunc {
 			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", "", false, true)
 		}
 		ctx.SetCookie("user_ID", user.ID.Hex(), 500, "/", "", false, true)
-		gob.Register(userSession)
 		session.Set("user", userSession)
 		_ = session.Save()
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "LoginSuccessfull"))
@@ -240,6 +238,10 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidUserName"))
 			return
 		}
+		if thisUser.Name == userName {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "BadRequest"))
+			return
+		}
 		userAge := time.Now().Year() - thisUser.DateOfBirth.Year()
 		if userAge < entity.EIGHTEEN_YEARS {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "UserLessThan18"))
@@ -275,6 +277,11 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 		err = service.CreateRequest(thisUser.ID, partner.ID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		err = service.CreateRequest(partner.ID, thisUser.ID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "RequestPartiallyCompleted"))
 			return
 		}
 		notification := entity.NotifyRequest{
@@ -620,24 +627,24 @@ func changeSettings(service user.UseCase) gin.HandlerFunc {
 }
 
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
-	r.POST("/user/signup", signup(service))
-	r.POST("/user/login", login(service))
+	r.POST("/user/signup", signup(service)) //tested
+	r.POST("/user/login", login(service))   //tested
 
 	r.Use(middlewares.Authenticate())
 
-	r.GET("/user/session", userSession)
-	r.GET("/user/:userName", getUser(service))
-	r.GET("/user/search/:query", searchUsers(service))
+	r.GET("/user/session", userSession)                //tested
+	r.GET("/user/:userName", getUser(service))         //tested
+	r.GET("/user/search/:query", searchUsers(service)) //tested
 	r.GET("/user/following/:skip", getFollowing(service))
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
 	r.POST("/user/logout", logout)
-	r.POST("/user/couple-request/:userName", initiateRequest(service))
-	r.POST("/user/change-name", changeUserName(service))
-	r.PUT("/user/request-status/:status", changeRequestStatus(service))
+	r.POST("/user/couple-request/:userName", initiateRequest(service))  //tested
+	r.POST("/user/change-name", changeUserName(service))                //tested
+	r.PUT("/user/request-status/:status", changeRequestStatus(service)) //tested
 	r.PUT("/user", updateUser(service))
 	r.PUT("/user/show-pictures/:index", updateShowPicture(service))
-	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))
+	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service)) //tested
 	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
 	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
 	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))

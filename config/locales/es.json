@@ -257,5 +257,9 @@
   "LanguageUpdated": {
     "description": "user changed their preffered langauge",
     "other": "Idioma cambiado con exito"
+ },
+ "InvalidPartnerRequest":{
+  "description": "Creating a couple with an invalid or  no request",
+  "other":"Failed to create a couple profile"
  }
 }

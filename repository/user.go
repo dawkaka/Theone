@@ -186,6 +186,19 @@ func (u *UserMongo) Following(userName string, skip int) ([]entity.Following, er
 	return following, nil
 }
 
+func (u *UserMongo) Notify(userName string, notif any) error {
+	result, err := u.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "user_name", Value: userName}},
+		bson.D{{Key: "$push", Value: bson.D{{Key: "notifications", Value: notif}}}},
+	)
+	if result.ModifiedCount != 1 {
+		return errors.New("notify: couldn't update user notifications")
+	}
+	return err
+}
+
+//Write Methods
 func (u *UserMongo) Request(from, to entity.ID) error {
 	result, err := u.collection.UpdateOne(
 		context.TODO(),
@@ -200,26 +213,12 @@ func (u *UserMongo) Request(from, to entity.ID) error {
 			},
 		},
 	)
-	fmt.Println(result)
 	if result.ModifiedCount != 1 {
 		return errors.New("something went wrong")
 	}
 	return err
 }
 
-func (u *UserMongo) Notify(userName string, notif any) error {
-	result, err := u.collection.UpdateOne(
-		context.TODO(),
-		bson.D{{Key: "user_name", Value: userName}},
-		bson.D{{Key: "$push", Value: bson.D{{Key: "notifications", Value: notif}}}},
-	)
-	if result.ModifiedCount != 1 {
-		return errors.New("notify: couldn't update user notifications")
-	}
-	return err
-}
-
-//Write Methods
 func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif any) error {
 	result, err := u.collection.UpdateMany(
 		context.TODO(),
@@ -310,7 +309,14 @@ func (u *UserMongo) NewCouple(c [2]entity.ID, coupleId entity.ID) error {
 	_, err := u.collection.UpdateMany(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: c}}}},
-		bson.D{{Key: "$set", Value: bson.D{{Key: "couple_id", Value: coupleId}}}},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: "couple_id", Value: coupleId},
+			{Key: "has_partner", Value: true},
+			{Key: "open_to_request", Value: false},
+			{Key: "has_pending_request", Value: false},
+		},
+		},
+		},
 	)
 
 	return err

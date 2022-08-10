@@ -33,14 +33,13 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			return
 		}
 		userId := userb.ID
-
 		users, err := userService.ListUsers([]primitive.ObjectID{userId, partnerID})
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		if len(users) < 2 {
-			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "InvalidParnterRequest"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "InvalidPartnerRequest"))
 			return
 		}
 		var (
@@ -60,9 +59,8 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			return
 		}
 
-		coupleName := fmt.Sprintf("%s&%s_%d", partner.FirstName, user.FirstName, time.Now().Unix())
-
-		Id, err := service.CreateCouple(userb.ID.String(), partnerID.String(), coupleName)
+		coupleName := fmt.Sprintf("%s.and.%s_%d", partner.FirstName, user.FirstName, time.Now().Unix())
+		Id, err := service.CreateCouple(userb.ID.Hex(), partnerID.Hex(), coupleName)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
