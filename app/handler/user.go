@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -274,7 +273,6 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		err = service.SendRequest(thisUser.ID, partner.ID)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -309,7 +307,6 @@ func getPendingRequest(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		res, err := service.GetUser(user.Name)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "BadRequest"))
 			return
@@ -343,7 +340,8 @@ func getPendingRequest(service user.UseCase) gin.HandlerFunc {
 
 func cancelRequest(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		session := sessions.Default(ctx)
+		user := session.Get("user").(entity.UserSession)
 		if user.PendingRequest != entity.SENT_REQUEST {
 			ctx.JSON(http.StatusForbidden, presentation.Error(user.Lang, "BadRequest"))
 			return
@@ -352,13 +350,17 @@ func cancelRequest(service user.UseCase) gin.HandlerFunc {
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
 		}
+		user.PendingRequest = entity.NO_REQUEST
+		session.Set("user", user)
+		session.Save()
 		ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "RequestCancelled"))
 	}
 }
 
 func rejectRequest(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		session := sessions.Default(ctx)
+		user := session.Get("user").(entity.UserSession)
 		if user.PendingRequest != entity.RECIEVED_REQUEST {
 			ctx.JSON(http.StatusForbidden, presentation.Error(user.Lang, "BadRequest"))
 			return
@@ -381,6 +383,9 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 			}
 			service.NotifyUser(initiator.UserName, notif)
 		}()
+		user.PendingRequest = entity.NO_REQUEST
+		session.Set("user", user)
+		session.Save()
 		ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "RequestRejected"))
 	}
 }

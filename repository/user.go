@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -126,8 +125,6 @@ func (u *UserMongo) Login(param string) (entity.User, error) {
 		if err == mongo.ErrNoDocuments {
 			return user, entity.ErrUserNotFound
 		}
-		fmt.Println(err)
-
 		return user, entity.ErrSomethingWentWrong
 	}
 	return user, nil
@@ -196,7 +193,6 @@ func (u *UserMongo) Notifications(userName string, page int) ([]entity.Notificat
 		bson.M{"user_name": userName},
 		opts,
 	).Decode(&user)
-	fmt.Println(user)
 	if err != nil {
 		return nil, err
 	}
