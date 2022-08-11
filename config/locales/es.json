@@ -261,5 +261,21 @@
  "InvalidPartnerRequest":{
   "description": "Creating a couple with an invalid or  no request",
   "other":"Failed to create a couple profile"
- }
+ },
+ "RequestPartiallyCompleted": {
+  "description":"not able to update partner",
+  "other":"partially completed"
+},
+"NoRequest": {
+  "description": "soemthign",
+  "other": "no reuqewst"
+},
+"RequestCancelled": {
+  "description": "hahahah",
+  "other": "request cancelled"
+},
+"RequestRejected": {
+  "description": "rejected request",
+  "other": "request rejected"
+}
 }

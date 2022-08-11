@@ -36,7 +36,7 @@
     "other": "Something went wrong, it's our fault, give it some time and try again."
   },
   "BadRequest": {
-    "description":"Bad request message",
+    "description": "Bad request message",
     "other": "Something is wrong with your request, check it and try again."
   },
   "RequestCreated": {
@@ -47,7 +47,7 @@
     "description": "Notify user when partner accepts their request",
     "other": "{{.FirstName}} {{.LastName}} just accepted your relationship request"
   },
-  "NewCoupleRequest":{
+  "NewCoupleRequest": {
     "description": "Notify user when the get a couple request",
     "other": "{{.FirstName}} {{.LastName}} just sent you relationship request"
   },
@@ -106,7 +106,7 @@
   },
   "PostMentionedNotif": {
     "description": "When user is tagged in a post or video",
-    "other":"{{.UserName}} tagged you in a post"
+    "other": "{{.UserName}} tagged you in a post"
   },
   "PartnerNewPostNotif": {
     "description": "Notify user when partner makes a new post",
@@ -117,7 +117,7 @@
     "other": "New post succesfull"
   },
   "NotFoundComment": {
-    "description":"Comment not found",
+    "description": "Comment not found",
     "other": "Comment not found"
   },
   "PostCommentNotif": {
@@ -126,7 +126,7 @@
   },
   "CommentAdded": {
     "description": "comment was successfull",
-    "other":"comment added"
+    "other": "comment added"
   },
   "PostLikeNotif": {
     "description": "Post like notif",
@@ -144,9 +144,7 @@
     "description": "Edit post caption message",
     "other": "Caption edited successfully"
   },
-  "VideoCommentNotif": {
-
-  },
+  "VideoCommentNotif": {},
   "VideoLiked": {
     "description": "Post comment notif",
     "other": "{{.UserName}} commented on your post"
@@ -180,19 +178,19 @@
     "other": "User name not available"
   },
   "ChangedCoupleName": {
-    "description":"change couple name",
+    "description": "change couple name",
     "other": "Name changed"
   },
   "IsSingle": {
-    "description":"You are single already",
+    "description": "You are single already",
     "other": "Already not in a relationship"
   },
   "YourPartnerBrokeUpWithYou": {
-    "description":"Your ass has been dumped",
+    "description": "Your ass has been dumped",
     "other": "{{.FirstName}} {{.LastName}} no longer want's to have a couple profile"
   },
   "BreakedUp": {
-    "description":"breakup message",
+    "description": "breakup message",
     "other": "You are no longer in a relationship"
   },
   "LogedOut": {
@@ -207,7 +205,7 @@
     "description": "user tried to login but it wasn't successfull",
     "other": "Sign in failed, incorrect user name or password"
   },
-  "LoginSuccessfull":{
+  "LoginSuccessfull": {
     "description": "user tried to login and it  was successfull",
     "other": "Signed in"
   },
@@ -216,8 +214,8 @@
     "other": "Not a valid email, change it and try again"
   },
   "EmailAlreadyExists": {
-     "description": "duplicate email",
-     "other": "Email already exists"
+    "description": "duplicate email",
+    "other": "Email already exists"
   },
   "WrongFirstNameFormat": {
     "description": "User enters a wrong first name format",
@@ -254,9 +252,25 @@
   "LanguageUpdated": {
     "description": "user changed their preffered langauge",
     "other": "Language changed successfully"
- },
- "InvalidPartnerRequest":{
-  "description": "Creating a couple with an invalid or  no request",
-  "other":"Failed to create a couple profile"
-}
+  },
+  "InvalidPartnerRequest": {
+    "description": "Creating a couple with an invalid or  no request",
+    "other": "Failed to create a couple profile"
+  },
+  "RequestPartiallyCompleted": {
+    "description":"not able to update partner",
+    "other":"partially completed"
+  },
+  "NoRequest": {
+    "description": "soemthign",
+    "other": "no reuqewst"
+  },
+  "RequestCancelled": {
+    "description": "hahahah",
+    "other": "request cancelled"
+  },
+  "RequestRejected": {
+    "description": "rejected request",
+    "other": "request rejected"
+  }
 }

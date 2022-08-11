@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -107,7 +108,8 @@ func login(service user.UseCase) gin.HandlerFunc {
 		user, err := service.Login(login.UserName)
 		if err != nil {
 			if err == entity.ErrUserNotFound {
-				ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "LoginFailed"))
+				return
 			}
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
 			return
@@ -272,6 +274,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		err = service.SendRequest(thisUser.ID, partner.ID)
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -306,12 +309,13 @@ func getPendingRequest(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		res, err := service.GetUser(user.Name)
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "BadRequest"))
 			return
 		}
-		if res.PendingRequest != entity.NO_REQUEST {
-			ctx.JSON(http.StatusOK, presentation.Error(user.Lang, "NoRequest"))
+		if res.PendingRequest == entity.NO_REQUEST {
+			ctx.JSON(http.StatusOK, gin.H{"request": []string{}})
 			return
 		}
 		users, err := service.ListUsers([]entity.ID{user.PartnerID})
@@ -499,7 +503,7 @@ func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		fileName, err := myaws.UploadImageFile(fileHeader, "toonjimages")
+		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
 			return
@@ -528,7 +532,7 @@ func updateShowPicture(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		fileName, err := myaws.UploadImageFile(fileHeader, "toonjimages")
+		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return

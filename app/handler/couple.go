@@ -198,7 +198,7 @@ func updateCoupleProfilePic(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		fileName, err := myaws.UploadImageFile(fileHeader, "toonjimages")
+		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
 			return
@@ -221,7 +221,7 @@ func updateCoupleCoverPic(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		fileName, err := myaws.UploadImageFile(fileHeader, "toonjimages")
+		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
 			return
@@ -387,7 +387,7 @@ func userCoupleMessages(service couple.UseCase, userService user.UseCase, messag
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage) {
 	r.GET("/:coupleName", getCouple(service))
 	r.GET("/:coupleName/posts/:skip", getCouplePosts(service))
-	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
+	//	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/:coupleName/followers/:skip", getFollowers(service))
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
