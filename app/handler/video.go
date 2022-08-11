@@ -80,7 +80,7 @@ func videoComment(service video.UseCase, userService user.UseCase) gin.HandlerFu
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 		}
-		comment.UserID = user.ID.String()
+		comment.UserID = user.ID
 		comment.CreatedAt = time.Now()
 		err = service.NewComment(videoID, comment)
 		if err != nil {

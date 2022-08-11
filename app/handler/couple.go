@@ -54,7 +54,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			}
 		}
 
-		if !partner.HasPendingRequest || user.ID != partner.PartnerID {
+		if partner.PendingRequest != entity.SENT_REQUEST || user.ID != partner.PartnerID {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}

@@ -186,6 +186,24 @@ func (u *UserMongo) Following(userName string, skip int) ([]entity.Following, er
 	return following, nil
 }
 
+func (u *UserMongo) Notifications(userName string, page int) ([]entity.Notification, error) {
+	opts := options.FindOne().SetProjection(bson.M{"notifications": bson.M{"$slice": []int{page, entity.Limit}}})
+
+	user := entity.User{}
+
+	err := u.collection.FindOne(
+		context.TODO(),
+		bson.M{"user_name": userName},
+		opts,
+	).Decode(&user)
+	fmt.Println(user)
+	if err != nil {
+		return nil, err
+	}
+	return user.Notifications, nil
+}
+
+//Write Methods
 func (u *UserMongo) Notify(userName string, notif any) error {
 	result, err := u.collection.UpdateOne(
 		context.TODO(),
@@ -197,9 +215,7 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 	}
 	return err
 }
-
-//Write Methods
-func (u *UserMongo) Request(from, to entity.ID) error {
+func (u *UserMongo) SendRequest(from, to entity.ID) error {
 	result, err := u.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: from}},
@@ -207,15 +223,45 @@ func (u *UserMongo) Request(from, to entity.ID) error {
 			{
 				Key: "$set",
 				Value: bson.D{
-					{Key: "has_pending_request", Value: true},
+					{Key: "pending_request", Value: entity.SENT_REQUEST},
 					{Key: "partner_id", Value: to},
 				},
 			},
 		},
 	)
-	if result.ModifiedCount != 1 {
+	if result.ModifiedCount == 1 {
 		return errors.New("something went wrong")
 	}
+	return err
+}
+
+func (u *UserMongo) RecieveRequest(from, to entity.ID) error {
+	result, err := u.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: from}},
+		bson.D{
+			{
+				Key: "$set",
+				Value: bson.D{
+					{Key: "pending_request", Value: entity.RECIEVED_REQUEST},
+					{Key: "partner_id", Value: to},
+				},
+			},
+		},
+	)
+	if result.ModifiedCount == 0 {
+		return errors.New("something went wrong")
+	}
+	return err
+}
+
+func (u *UserMongo) NullifyRequest(userIDs [2]entity.ID) error {
+	_, err := u.collection.UpdateMany(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: userIDs}}}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "pending_request", Value: entity.NO_REQUEST}, {Key: "partner_id", Value: ""}}}},
+	)
+
 	return err
 }
 
@@ -309,13 +355,16 @@ func (u *UserMongo) NewCouple(c [2]entity.ID, coupleId entity.ID) error {
 	_, err := u.collection.UpdateMany(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: c}}}},
-		bson.D{{Key: "$set", Value: bson.D{
-			{Key: "couple_id", Value: coupleId},
-			{Key: "has_partner", Value: true},
-			{Key: "open_to_request", Value: false},
-			{Key: "has_pending_request", Value: false},
-		},
-		},
+		bson.D{
+			{
+				Key: "$set",
+				Value: bson.D{
+					{Key: "couple_id", Value: coupleId},
+					{Key: "has_partner", Value: true},
+					{Key: "open_to_request", Value: false},
+					{Key: "pending_request", Value: entity.NO_REQUEST},
+				},
+			},
 		},
 	)
 

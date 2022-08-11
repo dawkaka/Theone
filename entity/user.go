@@ -11,47 +11,42 @@ import (
 )
 
 type Notification struct {
-	Type    string `json:"type"`
-	Message string `json:"message"`
-}
-
-type MentionedNotif struct {
 	Type       string `json:"type"`
 	Message    string `json:"message"`
-	PostID     string `json:"post_id" bson:"post_id"`
-	CoupleName string `json:"couple_name" bson:"couple_name"`
+	PostID     string `json:"post_id,omitempty" bson:"post_id,omitempty"`
+	CoupleName string `json:"couple_name,omitempty" bson:"couple_name,omitempty"`
 }
 
 //User data
 type User struct {
-	ID                   ID        `json:"id,omitempty" bson:"_id,omitempty"`
-	Email                string    `json:"email,omitempty" bson:"email,omitempty"`
-	UserName             string    `json:"user_name,omitempty" bson:"user_name,omitempty"`
-	FirstName            string    `json:"first_name,omitempty" bson:"first_name,omitempty"`
-	LastName             string    `json:"last_name,omitempty" bson:"last_name,omitempty"`
-	Password             string    `json:"password,omitempty"`
-	DateOfBirth          time.Time `json:"date_of_birth,omitempty" bson:"date_of_birth,omitempty"`
-	CoupleID             ID        `json:"couple_id,omitempty" bson:"couple_id,omitempty"`
-	Bio                  string    `json:"bio,omitempty" bson:"bio"`
-	Website              string    `json:"website,omitempty" bson:"website,omitempty"`
-	OpenToRequests       bool      `json:"open_to_requests,omitempty" bson:"open_to_request,omitempty"`
-	HasPartner           bool      `json:"has_partner,omitempty" bson:"has_partner"`
-	HasPendingRequest    bool      `json:"has_pending_request,omitempty" bson:"has_pending_request"`
-	CreatedAt            time.Time `json:"created_at,omitempty" bson:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at,omitempty" bson:"updated_at"`
-	ProfilePicture       string    `json:"profile_picture,omitempty" bson:"profile_picture"`
-	ShowPictures         [6]string `json:"show_pictures,omitempty" bson:"show_pictures"`
-	Likes                []ID      `json:"likes,omitempty"`
-	LikesCount           int64     `json:"likes_count,omitempty" bson:"likes_count"`
-	EmailVerified        bool      `json:"email_verified,omitempty" bson:"email_verified"`
-	PartnerID            ID        `json:"partner_id,omitempty" bson:"partner_id,omitempty"`
-	Following            []ID      `json:"following,omitempty"`
-	FollowingCount       uint64    `json:"following_count,omitempty" bson:"following_count"`
-	Notifications        []any     `json:"notifications,omitempty"`
-	Lang                 string    `json:"lang,omitempty"`
-	LastVisited          time.Time `json:"last_visited,omitempty"`
-	LoginIPs             []string  `json:"login_ips,omitempty" bson:"loging_ips"`
-	ContentPriorityQueue []ID      `json:"content_priority_queue,omitempty" bson:"content_priority_queue"`
+	ID                   ID             `json:"id,omitempty" bson:"_id,omitempty"`
+	Email                string         `json:"email,omitempty" bson:"email,omitempty"`
+	UserName             string         `json:"user_name,omitempty" bson:"user_name,omitempty"`
+	FirstName            string         `json:"first_name,omitempty" bson:"first_name,omitempty"`
+	LastName             string         `json:"last_name,omitempty" bson:"last_name,omitempty"`
+	Password             string         `json:"password,omitempty"`
+	DateOfBirth          time.Time      `json:"date_of_birth,omitempty" bson:"date_of_birth,omitempty"`
+	CoupleID             ID             `json:"couple_id,omitempty" bson:"couple_id,omitempty"`
+	Bio                  string         `json:"bio,omitempty" bson:"bio"`
+	Website              string         `json:"website,omitempty" bson:"website,omitempty"`
+	OpenToRequests       bool           `json:"open_to_requests,omitempty" bson:"open_to_request,omitempty"`
+	HasPartner           bool           `json:"has_partner,omitempty" bson:"has_partner"`
+	PendingRequest       int8           `json:"pending_request,omitempty" bson:"pending_request"`
+	CreatedAt            time.Time      `json:"created_at,omitempty" bson:"created_at"`
+	UpdatedAt            time.Time      `json:"updated_at,omitempty" bson:"updated_at"`
+	ProfilePicture       string         `json:"profile_picture,omitempty" bson:"profile_picture"`
+	ShowPictures         [6]string      `json:"show_pictures,omitempty" bson:"show_pictures"`
+	Likes                []ID           `json:"likes,omitempty"`
+	LikesCount           int64          `json:"likes_count,omitempty" bson:"likes_count"`
+	EmailVerified        bool           `json:"email_verified,omitempty" bson:"email_verified"`
+	PartnerID            ID             `json:"partner_id,omitempty" bson:"partner_id,omitempty"`
+	Following            []ID           `json:"following,omitempty"`
+	FollowingCount       uint64         `json:"following_count,omitempty" bson:"following_count"`
+	Notifications        []Notification `json:"notifications,omitempty"`
+	Lang                 string         `json:"lang,omitempty"`
+	LastVisited          time.Time      `json:"last_visited,omitempty"`
+	LoginIPs             []string       `json:"login_ips,omitempty" bson:"loging_ips"`
+	ContentPriorityQueue []ID           `json:"content_priority_queue,omitempty" bson:"content_priority_queue"`
 }
 
 type Follower struct {
@@ -69,18 +64,18 @@ type Following struct {
 	Verified       string `json:"verified"`
 }
 type UserSession struct {
-	ID                ID        `json:"id" bson:"_id"`
-	Name              string    `json:"name"`
-	Email             string    `json:"email"`
-	HasPartner        bool      `json:"has_partner"`
-	PartnerID         ID        `json:"partner_id"`
-	CoupleID          ID        `json:"couple_id"`
-	HasPendingRequest bool      `json:"has_pending_request"`
-	FirstName         string    `json:"first_name" bson:"first_name"`
-	LastName          string    `json:"last_name" bson:"last_name"`
-	Lang              string    `json:"lang" bson:"lang"`
-	DateOfBirth       time.Time `json:"date_of_birth" bson:"date_of_birth"`
-	LastVisited       time.Time `json:"last_visited" bson:"last_visited"`
+	ID             ID        `json:"id" bson:"_id"`
+	Name           string    `json:"name"`
+	Email          string    `json:"email"`
+	HasPartner     bool      `json:"has_partner"`
+	PartnerID      ID        `json:"partner_id"`
+	CoupleID       ID        `json:"couple_id"`
+	PendingRequest int8      `json:"pending_request"`
+	FirstName      string    `json:"first_name" bson:"first_name"`
+	LastName       string    `json:"last_name" bson:"last_name"`
+	Lang           string    `json:"lang" bson:"lang"`
+	DateOfBirth    time.Time `json:"date_of_birth" bson:"date_of_birth"`
+	LastVisited    time.Time `json:"last_visited" bson:"last_visited"`
 }
 
 type Signup struct {
@@ -183,7 +178,7 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		Bio:                  "-",
 		OpenToRequests:       true,
 		HasPartner:           false,
-		HasPendingRequest:    false,
+		PendingRequest:       NO_REQUEST,
 		CreatedAt:            time.Now(),
 		UpdatedAt:            time.Now(),
 		ProfilePicture:       "defaultProfile.jpg",
@@ -193,7 +188,7 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		EmailVerified:        false,
 		Following:            []primitive.ObjectID{},
 		FollowingCount:       0,
-		Notifications:        []any{},
+		Notifications:        []Notification{},
 		LastVisited:          time.Now(),
 		LoginIPs:             []string{},
 		ContentPriorityQueue: []primitive.ObjectID{},

@@ -14,12 +14,13 @@ type UserProfile struct {
 }
 
 type UserPreview struct {
-	ID                entity.ID `json:"id" bson:"_id"`
-	FirstName         string    `json:"first_name" bson:"first_name"`
-	LastName          string    `json:"Last_naem" bson:"last_name"`
-	UserName          string    `json:"user_naame" bson:"user_name"`
-	HasPartener       bool      `json:"has_partner" bson:"hast_partner"`
-	ProfilePicture    string    `json:"profile_picture" bson:"profile_picture"`
-	HasPendingRequest bool      `json:"has_pending_request" bson:"has_pending_request"`
-	PartnerID         entity.ID `json:"partner_id" bson:"partner_id"`
+	ID             entity.ID `json:"id" bson:"_id"`
+	FirstName      string    `json:"first_name" bson:"first_name"`
+	LastName       string    `json:"Last_naem" bson:"last_name"`
+	UserName       string    `json:"user_naame" bson:"user_name"`
+	HasPartner     bool      `json:"has_partner" bson:"hast_partner"`
+	ProfilePicture string    `json:"profile_picture" bson:"profile_picture"`
+	PendingRequest int8      `json:"has_pending_request" bson:"has_pending_request"`
+	PartnerID      entity.ID `json:"partner_id" bson:"partner_id"`
+	Lang           string    `json:"lang"`
 }

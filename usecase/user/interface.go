@@ -23,7 +23,8 @@ type Writer interface {
 	Create(e *entity.User) (entity.ID, error)
 	Update(userID entity.ID, update entity.UpdateUser) error
 	Delete(id entity.ID) error
-	Request(from, to entity.ID) error
+	SendRequest(from, to entity.ID) error
+	RecieveRequest(from, to entity.ID) error
 	Follow(coupleId, userID entity.ID) error
 	Unfollow(coupleId, userId entity.ID) error
 	Notify(userToNotify string, notification any) error
@@ -35,6 +36,8 @@ type Writer interface {
 	ChangeRequestStatus(userId entity.ID, status string) error
 	ChangeName(userID entity.ID, userName string) error
 	ChangeSettings(userID entity.ID, setting, value string) error
+	NullifyRequest([2]entity.ID) error
+	Notifications(userName string, page int) ([]entity.Notification, error)
 }
 
 //Repository interface
@@ -50,7 +53,8 @@ type UseCase interface {
 	ListUsers([]entity.ID) ([]presentation.UserPreview, error)
 	UserFollowing(userName string, skip int) ([]entity.Following, error)
 	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) (entity.ID, error)
-	CreateRequest(from, to entity.ID) error
+	SendRequest(from, to entity.ID) error
+	RecieveRequest(from, to entity.ID) error
 	UpdateUser(userID entity.ID, update entity.UpdateUser) error
 	DeleteUser(id entity.ID) error
 	ConfirmCouple(userID, partnerID string) (bool, error)
@@ -67,4 +71,6 @@ type UseCase interface {
 	ChangeSettings(userID entity.ID, setting, value string) error
 	Login(param string) (entity.User, error)
 	CheckSignup(userName, email string) (entity.User, error)
+	NullifyRequest([2]entity.ID) error
+	GetNotifications(userName string, page int) ([]entity.Notification, error)
 }

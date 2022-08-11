@@ -77,16 +77,16 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		}
 		session := sessions.Default(ctx)
 		userSession := entity.UserSession{
-			ID:                insertedID,
-			Email:             email,
-			Name:              userName,
-			FirstName:         firstName,
-			LastName:          lastName,
-			HasPartner:        false,
-			HasPendingRequest: false,
-			DateOfBirth:       dateOfBirth,
-			Lang:              lang,
-			LastVisited:       time.Now(),
+			ID:             insertedID,
+			Email:          email,
+			Name:           userName,
+			FirstName:      firstName,
+			LastName:       lastName,
+			HasPartner:     false,
+			PendingRequest: entity.NO_REQUEST,
+			DateOfBirth:    dateOfBirth,
+			Lang:           lang,
+			LastVisited:    time.Now(),
 		}
 		session.Set("user", userSession)
 		_ = session.Save()
@@ -122,18 +122,18 @@ func login(service user.UseCase) gin.HandlerFunc {
 		}
 		session := sessions.Default(ctx)
 		userSession := entity.UserSession{
-			ID:                user.ID,
-			Name:              user.UserName,
-			Email:             user.Email,
-			HasPartner:        user.HasPartner,
-			PartnerID:         user.PartnerID,
-			CoupleID:          user.CoupleID,
-			HasPendingRequest: user.HasPendingRequest,
-			FirstName:         user.FirstName,
-			LastName:          user.LastName,
-			Lang:              lang,
-			DateOfBirth:       user.DateOfBirth,
-			LastVisited:       user.LastVisited,
+			ID:             user.ID,
+			Name:           user.UserName,
+			Email:          user.Email,
+			HasPartner:     user.HasPartner,
+			PartnerID:      user.PartnerID,
+			CoupleID:       user.CoupleID,
+			PendingRequest: user.PendingRequest,
+			FirstName:      user.FirstName,
+			LastName:       user.LastName,
+			Lang:           lang,
+			DateOfBirth:    user.DateOfBirth,
+			LastVisited:    user.LastVisited,
 		}
 		if user.HasPartner {
 			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", "", false, true)
@@ -247,7 +247,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "UserLessThan18"))
 			return
 		}
-		if thisUser.HasPartner || thisUser.HasPendingRequest {
+		if thisUser.HasPartner || thisUser.PendingRequest != entity.NO_REQUEST {
 			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(lang, "UserHasPartnerOrPendingRequest"))
 			return
 		}
@@ -266,7 +266,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "PartnerLessThan18"))
 			return
 		}
-		if partner.HasPartner || partner.HasPendingRequest {
+		if partner.HasPartner || partner.PendingRequest != entity.NO_REQUEST {
 			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(lang, "PartnerHasPartnerOrPendingRequest"))
 			return
 		}
@@ -274,12 +274,12 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "PartnerNotOpen"))
 			return
 		}
-		err = service.CreateRequest(thisUser.ID, partner.ID)
+		err = service.SendRequest(thisUser.ID, partner.ID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		err = service.CreateRequest(partner.ID, thisUser.ID)
+		err = service.RecieveRequest(partner.ID, thisUser.ID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "RequestPartiallyCompleted"))
 			return
@@ -295,13 +295,92 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			),
 		}
 		_ = service.NotifyUser(userName, notification)
-		thisUser.HasPendingRequest = true
+		thisUser.PendingRequest = entity.SENT_REQUEST
 		thisUser.PartnerID = partner.ID
 
 		session.Set("user", thisUser)
 		session.Save()
 
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "RequestCreated"))
+	}
+}
+
+func getPendingRequest(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		res, err := service.GetUser(user.Name)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "BadRequest"))
+			return
+		}
+		if res.PendingRequest != entity.NO_REQUEST {
+			ctx.JSON(http.StatusOK, presentation.Error(user.Lang, "NoRequest"))
+			return
+		}
+		users, err := service.ListUsers([]entity.ID{user.PartnerID})
+		if len(users) != 1 {
+			ctx.JSON(http.StatusUnprocessableEntity, "SomethingWentWrong")
+			return
+		}
+		partner := users[0]
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(user.Lang, "SomethingWentWrong"))
+			return
+		}
+		request := presentation.UserPreview{
+			ID:             partner.ID,
+			FirstName:      partner.FirstName,
+			LastName:       partner.LastName,
+			UserName:       partner.UserName,
+			HasPartner:     false,
+			PendingRequest: partner.PendingRequest,
+			PartnerID:      user.ID,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"request": request})
+	}
+}
+
+func cancelRequest(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		if user.PendingRequest != entity.SENT_REQUEST {
+			ctx.JSON(http.StatusForbidden, presentation.Error(user.Lang, "BadRequest"))
+			return
+		}
+		err := service.NullifyRequest([2]entity.ID{user.ID, user.PartnerID})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "RequestCancelled"))
+	}
+}
+
+func rejectRequest(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		if user.PendingRequest != entity.RECIEVED_REQUEST {
+			ctx.JSON(http.StatusForbidden, presentation.Error(user.Lang, "BadRequest"))
+			return
+		}
+
+		users, err := service.ListUsers([]entity.ID{user.PartnerID})
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(user.Lang, "SomethingWentWrong"))
+		}
+		initiator := users[0]
+		err = service.NullifyRequest([2]entity.ID{user.ID, user.PartnerID})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethinWentWrong"))
+			return
+		}
+		go func() {
+			notif := entity.Notification{
+				Type:    "Request Rejected",
+				Message: inter.LocalizeWithFullName(initiator.Lang, user.FirstName, user.LastName, "RequestRejected"),
+			}
+			service.NotifyUser(initiator.UserName, notif)
+		}()
+		ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "RequestRejected"))
 	}
 }
 
@@ -607,7 +686,8 @@ func logout(ctx *gin.Context) {
 func changeSettings(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		setting, value := ctx.Param("setting"), ctx.Param("newValue")
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		session := sessions.Default(ctx)
+		user := session.Get("user").(entity.UserSession)
 		lang := user.Lang
 		if !validator.IsValidSetting(setting, value) {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "InvalidSetting"))
@@ -620,9 +700,29 @@ func changeSettings(service user.UseCase) gin.HandlerFunc {
 		}
 		if setting == "language" {
 			lang = value
+			user.Lang = lang
+			session.Set("user", user)
+			session.Save()
 		}
 		setting = strings.ToUpper(string(setting[0])) + setting[1:]
 		ctx.JSON(http.StatusOK, presentation.Success(lang, setting+"Updated"))
+	}
+}
+
+func notifications(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(user.Lang, "BadRequest"))
+			return
+		}
+		notifs, err := service.GetNotifications(user.Name, skip)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"notifications": notifs})
 	}
 }
 
@@ -632,13 +732,17 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 
 	r.Use(middlewares.Authenticate())
 
-	r.GET("/user/session", userSession)                //tested
+	r.GET("/user/u/session", userSession)              //tested
 	r.GET("/user/:userName", getUser(service))         //tested
 	r.GET("/user/search/:query", searchUsers(service)) //tested
 	r.GET("/user/following/:skip", getFollowing(service))
+	r.GET("/user/u/pending-request", getPendingRequest(service))
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
+	r.GET("/user/notifications/:skip", notifications(service))
 	r.POST("/user/logout", logout)
+	r.POST("/user/u/cancel-request", cancelRequest(service))
+	r.POST("/user/u/reject-request", rejectRequest(service))
 	r.POST("/user/couple-request/:userName", initiateRequest(service))  //tested
 	r.POST("/user/change-name", changeUserName(service))                //tested
 	r.PUT("/user/request-status/:status", changeRequestStatus(service)) //tested

@@ -59,13 +59,13 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		}
 		//Post error created, whether notifications are successful or not user does't need to know
 		go func() {
-			notif := entity.MentionedNotif{
+			notif := entity.Notification{
 				Type:       "PostMentioned",
 				Message:    inter.LocalizeWithUserName(lang, coupleName, "PostMentionedNotif"),
 				PostID:     post.PostID,
 				CoupleName: coupleName,
 			}
-			partnerNotif := entity.MentionedNotif{
+			partnerNotif := entity.Notification{
 				Type:       "PartnerPosted",
 				Message:    inter.LocalizeWithUserName(lang, user.Name, "PartnerNewPostNotif"),
 				PostID:     post.PostID,
@@ -131,8 +131,9 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 		err = ctx.ShouldBind(comment)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
 		}
-		comment.UserID = user.ID.String()
+		comment.UserID = user.ID
 		comment.CreatedAt = time.Now()
 		err = service.NewComment(postID, comment)
 		if err != nil {

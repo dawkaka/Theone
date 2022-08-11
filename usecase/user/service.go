@@ -26,8 +26,13 @@ func (s *Service) CreateUser(email, password, firstName, lastName, userName stri
 	return s.repo.Create(e)
 }
 
-func (s *Service) CreateRequest(from, to entity.ID) error {
-	return s.repo.Request(from, to)
+//Send
+func (s *Service) SendRequest(from, to entity.ID) error {
+	return s.repo.SendRequest(from, to)
+}
+
+func (s *Service) RecieveRequest(from, to entity.ID) error {
+	return s.repo.RecieveRequest(from, to)
 }
 
 //GetUser Get an user
@@ -123,4 +128,12 @@ func (s *Service) Login(param string) (entity.User, error) {
 
 func (s *Service) CheckSignup(userName, email string) (entity.User, error) {
 	return s.repo.CheckSignup(userName, email)
+}
+
+func (s *Service) NullifyRequest(userIDs [2]entity.ID) error {
+	return s.repo.NullifyRequest(userIDs)
+}
+
+func (s *Service) GetNotifications(userName string, skip int) (any, error) {
+	return s.repo.Notifications(userName, skip)
 }

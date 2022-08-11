@@ -10,9 +10,11 @@ import (
 type ID = primitive.ObjectID
 
 type Comment struct {
-	UserID    string    `json:"user_id"`
-	Comment   string    `json:"comment"`
-	CreatedAt time.Time `json:"created_at"`
+	UserID     ID        `json:"user_id" bson:"user_id"`
+	Comment    string    `json:"comment"`
+	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
+	Likes      []ID      `json:"likes"`
+	LikesCount int       `json:"likes_count" bson:"likes_count"`
 }
 
 //StringToID convert a string to an entity ID
@@ -25,10 +27,15 @@ type Pagination struct {
 	End  bool `json:"end"`
 }
 
-var (
+const (
 	Limit          = 30
 	LimitP         = 15
 	EIGHTEEN_YEARS = 18
+)
+const (
+	NO_REQUEST int8 = iota
+	SENT_REQUEST
+	RECIEVED_REQUEST
 )
 
 type PhotoMetaData struct {
