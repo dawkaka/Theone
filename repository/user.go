@@ -259,7 +259,10 @@ func (u *UserMongo) NullifyRequest(userIDs [2]entity.ID) error {
 	_, err := u.collection.UpdateMany(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: userIDs}}}},
-		bson.D{{Key: "$set", Value: bson.D{{Key: "pending_request", Value: entity.NO_REQUEST}, {Key: "partner_id", Value: ""}}}},
+		bson.D{
+			{Key: "$set", Value: bson.D{{Key: "pending_request", Value: entity.NO_REQUEST}}},
+			{Key: "$unset", Value: bson.D{{Key: "partner_id", Value: 1}}},
+		},
 	)
 
 	return err
