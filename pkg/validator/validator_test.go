@@ -208,3 +208,29 @@ func TestIsSupportedImageType(t *testing.T) {
 		t.Fatalf("Testing %s. Expected %t got %t", i, false, true)
 	}
 }
+
+func TestIs18Plus(t *testing.T) {
+	validAge, err := time.Parse("2006-01-02", "1993-03-16")
+	if err != nil {
+		panic(err)
+	}
+	if !Is18Plus(validAge) {
+		t.Errorf("Testing %v. expected %t got %t", validAge, true, false)
+	}
+
+	validAge, err = time.Parse("2006-01-02", "2004-08-11")
+	if err != nil {
+		panic(err)
+	}
+	if !Is18Plus(validAge) {
+		t.Errorf("Testing %v. expected %t got %t", validAge, true, false)
+	}
+
+	validAge, err = time.Parse("2006-01-02", "2005-10-16")
+	if err != nil {
+		panic(err)
+	}
+	if Is18Plus(validAge) {
+		t.Errorf("Testing %v. expected %t got %t", validAge, false, true)
+	}
+}
