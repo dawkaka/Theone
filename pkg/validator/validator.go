@@ -173,7 +173,7 @@ func IsValidSetting(setting, value string) bool {
 	return false
 }
 
-func Is18Plust(date time.Time) bool {
+func Is18Plus(date time.Time) bool {
 	now := time.Now()
 	Today := now.Year() + int(now.Month()) + now.Day()
 	UserAge := date.Year() + int(date.Month()) + date.Day()

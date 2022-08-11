@@ -242,8 +242,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		userAge := time.Now().Year() - thisUser.DateOfBirth.Year()
-		if userAge < entity.EIGHTEEN_YEARS {
+		if !validator.Is18Plus(thisUser.DateOfBirth) {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "UserLessThan18"))
 			return
 		}
@@ -251,7 +250,6 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(lang, "UserHasPartnerOrPendingRequest"))
 			return
 		}
-
 		partner, err := service.GetUser(userName)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
@@ -261,8 +259,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		partnerAge := time.Now().Year() - partner.DateOfBirth.Year()
-		if partnerAge < entity.EIGHTEEN_YEARS {
+		if !validator.Is18Plus(partner.DateOfBirth) {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "PartnerLessThan18"))
 			return
 		}

@@ -134,6 +134,6 @@ func (s *Service) NullifyRequest(userIDs [2]entity.ID) error {
 	return s.repo.NullifyRequest(userIDs)
 }
 
-func (s *Service) GetNotifications(userName string, skip int) (any, error) {
+func (s *Service) GetNotifications(userName string, skip int) ([]entity.Notification, error) {
 	return s.repo.Notifications(userName, skip)
 }
