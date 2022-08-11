@@ -20,7 +20,7 @@ type UserPreview struct {
 	UserName       string    `json:"user_naame" bson:"user_name"`
 	HasPartner     bool      `json:"has_partner" bson:"hast_partner"`
 	ProfilePicture string    `json:"profile_picture" bson:"profile_picture"`
-	PendingRequest int8      `json:"has_pending_request" bson:"has_pending_request"`
+	PendingRequest int8      `json:"pending_request" bson:"pending_request"`
 	PartnerID      entity.ID `json:"partner_id" bson:"partner_id"`
 	Lang           string    `json:"lang"`
 }

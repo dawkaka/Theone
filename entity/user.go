@@ -146,10 +146,10 @@ func (u UpdateUser) Validate() []string {
 	if !validator.IsRealName(u.FirstName) || !validator.IsRealName(u.LastName) {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidFirstNameOrLastName"))
 	}
-	if !validator.IsBio(u.Bio) {
+	if u.Bio != "" && !validator.IsBio(u.Bio) {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidBio"))
 	}
-	if !validator.IsPronouns(u.Pronouns) {
+	if u.Pronouns != "" && !validator.IsPronouns(u.Pronouns) {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidPronouns"))
 	}
 	if !validator.IsWebsite(u.Website) {

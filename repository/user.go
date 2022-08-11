@@ -212,7 +212,7 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 	return err
 }
 func (u *UserMongo) SendRequest(from, to entity.ID) error {
-	result, err := u.collection.UpdateOne(
+	_, err := u.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: from}},
 		bson.D{
@@ -225,14 +225,11 @@ func (u *UserMongo) SendRequest(from, to entity.ID) error {
 			},
 		},
 	)
-	if result.ModifiedCount == 1 {
-		return errors.New("something went wrong")
-	}
 	return err
 }
 
 func (u *UserMongo) RecieveRequest(from, to entity.ID) error {
-	result, err := u.collection.UpdateOne(
+	_, err := u.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: from}},
 		bson.D{
@@ -245,9 +242,6 @@ func (u *UserMongo) RecieveRequest(from, to entity.ID) error {
 			},
 		},
 	)
-	if result.ModifiedCount == 0 {
-		return errors.New("something went wrong")
-	}
 	return err
 }
 
@@ -307,6 +301,7 @@ func (u *UserMongo) Update(userID entity.ID, update entity.UpdateUser) error {
 			{Key: "updated_at", Value: update.UpdatedAt},
 			{Key: "pronouns", Value: update.Pronouns},
 			{Key: "website", Value: update.Website},
+			{Key: "date_of_birth", Value: update.DateOfBirth},
 		}}},
 	)
 	return err

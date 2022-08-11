@@ -248,7 +248,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		if thisUser.HasPartner || thisUser.PendingRequest != entity.NO_REQUEST {
-			ctx.JSON(http.StatusMethodNotAllowed, presentation.Error(lang, "UserHasPartnerOrPendingRequest"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "UserHasPartnerOrPendingRequest"))
 			return
 		}
 		partner, err := service.GetUser(userName)
@@ -330,9 +330,8 @@ func getPendingRequest(service user.UseCase) gin.HandlerFunc {
 			FirstName:      partner.FirstName,
 			LastName:       partner.LastName,
 			UserName:       partner.UserName,
-			HasPartner:     false,
 			PendingRequest: partner.PendingRequest,
-			PartnerID:      user.ID,
+			ProfilePicture: partner.ProfilePicture,
 		}
 		ctx.JSON(http.StatusOK, gin.H{"request": request})
 	}
@@ -460,7 +459,8 @@ func unfollow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFun
 func updateUser(service user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		session := sessions.Default(ctx)
+		user := session.Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		var update entity.UpdateUser
 		err := ctx.ShouldBindJSON(&update)
@@ -480,6 +480,11 @@ func updateUser(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
+		user.FirstName = update.FirstName
+		user.LastName = update.LastName
+		user.DateOfBirth = update.DateOfBirth
+		session.Set("user", user)
+		session.Save()
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "UserUpdated"))
 	}
 }
@@ -742,13 +747,13 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/:userName", getUser(service))         //tested
 	r.GET("/user/search/:query", searchUsers(service)) //tested
 	r.GET("/user/following/:skip", getFollowing(service))
-	r.GET("/user/u/pending-request", getPendingRequest(service))
+	r.GET("/user/u/pending-request", getPendingRequest(service)) //tested
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/notifications/:skip", notifications(service))
+	r.GET("/user/notifications/:skip", notifications(service)) //tested
 	r.POST("/user/logout", logout)
-	r.POST("/user/u/cancel-request", cancelRequest(service))
-	r.POST("/user/u/reject-request", rejectRequest(service))
+	r.POST("/user/u/cancel-request", cancelRequest(service))            //tested
+	r.POST("/user/u/reject-request", rejectRequest(service))            //tested
 	r.POST("/user/couple-request/:userName", initiateRequest(service))  //tested
 	r.POST("/user/change-name", changeUserName(service))                //tested
 	r.PUT("/user/request-status/:status", changeRequestStatus(service)) //tested
