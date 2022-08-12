@@ -517,13 +517,12 @@ func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 		}
 		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
-			fmt.Println(err)
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
 			return
 		}
 		err = service.UpdateUserProfilePic(fileName, user.ID)
 		if err != nil {
-			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "Forbidden"))
 			return
 		}
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicUpdated"))
@@ -539,7 +538,12 @@ func updateShowPicture(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
+		if index < 0 || index > 5 {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
 		fileHeader, err := ctx.FormFile("show_picture")
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -751,18 +755,18 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/u/pending-request", getPendingRequest(service))         //tested
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/notifications/:skip", notifications(service))          //tested
-	r.POST("/user/logout", logout)                                      //tested
-	r.POST("/user/u/cancel-request", cancelRequest(service))            //tested
-	r.POST("/user/u/reject-request", rejectRequest(service))            //tested
-	r.POST("/user/couple-request/:userName", initiateRequest(service))  //tested
-	r.POST("/user/change-name", changeUserName(service))                //tested
-	r.PUT("/user/request-status/:status", changeRequestStatus(service)) //tested
-	r.PUT("/user", updateUser(service))                                 //tested
-	r.PUT("/user/show-pictures/:index", updateShowPicture(service))
+	r.GET("/user/notifications/:skip", notifications(service))              //tested
+	r.POST("/user/logout", logout)                                          //tested
+	r.POST("/user/u/cancel-request", cancelRequest(service))                //tested
+	r.POST("/user/u/reject-request", rejectRequest(service))                //tested
+	r.POST("/user/couple-request/:userName", initiateRequest(service))      //tested
+	r.POST("/user/change-name", changeUserName(service))                    //tested
+	r.PUT("/user/request-status/:status", changeRequestStatus(service))     //tested
+	r.PUT("/user", updateUser(service))                                     //tested
+	r.PUT("/user/show-pictures/:index", updateShowPicture(service))         //tested
 	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))   //tested
 	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))     //tested
 	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
-	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))
+	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))      //tested
 	r.DELETE("/user", deleteUser(service))
 }

@@ -2,13 +2,14 @@ package myaws
 
 import (
 	"bytes"
+	"fmt"
 	"mime/multipart"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/validator"
@@ -22,38 +23,38 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 	if err != nil {
 		return fileName, err
 	}
-	image := make([]byte, 512)
+	fmt.Println(fileHeader.Filename)
+	image := make([]byte, fileHeader.Size)
 	f.Read(image)
 	imgType, isValid := validator.IsSupportedImageType(image)
+
 	if !isValid {
 		return fileName, entity.ErrUnsupportedImage
 	}
 
 	fileName = uuid.New().String() + "." + strings.Split(imgType, "/")[1]
 
-	var sess = session.Must(session.NewSession(&aws.Config{
+	session, err := session.NewSession(&aws.Config{
 		Region:                        aws.String(endpoints.UsWest1RegionID),
 		MaxRetries:                    aws.Int(3),
 		CredentialsChainVerboseErrors: aws.Bool(true),
-	}))
+		Credentials: credentials.NewStaticCredentials(
+			"AKIAZKM5T2L3K6SKXDIJ",
+			"PwuoKmk582oLneT3HPT9OvS+hOkR44rkgDJJhClX",
+			""),
+	})
+	if err != nil {
+		panic(err)
+	}
 
-	//creds := stscreds.NewCredentials(sess, "dawkaka")
-
-	// uploader := s3manager.NewUploader(sess)
-	// _, err = uploader.Upload(&s3manager.UploadInput{
-	// 	Bucket:      aws.String(bucket),
-	// 	Key:         aws.String(fileName),
-	// 	Body:        f,
-	// 	ContentType: aws.String(imgType),
-	// })
-
-	s3C := s3.New(sess)
-	_, err = s3C.PutObject(&s3.PutObjectInput{
+	uploader := s3manager.NewUploader(session)
+	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket:      aws.String(bucket),
 		Key:         aws.String(fileName),
-		Body:        f,
-		ContentType: aws.String(imgType),
+		Body:        bytes.NewReader(image),
+		ContentType: aws.String("image/jpeg"),
 	})
+	fmt.Println(err)
 	return fileName, err
 }
 

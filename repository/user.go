@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -365,11 +366,8 @@ func (u *UserMongo) UpdateShowPicture(userID entity.ID, index int, fileName stri
 		userID,
 		bson.D{
 			{
-				Key: "$push",
-				Value: bson.D{{Key: "show_pictures", Value: bson.D{
-					{Key: "$each", Value: []string{fileName}},
-					{Key: "$position", Value: index},
-				}}},
+				Key:   "$set",
+				Value: bson.D{{Key: "show_pictures." + fmt.Sprint(index), Value: fileName}},
 			},
 		},
 	)
