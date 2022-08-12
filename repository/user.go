@@ -151,36 +151,18 @@ func (u *UserMongo) CheckSignup(userName, email string) (entity.User, error) {
 
 }
 
-func (u *UserMongo) Following(userName string, skip int) ([]entity.Following, error) {
-	var following []entity.Following
-
-	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: userName}}}}
-	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: entity.Limit + 1}}
-	unwindStage := bson.D{{Key: "$unwind", Value: "$following"}}
-	joinStage := bson.D{
-		{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "couples"},
-				{Key: "localfield", Value: "following"},
-				{Key: "foreignfield", Value: "_id"},
-				{Key: "as", Value: "user_following"},
-			},
-		},
-	}
-	unwindStage2 := bson.D{{Key: "$unwind", Value: "$user_following"}}
-	cursor, err := u.collection.Aggregate(
+func (u *UserMongo) Following(userName string, skip int) ([]entity.ID, error) {
+	result := entity.User{}
+	opts := options.FindOne().SetProjection(bson.M{"following": bson.M{"$slice": []int{skip, entity.Limit}}})
+	err := u.collection.FindOne(
 		context.TODO(),
-		mongo.Pipeline{matchStage, unwindStage, skipLimitStage, joinStage, unwindStage2},
-	)
-
+		bson.M{"user_name": userName},
+		opts,
+	).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
-	if err = cursor.All(context.TODO(), &following); err != nil {
-		return nil, err
-	}
-	return following, nil
+	return result.Following, nil
 }
 
 func (u *UserMongo) Notifications(userName string, page int) ([]entity.Notification, error) {
@@ -325,7 +307,7 @@ func (u *UserMongo) Follow(coupleID entity.ID, userID entity.ID) error {
 func (u *UserMongo) Unfollow(coupleID, userID entity.ID) error {
 	result, err := u.collection.UpdateByID(
 		context.TODO(),
-		coupleID,
+		userID,
 		bson.D{
 			{Key: "$inc", Value: bson.D{{Key: "following_count", Value: -1}}},
 			{Key: "$pull", Value: bson.D{{Key: "following", Value: coupleID}}},

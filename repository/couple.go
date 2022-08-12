@@ -3,11 +3,14 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
+	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type CoupleMongo struct {
@@ -23,14 +26,29 @@ func NewCoupleMongo(col *mongo.Collection) *CoupleMongo {
 
 //Read Operations
 func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
-	var result entity.Couple
-
+	opts := options.FindOne().SetProjection(bson.M{"followers": 0})
+	result := entity.Couple{}
 	err := c.collection.FindOne(
 		context.TODO(),
 		bson.D{{Key: "couple_name", Value: coupleName}},
+		opts,
 	).Decode(&result)
-
+	fmt.Println(result.Followers)
 	return result, err
+}
+
+func (c *CoupleMongo) List(IDs []entity.ID) ([]presentation.CouplePreview, error) {
+	cursor, err := c.collection.Find(context.TODO(),
+		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: IDs}}}},
+	)
+	if err != nil {
+		return nil, err
+	}
+	results := []presentation.CouplePreview{}
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+	return results, nil
 }
 
 func (c *CoupleMongo) GetCouplePosts(coupleName string, skip int) ([]entity.Post, error) {
@@ -75,8 +93,8 @@ func (c *CoupleMongo) GetCoupleVideos(coupleName string, skip int) ([]entity.Vid
 			Key: "$lookup",
 			Value: bson.D{
 				{Key: "from", Value: "videos"},
-				{Key: "localfield", Value: "_id"},
-				{Key: "foreignfield", Value: "couple_id"},
+				{Key: "localField", Value: "_id"},
+				{Key: "foreignField", Value: "couple_id"},
 				{Key: "as", Value: "couple_videos"},
 			},
 		},
@@ -97,66 +115,43 @@ func (c *CoupleMongo) GetCoupleVideos(coupleName string, skip int) ([]entity.Vid
 	return result, err
 }
 
-func (c *CoupleMongo) Followers(coupleName string, skip int) ([]entity.Follower, error) {
-	var followers []entity.Follower
-
-	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
-	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: entity.Limit + 1}}
-	unwindStage := bson.D{{Key: "$unwind", Value: "$followers"}}
-	joinStage := bson.D{
-		{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "users"},
-				{Key: "localfield", Value: "followers"},
-				{Key: "foreignfield", Value: "_id"},
-				{Key: "as", Value: "couple_followers"},
-			},
-		},
-	}
-	unwindStage2 := bson.D{{Key: "$unwind", Value: "$couple_followers"}}
-	cursor, err := c.collection.Aggregate(
+func (c *CoupleMongo) Followers(coupleName string, skip int) ([]entity.ID, error) {
+	couple := entity.Couple{}
+	opts := options.FindOne().SetProjection(bson.M{"followers": bson.M{"$slice": []int{skip, entity.Limit}}})
+	err := c.collection.FindOne(
 		context.TODO(),
-		mongo.Pipeline{matchStage, unwindStage, skipLimitStage, joinStage, unwindStage2},
-	)
+		bson.D{{Key: "couple_name", Value: coupleName}},
+		opts,
+	).Decode(&couple)
 	if err != nil {
 		return nil, err
 	}
-	if err = cursor.All(context.TODO(), &followers); err != nil {
-		return nil, err
-	}
-	return followers, nil
+	return couple.Followers, nil
 }
 
 func (c *CoupleMongo) Follower(userID, coupleID entity.ID) error {
-	result, err := c.collection.UpdateByID(
+	_, err := c.collection.UpdateByID(
 		context.TODO(),
 		coupleID,
 		bson.D{
-			{Key: "$inc", Value: bson.D{{Key: "followers_count", Value: 1}}},
-			{Key: "$push", Value: bson.D{{Key: "followers", Value: userID}}},
+			{Key: "$addToSet", Value: bson.D{{Key: "followers", Value: userID}}},
+			{Key: "$set", Value: bson.D{{Key: "followers_count", Value: bson.D{{Key: "$size", Value: "$followers"}}}}},
 		},
 	)
-	if result.ModifiedCount < 1 {
-		return errors.New("user follow: something went wrong")
-	}
+	fmt.Println(err)
 	return err
 }
 
-func (c *CoupleMongo) Unfollow(userID, coupleId entity.ID) error {
-	result, err := c.collection.UpdateByID(
+func (c *CoupleMongo) Unfollow(coupleID, userID entity.ID) error {
+	_, err := c.collection.UpdateByID(
 		context.TODO(),
-		userID,
+		coupleID,
 		bson.D{
-			{Key: "$inc", Value: bson.D{{Key: "followers_count", Value: -1}}},
-			{Key: "$push", Value: bson.D{{Key: "followers", Value: coupleId}}},
+			{Key: "$pull", Value: bson.D{{Key: "followers", Value: userID}}},
+			{Key: "$set", Value: bson.M{"followers_count": bson.M{"$size": "$followers"}}},
 		},
 	)
-	if result.ModifiedCount < 1 {
-		return errors.New("user follow: something went wrong")
-	}
 	return err
-
 }
 
 //Write Operations

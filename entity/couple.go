@@ -22,7 +22,7 @@ type Couple struct {
 	ProfilePicture string    `json:"profile_picture" bson:"profile_picture"`
 	CoverPicture   string    `json:"cover_picture" bson:"cover_picture"`
 	Bio            string    `json:"bio"`
-	Followers      []ID      `json:"followers"`
+	Followers      []ID      `json:"followers" bson:"followers"`
 	Separated      bool      `json:"separated"`
 	FollowersCount uint64    `json:"followers_count" bson:"followers_count"`
 	PostCount      uint64    `json:"post_count" bson:"post_count"`

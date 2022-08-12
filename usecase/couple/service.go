@@ -3,6 +3,7 @@ package couple
 import (
 	"time"
 
+	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -27,6 +28,10 @@ func (s *Service) GetCouplePosts(coupleName string, skip int) ([]entity.Post, er
 
 func (s *Service) GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error) {
 	return s.repo.GetCoupleVideos(coupleName, skip)
+}
+
+func (s *Service) ListCouple(IDs []entity.ID) ([]presentation.CouplePreview, error) {
+	return s.repo.List(IDs)
 }
 
 func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID, error) {
@@ -58,7 +63,7 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID,
 	return s.repo.Create(couple)
 }
 
-func (s *Service) GetFollowers(coupleName string, skip int) ([]entity.Follower, error) {
+func (s *Service) GetFollowers(coupleName string, skip int) ([]entity.ID, error) {
 	return s.repo.Followers(coupleName, skip)
 }
 
@@ -66,8 +71,8 @@ func (s *Service) NewFollower(userID, coupleID entity.ID) error {
 	return s.repo.Follower(userID, coupleID)
 }
 
-func (s *Service) RemoveFollower(userID, coupleID entity.ID) error {
-	return s.repo.Unfollow(userID, coupleID)
+func (s *Service) RemoveFollower(coupleID, userID entity.ID) error {
+	return s.repo.Unfollow(coupleID, userID)
 }
 
 func (s *Service) UpdateCouple(coupleID entity.ID, update entity.UpdateCouple) error {

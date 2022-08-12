@@ -3,9 +3,12 @@ package myaws
 import (
 	"bytes"
 	"mime/multipart"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/validator"
@@ -26,15 +29,26 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 		return fileName, entity.ErrUnsupportedImage
 	}
 
-	fileName = uuid.New().String() + "." + imgType[len(imgType)-3:]
+	fileName = uuid.New().String() + "." + strings.Split(imgType, "/")[1]
 
 	var sess = session.Must(session.NewSession(&aws.Config{
-		Region:     aws.String("eu-central-1"),
-		MaxRetries: aws.Int(3),
+		Region:                        aws.String(endpoints.UsWest1RegionID),
+		MaxRetries:                    aws.Int(3),
+		CredentialsChainVerboseErrors: aws.Bool(true),
 	}))
 
-	uploader := s3manager.NewUploader(sess)
-	_, err = uploader.Upload(&s3manager.UploadInput{
+	//creds := stscreds.NewCredentials(sess, "dawkaka")
+
+	// uploader := s3manager.NewUploader(sess)
+	// _, err = uploader.Upload(&s3manager.UploadInput{
+	// 	Bucket:      aws.String(bucket),
+	// 	Key:         aws.String(fileName),
+	// 	Body:        f,
+	// 	ContentType: aws.String(imgType),
+	// })
+
+	s3C := s3.New(sess)
+	_, err = s3C.PutObject(&s3.PutObjectInput{
 		Bucket:      aws.String(bucket),
 		Key:         aws.String(fileName),
 		Body:        f,

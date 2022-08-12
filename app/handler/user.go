@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -200,7 +201,7 @@ func searchUsers(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
-func getFollowing(service user.UseCase) gin.HandlerFunc {
+func getFollowing(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		userName := user.Name
@@ -211,7 +212,6 @@ func getFollowing(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		following, err := service.UserFollowing(userName, skip)
-
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "UserNotFound"))
@@ -220,12 +220,16 @@ func getFollowing(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+		couples, err := coupleService.ListCouple(following)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+		}
 
 		page := entity.Pagination{
 			Next: skip + entity.Limit,
 			End:  len(following) < entity.Limit,
 		}
-		ctx.JSON(http.StatusOK, gin.H{"following": following, "pagination": page})
+		ctx.JSON(http.StatusOK, gin.H{"following": couples, "pagination": page})
 	}
 }
 
@@ -409,13 +413,11 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-
 		err = service.Follow(couple.ID, userID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-
 		_ = coupleService.NewFollower(userID, couple.ID)
 		notif := entity.Notification{
 			Type:    "follow",
@@ -451,7 +453,7 @@ func unfollow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFun
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		_ = coupleService.RemoveFollower(userID, couple.ID)
+		_ = coupleService.RemoveFollower(couple.ID, userID)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "Unfollowed"))
 	}
 }
@@ -515,6 +517,7 @@ func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 		}
 		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
+			fmt.Println(err)
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
 			return
 		}
@@ -738,30 +741,28 @@ func notifications(service user.UseCase) gin.HandlerFunc {
 }
 
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
-	r.POST("/user/signup", signup(service)) //tested
-	r.POST("/user/login", login(service))   //tested
-
-	r.Use(middlewares.Authenticate())
-
-	r.GET("/user/u/session", userSession)              //tested
-	r.GET("/user/:userName", getUser(service))         //tested
-	r.GET("/user/search/:query", searchUsers(service)) //tested
-	r.GET("/user/following/:skip", getFollowing(service))
-	r.GET("/user/u/pending-request", getPendingRequest(service)) //tested
+	r.POST("/user/signup", signup(service))                              //tested
+	r.POST("/user/login", login(service))                                //tested
+	r.Use(middlewares.Authenticate())                                    //tested
+	r.GET("/user/u/session", userSession)                                //tested
+	r.GET("/user/:userName", getUser(service))                           //tested
+	r.GET("/user/search/:query", searchUsers(service))                   //tested
+	r.GET("/user/following/:skip", getFollowing(service, coupleService)) //tested
+	r.GET("/user/u/pending-request", getPendingRequest(service))         //tested
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/notifications/:skip", notifications(service)) //tested
-	r.POST("/user/logout", logout)
+	r.GET("/user/notifications/:skip", notifications(service))          //tested
+	r.POST("/user/logout", logout)                                      //tested
 	r.POST("/user/u/cancel-request", cancelRequest(service))            //tested
 	r.POST("/user/u/reject-request", rejectRequest(service))            //tested
 	r.POST("/user/couple-request/:userName", initiateRequest(service))  //tested
 	r.POST("/user/change-name", changeUserName(service))                //tested
 	r.PUT("/user/request-status/:status", changeRequestStatus(service)) //tested
-	r.PUT("/user", updateUser(service))
+	r.PUT("/user", updateUser(service))                                 //tested
 	r.PUT("/user/show-pictures/:index", updateShowPicture(service))
-	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service)) //tested
-	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))
-	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService))
+	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))   //tested
+	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))     //tested
+	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
 	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))
 	r.DELETE("/user", deleteUser(service))
 }

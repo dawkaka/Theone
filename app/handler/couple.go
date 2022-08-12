@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dawkaka/theone/app/presentation"
@@ -59,7 +60,18 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			return
 		}
 
-		coupleName := fmt.Sprintf("%s.and.%s_%d", partner.FirstName, user.FirstName, time.Now().Unix())
+		coupleName := fmt.Sprintf("%s.and.%s", strings.ToLower(partner.FirstName), strings.ToLower(user.FirstName))
+
+		_, err = service.GetCouple(coupleName)
+		if err == nil {
+			coupleName += fmt.Sprint(time.Now().Unix())
+		} else {
+			if err != mongo.ErrNoDocuments {
+				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+				return
+			}
+		}
+
 		Id, err := service.CreateCouple(userb.ID.Hex(), partnerID.Hex(), coupleName)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
@@ -125,13 +137,16 @@ func getCouplePosts(service couple.UseCase) gin.HandlerFunc {
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
 		}
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+			return
 		}
 		posts, err := service.GetCouplePosts(coupleName, skipPosts)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+			return
 		}
 		page := entity.Pagination{
 			Next: skipPosts + entity.Limit,
@@ -149,13 +164,16 @@ func getCoupleVideos(service couple.UseCase) gin.HandlerFunc {
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
 		}
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+			return
 		}
 		videos, err := service.GetCoupleVideos(coupleName, skipVideos)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+			return
 		}
 		page := entity.Pagination{
 			Next: skipVideos + entity.Limit,
@@ -165,27 +183,35 @@ func getCoupleVideos(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
-func getFollowers(service couple.UseCase) gin.HandlerFunc {
+func getFollowers(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		coupleName := ctx.Param("coupleName")
 		skip, err := strconv.Atoi(ctx.Param("skip")) //pagination
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
 		}
 		if !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
 		}
 		followers, err := service.GetFollowers(coupleName, skip)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		users, err := userService.ListUsers(followers)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
 		}
 		page := entity.Pagination{
 			Next: skip + entity.Limit,
 			End:  len(followers) < entity.Limit,
 		}
-		ctx.JSON(http.StatusOK, gin.H{"followers": followers, "pagination": page})
+		ctx.JSON(http.StatusOK, gin.H{"followers": users, "pagination": page})
 	}
 }
 
@@ -385,14 +411,14 @@ func userCoupleMessages(service couple.UseCase, userService user.UseCase, messag
 }
 
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage) {
-	r.GET("/:coupleName", getCouple(service))
+	r.GET("/:coupleName", getCouple(service)) //tested
 	r.GET("/:coupleName/posts/:skip", getCouplePosts(service))
-	//	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
-	r.GET("/:coupleName/followers/:skip", getFollowers(service))
+	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
+	r.GET("/:coupleName/followers/:skip", getFollowers(service, userService)) //tested
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
 	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
-	r.POST("/couple/new/:partnerID", newCouple(service, userService))
+	r.POST("/couple/new/:partnerID", newCouple(service, userService)) //tested
 	r.POST("/couple/break-up", lastLastEdonCast(service, userService))
 	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service))
 	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))
