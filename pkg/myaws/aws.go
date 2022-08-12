@@ -18,6 +18,24 @@ import (
 	"github.com/h2non/bimg"
 )
 
+var sess *session.Session
+
+func init() {
+	se, err := session.NewSession(&aws.Config{
+		Region:                        aws.String(endpoints.UsWest1RegionID),
+		MaxRetries:                    aws.Int(3),
+		CredentialsChainVerboseErrors: aws.Bool(true),
+		Credentials: credentials.NewStaticCredentials(
+			config.AWS_ACCESS_KEY,
+			config.AWS_SECRET_KEY,
+			""),
+	})
+	if err != nil {
+		panic(err)
+	}
+	sess = se
+}
+
 func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, error) {
 	f, err := fileHeader.Open()
 	var fileName string
@@ -35,20 +53,7 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 
 	fileName = uuid.New().String() + "." + strings.Split(imgType, "/")[1]
 
-	session, err := session.NewSession(&aws.Config{
-		Region:                        aws.String(endpoints.UsWest1RegionID),
-		MaxRetries:                    aws.Int(3),
-		CredentialsChainVerboseErrors: aws.Bool(true),
-		Credentials: credentials.NewStaticCredentials(
-			config.AWS_ACCESS_KEY,
-			config.AWS_SECRET_KEY,
-			""),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	uploader := s3manager.NewUploader(session)
+	uploader := s3manager.NewUploader(sess)
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket:      aws.String(bucket),
 		Key:         aws.String(fileName),
@@ -85,7 +90,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 		ch <- entity.ErrImageProcessing
 	}
 
-	image := []byte{}
+	image := make([]byte, file.Size)
 	f.Read(image)
 	imgType, isValid := validator.IsSupportedImageType(image)
 	if !isValid {
@@ -95,7 +100,6 @@ func upload(file *multipart.FileHeader, ch chan any) {
 	if err != nil {
 		ch <- entity.ErrImageProcessing
 	}
-
 	height := getPrefDimention(size.Height, "h")
 	width := getPrefDimention(size.Width, "w")
 
@@ -111,11 +115,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 		ch <- entity.ErrImageProcessing
 	}
 
-	fileName := uuid.New().String() + "." + imgType[len(imgType)-3:]
-	var sess = session.Must(session.NewSession(&aws.Config{
-		Region:     aws.String("eu-central-1"),
-		MaxRetries: aws.Int(3),
-	}))
+	fileName := uuid.New().String() + "." + strings.Split(imgType, "/")[1]
 
 	imageReader := bytes.NewReader(newImage)
 
