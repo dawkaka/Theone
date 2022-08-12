@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/dawkaka/theone/config"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/google/uuid"
@@ -39,8 +40,8 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 		MaxRetries:                    aws.Int(3),
 		CredentialsChainVerboseErrors: aws.Bool(true),
 		Credentials: credentials.NewStaticCredentials(
-			"AKIAZKM5T2L3K6SKXDIJ",
-			"PwuoKmk582oLneT3HPT9OvS+hOkR44rkgDJJhClX",
+			config.AWS_ACCESS_KEY,
+			config.AWS_SECRET_KEY,
 			""),
 	})
 	if err != nil {
