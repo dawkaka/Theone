@@ -58,13 +58,12 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 		Bucket:      aws.String(bucket),
 		Key:         aws.String(fileName),
 		Body:        bytes.NewReader(image),
-		ContentType: aws.String("image/jpeg"),
+		ContentType: aws.String(imgType),
 	})
-	fmt.Println(err)
 	return fileName, err
 }
 
-func UploadMultipleFiles(files []*multipart.FileHeader, bucket string) ([]entity.PostMetadata, error) {
+func UploadMultipleFiles(files []*multipart.FileHeader) ([]entity.PostMetadata, error) {
 	ch := make(chan any, len(files))
 	for _, file := range files {
 		go upload(file, ch)
@@ -121,7 +120,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 
 	uploader := s3manager.NewUploader(sess)
 	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket:      aws.String("postimages"),
+		Bucket:      aws.String("theone-postfiles"),
 		Key:         aws.String(fileName),
 		Body:        imageReader,
 		ContentType: aws.String(imgType),

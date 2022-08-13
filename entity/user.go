@@ -35,7 +35,7 @@ type User struct {
 	CreatedAt            time.Time      `json:"created_at,omitempty" bson:"created_at"`
 	UpdatedAt            time.Time      `json:"updated_at,omitempty" bson:"updated_at"`
 	ProfilePicture       string         `json:"profile_picture,omitempty" bson:"profile_picture"`
-	ShowPictures         [6]string      `json:"show_pictures,omitempty" bson:"show_pictures"`
+	ShowPictures         []string       `json:"show_pictures,omitempty" bson:"show_pictures"`
 	Likes                []ID           `json:"likes,omitempty"`
 	LikesCount           int64          `json:"likes_count,omitempty" bson:"likes_count"`
 	EmailVerified        bool           `json:"email_verified,omitempty" bson:"email_verified"`
@@ -182,7 +182,7 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		CreatedAt:            time.Now(),
 		UpdatedAt:            time.Now(),
 		ProfilePicture:       "defaultProfile.jpg",
-		ShowPictures:         [6]string{"defaultshow1.jpg", "defaultshow2.jpg", "defaultshow3.jpg", "defaultshow4.jpg", "defaultshow5.jpg", "defaultshow6.jpg"},
+		ShowPictures:         []string{"defaultshow1.jpg", "defaultshow2.jpg", "defaultshow3.jpg", "defaultshow4.jpg", "defaultshow5.jpg", "defaultshow6.jpg"},
 		Likes:                []primitive.ObjectID{},
 		LikesCount:           0,
 		EmailVerified:        false,

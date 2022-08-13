@@ -33,7 +33,6 @@ func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
 		bson.D{{Key: "couple_name", Value: coupleName}},
 		opts,
 	).Decode(&result)
-	fmt.Println(result.Followers)
 	return result, err
 }
 
@@ -169,12 +168,12 @@ func (u *CoupleMongo) Update(coupleID entity.ID, update entity.UpdateCouple) err
 	_, err := u.collection.UpdateByID(
 		context.TODO(),
 		coupleID,
-		bson.D{{Key: "$set", Value: bson.D{
-			{Key: "bio", Value: update.Bio},
-			{Key: "updated_at", Value: update.UpdatedAt},
-			{Key: "pronouns", Value: update.Pronouns},
-			{Key: "website", Value: update.Website},
-			{Key: "date_commenced", Value: update.DateCommenced},
+		bson.D{{Key: "$set", Value: bson.M{
+			"bio":            update.Bio,
+			"updated_at":     update.UpdatedAt,
+			"website":        update.Website,
+			"date_commenced": update.DateCommenced,
+			"status":         update.Status,
 		}}},
 	)
 	return err

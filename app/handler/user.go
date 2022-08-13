@@ -107,6 +107,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 		}
 		user, err := service.Login(login.UserName)
 		if err != nil {
+			fmt.Println(err)
 			if err == entity.ErrUserNotFound {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "LoginFailed"))
 				return
@@ -745,8 +746,8 @@ func notifications(service user.UseCase) gin.HandlerFunc {
 }
 
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
-	r.POST("/user/signup", signup(service))                              //tested
-	r.POST("/user/login", login(service))                                //tested
+	r.POST("/user/u/signup", signup(service))                            //tested
+	r.POST("/user/u/login", login(service))                              //tested
 	r.Use(middlewares.Authenticate())                                    //tested
 	r.GET("/user/u/session", userSession)                                //tested
 	r.GET("/user/:userName", getUser(service))                           //tested

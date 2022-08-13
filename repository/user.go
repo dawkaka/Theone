@@ -122,6 +122,7 @@ func (u *UserMongo) Login(param string) (entity.User, error) {
 		bson.D{{Key: "$or", Value: bson.A{bson.D{{Key: "user_name", Value: param}}, bson.D{{Key: "email", Value: param}}}}},
 		opts,
 	).Decode(&user)
+	fmt.Println(err)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return user, entity.ErrUserNotFound
@@ -374,7 +375,6 @@ func (u *UserMongo) UpdateShowPicture(userID entity.ID, index int, fileName stri
 	if result.MatchedCount < 1 {
 		return entity.ErrNoMatch
 	}
-
 	return err
 }
 

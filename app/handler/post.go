@@ -35,7 +35,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			return
 		}
 
-		filesMetadata, err := myaws.UploadMultipleFiles(files, "posts")
+		filesMetadata, err := myaws.UploadMultipleFiles(files)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return

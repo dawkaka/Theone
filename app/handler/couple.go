@@ -54,14 +54,11 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 				partner = users[i]
 			}
 		}
-
 		if partner.PendingRequest != entity.SENT_REQUEST || user.ID != partner.PartnerID {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
-
 		coupleName := fmt.Sprintf("%s.and.%s", strings.ToLower(partner.FirstName), strings.ToLower(user.FirstName))
-
 		_, err = service.GetCouple(coupleName)
 		if err == nil {
 			coupleName += fmt.Sprint(time.Now().Unix())
@@ -71,7 +68,6 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 				return
 			}
 		}
-
 		Id, err := service.CreateCouple(userb.ID.Hex(), partnerID.Hex(), coupleName)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
@@ -86,10 +82,17 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 				"RequestAccepted",
 			),
 		}
+
 		go func() {
 			_ = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, Id)
 			_ = userService.NotifyUser(partner.UserName, notif)
 		}()
+
+		userb.CoupleID = Id
+		userb.HasPartner = true
+		userb.PendingRequest = entity.NO_REQUEST
+		session.Set("user", userb)
+		session.Save()
 		ctx.SetCookie("couple_ID", Id.Hex(), 500, "/", "", false, true)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CoupleCreated"))
 	}
@@ -106,11 +109,14 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
 			return
 		}
-
 		couple, err := service.GetCouple(coupleName)
-
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+			fmt.Println(err)
+			if err == mongo.ErrNoDocuments {
+				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		pCouple := presentation.CoupleProfile{
@@ -234,7 +240,7 @@ func updateCoupleProfilePic(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
-		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicSuccess"))
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicUpdated"))
 	}
 }
 
@@ -257,7 +263,7 @@ func updateCoupleCoverPic(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
-		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicUpdated"))
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CoverPicUpdated"))
 	}
 }
 
@@ -289,24 +295,36 @@ func updateCouple(service couple.UseCase) gin.HandlerFunc {
 
 func changeCoupleName(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		newCoupleName := ctx.PostForm("couple_name")
+		nameStruct := struct {
+			CoupleName string `json:"couple_name"`
+		}{}
 		session := sessions.Default(ctx)
 		user := session.Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
-		if !validator.IsCoupleName(newCoupleName) {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
+		err := ctx.ShouldBindJSON(&nameStruct)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
 		}
-		_, err := service.GetCouple(newCoupleName)
+		newCoupleName := nameStruct.CoupleName
+		if !validator.IsCoupleName(newCoupleName) {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
+			return
+		}
+		_, err = service.GetCouple(newCoupleName)
 		if err == nil {
-			ctx.AbortWithStatusJSON(http.StatusConflict, presentation.Error(lang, "CoupleAlreadyExists"))
+			ctx.JSON(http.StatusConflict, presentation.Error(lang, "CoupleAlreadyExists"))
+			return
 		} else {
 			if err != mongo.ErrNoDocuments {
-				ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+				return
 			}
 		}
 		err = service.ChangeCoupleName(user.CoupleID, newCoupleName)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
 		}
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ChangedCoupleName"))
 	}
@@ -420,8 +438,8 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService)) //tested
 	r.POST("/couple/break-up", lastLastEdonCast(service, userService))
-	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service))
-	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))
-	r.PUT("/couple/update", updateCouple(service))
-	r.PUT("/couple/change-name", changeCoupleName(service))
+	r.PUT("/couple", updateCouple(service))
+	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
+	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
+	r.PATCH("/couple/name", changeCoupleName(service))                  //tested
 }

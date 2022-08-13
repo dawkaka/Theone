@@ -277,5 +277,9 @@
 "RequestRejected": {
   "description": "rejected request",
   "other": "request rejected"
+},
+"CoverPicUpdated": {
+  "description": "message when couple change their cover picture",
+  "other": "Cover picture updated"
 }
 }

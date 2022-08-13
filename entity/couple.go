@@ -31,9 +31,9 @@ type Couple struct {
 
 type UpdateCouple struct {
 	Bio           string    `json:"bio"`
-	Pronouns      string    `json:"pronouns"`
 	Website       string    `json:"website"`
 	DateCommenced time.Time `json:"date_commenced"`
+	Status        string    `json:"status"`
 	UpdatedAt     time.Time `bson:"updated_at"`
 	Lang          string    `json:"lang"`
 }
@@ -43,20 +43,20 @@ func (u UpdateCouple) Validate() []string {
 	if !validator.IsBio(u.Bio) {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidBio"))
 	}
-	if !validator.IsPronouns(u.Pronouns) {
-		errs = append(errs, inter.Localize(u.Lang, "InvalidPronouns"))
-	}
 	if !validator.IsWebsite(u.Website) {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidWebsite"))
 	}
 	if !validator.IsValidPastDate(u.DateCommenced) {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidCommencedDate"))
 	}
+	if len(u.Status) < 4 || len(u.Status) > 30 {
+		errs = append(errs, "InvalidStatus")
+	}
 	return errs
 }
 
 func (u *UpdateCouple) Sanitize() {
 	u.Bio = strings.TrimSpace(u.Bio)
-	u.Pronouns = strings.TrimSpace(u.Pronouns)
 	u.Website = strings.TrimSpace(u.Website)
+	u.Status = strings.TrimSpace(u.Status)
 }
