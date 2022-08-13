@@ -38,6 +38,7 @@ type Writer interface {
 	ChangeSettings(userID entity.ID, setting, value string) error
 	NullifyRequest([2]entity.ID) error
 	Notifications(userName string, page int) ([]entity.Notification, error)
+	BreakedUp(couple [2]entity.ID) error
 }
 
 //Repository interface
@@ -73,4 +74,5 @@ type UseCase interface {
 	CheckSignup(userName, email string) (entity.User, error)
 	NullifyRequest([2]entity.ID) error
 	GetNotifications(userName string, page int) ([]entity.Notification, error)
+	BreakedUp(couple [2]entity.ID) error
 }

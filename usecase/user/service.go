@@ -137,3 +137,7 @@ func (s *Service) NullifyRequest(userIDs [2]entity.ID) error {
 func (s *Service) GetNotifications(userName string, skip int) ([]entity.Notification, error) {
 	return s.repo.Notifications(userName, skip)
 }
+
+func (s *Service) BreakedUp(couple [2]entity.ID) error {
+	return s.repo.BreakedUp(couple)
+}

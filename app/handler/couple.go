@@ -336,11 +336,13 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 		user := session.Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !user.HasPartner {
-			ctx.AbortWithStatusJSON(http.StatusForbidden, presentation.Error(lang, "IsSingle"))
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "IsSingle"))
+			return
 		}
 		err := service.BreakUp(user.CoupleID)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
 		}
 
 		go func() {
@@ -348,9 +350,14 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 				Type:    "breakUp",
 				Message: inter.LocalizeWithFullName(lang, user.FirstName, user.LastName, "YourPartnerBrokeUpWithYou"),
 			}
-
-			err = userService.NotifyCouple([2]entity.ID{user.PartnerID, primitive.NewObjectID()}, notif)
+			userService.BreakedUp([2]entity.ID{user.ID, user.PartnerID})
+			_ = userService.NotifyCouple([2]entity.ID{user.PartnerID, primitive.NewObjectID()}, notif)
 		}()
+		user.HasPartner = false
+		user.PartnerID = primitive.ObjectID{}
+		user.CoupleID = primitive.ObjectID{}
+		session.Set("user", user)
+		session.Save()
 		ctx.SetCookie("couple_ID", "", -33, "/", "", false, true)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "BreakedUp"))
 	}
@@ -436,9 +443,9 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
 	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
-	r.POST("/couple/new/:partnerID", newCouple(service, userService)) //tested
-	r.POST("/couple/break-up", lastLastEdonCast(service, userService))
-	r.PUT("/couple", updateCouple(service))
+	r.POST("/couple/new/:partnerID", newCouple(service, userService))   //tested
+	r.POST("/couple/break-up", lastLastEdonCast(service, userService))  //tested
+	r.PUT("/couple", updateCouple(service))                             //tested
 	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
 	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
 	r.PATCH("/couple/name", changeCoupleName(service))                  //tested
