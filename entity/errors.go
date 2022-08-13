@@ -13,4 +13,5 @@ var (
 	ErrImageProcessing    = errors.New("ImageProcessingFailed")
 	ErrInvalidID          = errors.New("InvalidBsonID")
 	ErrUnsupportedImage   = errors.New("UnsupportedImage")
+	ErrCoupleNotFound     = errors.New("CoupleNotFound")
 )

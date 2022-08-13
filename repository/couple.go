@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -30,7 +29,7 @@ func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
 	result := entity.Couple{}
 	err := c.collection.FindOne(
 		context.TODO(),
-		bson.D{{Key: "couple_name", Value: coupleName}},
+		bson.D{{Key: "couple_name", Value: coupleName}, {Key: "separated", Value: false}},
 		opts,
 	).Decode(&result)
 	return result, err
@@ -38,7 +37,7 @@ func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
 
 func (c *CoupleMongo) List(IDs []entity.ID) ([]presentation.CouplePreview, error) {
 	cursor, err := c.collection.Find(context.TODO(),
-		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: IDs}}}},
+		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: IDs}}}, {Key: "separated", Value: false}},
 	)
 	if err != nil {
 		return nil, err
@@ -132,12 +131,15 @@ func (c *CoupleMongo) Follower(userID, coupleID entity.ID) error {
 	_, err := c.collection.UpdateByID(
 		context.TODO(),
 		coupleID,
-		bson.D{
-			{Key: "$addToSet", Value: bson.D{{Key: "followers", Value: userID}}},
-			{Key: "$set", Value: bson.D{{Key: "followers_count", Value: bson.D{{Key: "$size", Value: "$followers"}}}}},
+		bson.A{
+			bson.D{{
+				Key: "$set", Value: bson.M{"followers": bson.M{"$setUnion": []interface{}{"$followers", []entity.ID{userID}}}},
+			}},
+			bson.D{{
+				Key: "$set", Value: bson.M{"followers_count": bson.M{"$size": "$followers"}},
+			}},
 		},
 	)
-	fmt.Println(err)
 	return err
 }
 
@@ -145,9 +147,13 @@ func (c *CoupleMongo) Unfollow(coupleID, userID entity.ID) error {
 	_, err := c.collection.UpdateByID(
 		context.TODO(),
 		coupleID,
-		bson.D{
-			{Key: "$pull", Value: bson.D{{Key: "followers", Value: userID}}},
-			{Key: "$set", Value: bson.M{"followers_count": bson.M{"$size": "$followers"}}},
+		bson.A{
+			bson.D{{
+				Key: "$set", Value: bson.M{"followers": bson.M{"$setDifference": []interface{}{"$followers", []entity.ID{userID}}}},
+			}},
+			bson.D{{
+				Key: "$set", Value: bson.M{"followers_count": bson.M{"$size": "$followers"}},
+			}},
 		},
 	)
 	return err

@@ -292,32 +292,34 @@ func (u *UserMongo) Update(userID entity.ID, update entity.UpdateUser) error {
 }
 
 func (u *UserMongo) Follow(coupleID entity.ID, userID entity.ID) error {
-	result, err := u.collection.UpdateByID(
+	_, err := u.collection.UpdateByID(
 		context.TODO(),
 		userID,
-		bson.D{
-			{Key: "$inc", Value: bson.D{{Key: "following_count", Value: 1}}},
-			{Key: "$push", Value: bson.D{{Key: "following", Value: coupleID}}},
+		bson.A{
+			bson.D{{
+				Key: "$set", Value: bson.M{"following": bson.M{"$setUnion": []interface{}{"$following", []entity.ID{coupleID}}}},
+			}},
+			bson.D{{
+				Key: "$set", Value: bson.M{"following_count": bson.M{"$size": "$following"}},
+			}},
 		},
 	)
-	if result.ModifiedCount < 1 {
-		return errors.New("user follow: something went wrong")
-	}
 	return err
 }
 
 func (u *UserMongo) Unfollow(coupleID, userID entity.ID) error {
-	result, err := u.collection.UpdateByID(
+	_, err := u.collection.UpdateByID(
 		context.TODO(),
 		userID,
-		bson.D{
-			{Key: "$inc", Value: bson.D{{Key: "following_count", Value: -1}}},
-			{Key: "$pull", Value: bson.D{{Key: "following", Value: coupleID}}},
+		bson.A{
+			bson.D{{
+				Key: "$set", Value: bson.M{"following": bson.M{"$setDifference": []interface{}{"$following", []entity.ID{coupleID}}}},
+			}},
+			bson.D{{
+				Key: "$set", Value: bson.M{"following_count": bson.M{"$size": "$following"}},
+			}},
 		},
 	)
-	if result.MatchedCount < 1 {
-		return errors.New("unfollow: no match found")
-	}
 	return err
 }
 

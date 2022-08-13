@@ -414,12 +414,17 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+		err = coupleService.NewFollower(userID, couple.ID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+
 		err = service.Follow(couple.ID, userID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		_ = coupleService.NewFollower(userID, couple.ID)
 		notif := entity.Notification{
 			Type:    "follow",
 			Message: inter.LocalizeWithUserName(lang, userName, "NewFollower"),
@@ -449,12 +454,16 @@ func unfollow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFun
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+		err = coupleService.RemoveFollower(couple.ID, userID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
 		err = service.Unfollow(couple.ID, userID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		_ = coupleService.RemoveFollower(couple.ID, userID)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "Unfollowed"))
 	}
 }
@@ -756,18 +765,18 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/u/pending-request", getPendingRequest(service))         //tested
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/notifications/:skip", notifications(service))              //tested
-	r.POST("/user/logout", logout)                                          //tested
-	r.POST("/user/u/cancel-request", cancelRequest(service))                //tested
-	r.POST("/user/u/reject-request", rejectRequest(service))                //tested
-	r.POST("/user/couple-request/:userName", initiateRequest(service))      //tested
-	r.POST("/user/change-name", changeUserName(service))                    //tested
-	r.PUT("/user/request-status/:status", changeRequestStatus(service))     //tested
-	r.PUT("/user", updateUser(service))                                     //tested
-	r.PUT("/user/show-pictures/:index", updateShowPicture(service))         //tested
-	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))   //tested
-	r.PATCH("/user/follow/:coupleName", follow(service, coupleService))     //tested
-	r.PATCH("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
-	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))      //tested
+	r.GET("/user/notifications/:skip", notifications(service))             //tested
+	r.POST("/user/logout", logout)                                         //tested
+	r.POST("/user/u/cancel-request", cancelRequest(service))               //tested
+	r.POST("/user/u/reject-request", rejectRequest(service))               //tested
+	r.POST("/user/couple-request/:userName", initiateRequest(service))     //tested
+	r.POST("/user/change-name", changeUserName(service))                   //tested
+	r.PUT("/user/request-status/:status", changeRequestStatus(service))    //tested
+	r.PUT("/user", updateUser(service))                                    //tested
+	r.PUT("/user/show-pictures/:index", updateShowPicture(service))        //tested
+	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))  //tested
+	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
+	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
+	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))     //tested
 	r.DELETE("/user", deleteUser(service))
 }
