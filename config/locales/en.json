@@ -276,5 +276,25 @@
   "CoverPicUpdated": {
     "description": "message when couple change their cover picture",
     "other": "Cover picture updated"
-  }
+  },
+  "InvalidCommencedDate":{
+    "description": "not a past date",
+    "other": "Date relationship started can not be a past date"
+  },
+  "InvalidBio": {
+    "description": "Bio not accepted",
+    "other": "Bio can not be longer than 256 characters"
+  },
+  "InvalidWebsite": {
+    "description": "Not a website",
+    "other": "website can not be longer than 100 characters"
+ },
+ "InvalidPronouns": {
+   "description": "Wrong pronoun format",
+   "other": "Wrong pronouns format"
+ },
+ "InvalidStatus": {
+ "description": "not a valid status",
+ "other": "Status can not be longer than 30 characters"
+ }
 }

@@ -143,8 +143,11 @@ type UpdateUser struct {
 
 func (u UpdateUser) Validate() []string {
 	errs := []string{}
-	if !validator.IsRealName(u.FirstName) || !validator.IsRealName(u.LastName) {
-		errs = append(errs, inter.Localize(u.Lang, "InvalidFirstNameOrLastName"))
+	if !validator.IsRealName(u.FirstName) {
+		errs = append(errs, inter.Localize(u.Lang, "WrongFirstNameFormat"))
+	}
+	if !validator.IsRealName(u.LastName) {
+		errs = append(errs, inter.Localize(u.Lang, "WrongLastNameFormat"))
 	}
 	if u.Bio != "" && !validator.IsBio(u.Bio) {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidBio"))
