@@ -270,7 +270,7 @@ func updateCoupleCoverPic(service couple.UseCase) gin.HandlerFunc {
 func updateCouple(service couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		lang := user.Lang
 		var update entity.UpdateCouple
 		err := ctx.ShouldBindJSON(&update)
 		if err != nil {

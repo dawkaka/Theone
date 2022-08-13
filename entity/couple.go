@@ -50,7 +50,7 @@ func (u UpdateCouple) Validate() []string {
 		errs = append(errs, inter.Localize(u.Lang, "InvalidCommencedDate"))
 	}
 	if len(u.Status) < 4 || len(u.Status) > 30 {
-		errs = append(errs, "InvalidStatus")
+		errs = append(errs, inter.Localize(u.Lang, "InvalidStatus"))
 	}
 	return errs
 }
