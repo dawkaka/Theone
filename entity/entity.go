@@ -11,10 +11,10 @@ type ID = primitive.ObjectID
 
 type Comment struct {
 	ID         ID        `json:"id" bson:"_id,omitempty"`
-	UserID     ID        `json:"user_id" bson:"user_id"`
+	UserID     ID        `json:"user_id,omitempty" bson:"user_id,omitempty"`
 	Comment    string    `json:"comment"`
 	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
-	Likes      []ID      `json:"likes" bson:"likes, omitempty"`
+	Likes      []ID      `json:"likes,omitempty" bson:"likes, omitempty"`
 	LikesCount int       `json:"likes_count" bson:"likes_count"`
 }
 

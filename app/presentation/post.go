@@ -17,10 +17,7 @@ type Post struct {
 }
 
 type Comment struct {
-	ID         entity.ID `json:"id" bson:"_id"`
-	Comment    string    `json:"comment" bson:"comment"`
-	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
-	LikesCount int       `json:"likes_count" bson:"likes_count"`
-	UserName   string    `json:"user_name" bson:"user_name"`
-	HasPartner bool      `json:"has_partner" bson:"has_partner"`
+	entity.Comment `bson:"inline"`
+	UserName       string `json:"user_name" bson:"user_name"`
+	HasPartner     bool   `json:"has_partner" bson:"has_partner"`
 }
