@@ -43,12 +43,26 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 		return fileName, err
 	}
 	fmt.Println(fileHeader.Filename)
+	if fileHeader.Size > 2000000 {
+		return fileName, entity.ErrImageProcessing
+	}
 	image := make([]byte, fileHeader.Size)
 	f.Read(image)
 	imgType, isValid := validator.IsSupportedImageType(image)
 
 	if !isValid {
 		return fileName, entity.ErrUnsupportedImage
+	}
+	options := bimg.Options{
+		Width:     400,
+		Height:    400,
+		Crop:      true,
+		Quality:   90,
+		Interlace: true,
+	}
+	newImage, err := bimg.NewImage(image).Process(options)
+	if err != nil {
+		return fileName, entity.ErrImageProcessing
 	}
 
 	fileName = uuid.New().String() + "." + strings.Split(imgType, "/")[1]
@@ -57,7 +71,7 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket:      aws.String(bucket),
 		Key:         aws.String(fileName),
-		Body:        bytes.NewReader(image),
+		Body:        bytes.NewReader(newImage),
 		ContentType: aws.String(imgType),
 	})
 	return fileName, err
@@ -107,7 +121,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 	options := bimg.Options{
 		Width:     height,
 		Height:    width,
-		Crop:      false,
+		Crop:      true,
 		Quality:   100,
 		Interlace: true,
 	}
