@@ -20,4 +20,5 @@ type Comment struct {
 	entity.Comment `bson:"inline"`
 	UserName       string `json:"user_name" bson:"user_name"`
 	HasPartner     bool   `json:"has_partner" bson:"has_partner"`
+	LikesCount     int    `json:"likes_count" bson:"likes_count"`
 }
