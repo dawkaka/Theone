@@ -71,7 +71,7 @@ func (p *PostMongo) Comments(videoID string, skip int) ([]presentation.Comment, 
 				"_id":         1,
 				"comment":     "$comments.comment",
 				"created_at":  "$comments.created_at",
-				"likes_count": "$comments.likes_count",
+				"likes_count": bson.M{"$size": "$comments.likes"},
 				"user_name":   "$user.user_name",
 				"has_partner": "$user.has_partner",
 			},
@@ -210,14 +210,30 @@ func (p *PostMongo) UnLike(postID, userID entity.ID) error {
 }
 
 func (p *PostMongo) Edit(postID, coupleID entity.ID, newCaption string) error {
-	res, err := p.collection.UpdateOne(
+	_, err := p.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: postID}, {Key: "couple_id", Value: coupleID}},
 		bson.D{{Key: "$set", Value: bson.D{{Key: "caption", Value: newCaption}}}},
 	)
-	if res.ModifiedCount == 0 {
-		return errors.New("no match found")
-	}
+
+	return err
+}
+
+func (p *PostMongo) LikeComment(postID, commentID, userID entity.ID) error {
+	_, err := p.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: postID}, {Key: "comments._id", Value: commentID}},
+		bson.M{"$addToSet": bson.M{"comments.$.likes": userID}},
+	)
+	return err
+}
+
+func (p *PostMongo) UnLikeComment(postID, commentID, userID entity.ID) error {
+	_, err := p.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: postID}, {Key: "comments._id", Value: commentID}},
+		bson.M{"$pull": bson.M{"comments.$.likes": userID}},
+	)
 	return err
 }
 

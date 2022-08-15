@@ -239,7 +239,7 @@ func deletePostComment(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		commentID, postID := ctx.Param("commentID"), ctx.Param("postID")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		lang := user.Lang
 		if strings.TrimSpace(commentID) == "" || strings.TrimSpace(postID) == "" {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -296,6 +296,65 @@ func editPostCaption(service post.UseCase) gin.HandlerFunc {
 	}
 }
 
+func likeComment(service post.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		commentID, postID := ctx.Param("commentID"), ctx.Param("postID")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := user.Lang
+		if strings.TrimSpace(commentID) == "" || strings.TrimSpace(postID) == "" {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		pID, err := entity.StringToID(postID)
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
+		}
+
+		cID, err := entity.StringToID(commentID)
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
+		}
+
+		err = service.LikeComment(pID, cID, user.ID)
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, "SomethingWentWrong")
+			return
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "PostLiked"))
+	}
+}
+
+func unlikeComment(service post.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		commentID, postID := ctx.Param("commentID"), ctx.Param("postID")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		lang := user.Lang
+		if strings.TrimSpace(commentID) == "" || strings.TrimSpace(postID) == "" {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		pID, err := entity.StringToID(postID)
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
+		}
+
+		cID, err := entity.StringToID(commentID)
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		err = service.UnLikeComment(pID, cID, user.ID)
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, "SomethingWentWrong")
+			return
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "UnlikePost"))
+	}
+}
+
 func deletePost(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
@@ -316,13 +375,15 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 }
 
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase) {
-	r.GET("/post/:coupleName/:postID", getPost(service, coupleService)) //tested
-	r.GET("/post/comments/:postID/:skip", postComments(service))
+	r.GET("/post/:coupleName/:postID", getPost(service, coupleService))      //tested
+	r.GET("/post/comments/:postID/:skip", postComments(service))             //tested
 	r.POST("/post", newPost(service, coupleService, userService))            //tested
 	r.POST("/post/comment/:postID", newComment(service, userService))        //tested
 	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service)) //tested
 	r.PATCH("/post/like/:postID", like(service, userService))                //tested
 	r.PATCH("/post/unlike/:postID", unLikePost(service))                     //tested
 	r.PATCH("/post/edit/:postID", editPostCaption(service))                  //tested
+	r.PATCH("/post/comment/like/:postID/:commentID", likeComment(service))
+	r.PATCH("/post/comment/unlike/:postID/:commentID", unlikeComment(service))
 	r.DELETE("/post/:postID", deletePost(service))
 }
