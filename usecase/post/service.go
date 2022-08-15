@@ -3,6 +3,7 @@ package post
 import (
 	"errors"
 
+	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 )
 
@@ -29,7 +30,7 @@ func (s *Service) GetPostByID(id string) (entity.Post, error) {
 	return s.repo.GetByID((ID))
 }
 
-func (s *Service) GetComments(postid string, skip int) ([]entity.Comment, error) {
+func (s *Service) GetComments(postid string, skip int) ([]presentation.Comment, error) {
 	return s.repo.Comments(postid, skip)
 }
 

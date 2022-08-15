@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -25,17 +26,21 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := utils.GetLang(user.Lang, ctx.Request.Header)
-		caption := strings.TrimSpace(ctx.PostForm("caption"))
-		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
+		lang := user.Lang
 		form, err := ctx.MultipartForm()
 		files := form.File["post_image"]
+		caption := strings.TrimSpace(ctx.PostForm("caption"))
+		fmt.Println(form.Value)
+		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
 		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-
+		if !user.HasPartner {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "OnlyCoupleCanPost"))
+		}
 		filesMetadata, err := myaws.UploadMultipleFiles(files)
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -51,6 +56,8 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			Caption:     caption,
 			Mentioned:   mentions,
 			CreatedAt:   time.Now(),
+			Likes:       []entity.ID{},
+			Comments:    []entity.Comment{},
 		}
 		_, err = service.CreatePost(&post)
 		if err != nil {
@@ -86,11 +93,11 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		coupleName, postID := ctx.Param("coupleName"), ctx.Param("postId")
+		coupleName, postID := ctx.Param("coupleName"), ctx.Param("postID")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := utils.GetLang(user.Lang, ctx.Request.Header)
-		if !validator.IsUserName(coupleName) || strings.TrimSpace(postID) == "" {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+		lang := user.Lang
+		if !validator.IsCoupleName(coupleName) || strings.TrimSpace(postID) == "" {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		couple, err := coupleService.GetCouple(coupleName)
@@ -100,12 +107,21 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 				return
 			}
 		}
-		post, err := service.GetPost(couple.ID.String(), postID)
+		post, err := service.GetPost(couple.ID.Hex(), postID)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"post": post})
+		p := presentation.Post{
+			CoupleName:    couple.CoupleName,
+			ID:            post.ID,
+			CreatedAt:     post.CreatedAt,
+			Caption:       post.Caption,
+			LikesCount:    post.LikesCount,
+			CommentsCount: post.CommentsCount,
+			Files:         post.Files,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"post": p})
 	}
 }
 
@@ -119,6 +135,7 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 			return
 		}
 		post, err := service.GetPostByID(postID)
+		fmt.Println(err)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "NotFoundComment"))
@@ -128,14 +145,23 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 			return
 		}
 		var comment entity.Comment
-		err = ctx.ShouldBind(comment)
+		err = ctx.ShouldBindJSON(&comment)
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
+		fmt.Println(strings.TrimSpace(comment.Comment))
+		if !validator.IsCaption(comment.Comment) {
+			ctx.JSON(http.StatusUnprocessableEntity, "InvalidComment")
+			return
+		}
 		comment.UserID = user.ID
+		comment.ID = primitive.NewObjectID()
 		comment.CreatedAt = time.Now()
+		comment.Likes = []entity.ID{}
 		err = service.NewComment(postID, comment)
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -160,6 +186,7 @@ func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 			return
 		}
 		post, err := service.GetPostByID(postID)
+		fmt.Println(err)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "NotFoundComment"))
@@ -169,7 +196,8 @@ func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		err = service.LikePost(postID, user.ID.String())
+		err = service.LikePost(postID, user.ID.Hex())
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -194,8 +222,9 @@ func postComments(service post.UseCase) gin.HandlerFunc {
 		}
 		postID := ctx.Param("postID")
 		comments, err := service.GetComments(postID, skip)
+		fmt.Println(err)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		page := entity.Pagination{
@@ -287,13 +316,13 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 }
 
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase) {
-	r.GET("/post/:coupleName/:postID", getPost(service, coupleService))
+	r.GET("/post/:coupleName/:postID", getPost(service, coupleService)) //tested
 	r.GET("/post/comments/:postID/:skip", postComments(service))
-	r.POST("/post", newPost(service, coupleService, userService))
-	r.POST("/post/new-comment/:postID", newComment(service, userService))
-	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service))
-	r.PATCH("/post/like/:postID", like(service, userService))
-	r.PATCH("/post/unlike/:postID", unLikePost(service))
-	r.PATCH("/post/edit/:postID", editPostCaption(service))
+	r.POST("/post", newPost(service, coupleService, userService))            //tested
+	r.POST("/post/comment/:postID", newComment(service, userService))        //tested
+	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service)) //tested
+	r.PATCH("/post/like/:postID", like(service, userService))                //tested
+	r.PATCH("/post/unlike/:postID", unLikePost(service))                     //tested
+	r.PATCH("/post/edit/:postID", editPostCaption(service))                  //tested
 	r.DELETE("/post/:postID", deletePost(service))
 }

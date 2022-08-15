@@ -9,7 +9,7 @@ import (
 
 //Post data
 type Post struct {
-	ID            ID             `json:"id" bson:"_id"`
+	ID            ID             `json:"id" bson:"_id,omitempty"`
 	PostID        string         `json:"post_id" bson:"post_id"`
 	CoupleID      ID             `json:"couple_id" bson:"couple_id"`
 	InitiatedID   ID             `json:"initiated_id" bson:"initiated_id"`

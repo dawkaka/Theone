@@ -88,6 +88,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 	if err != nil {
 		ch <- entity.ErrImageProcessing
 	}
+	fmt.Println(err)
 
 	image := make([]byte, file.Size)
 	f.Read(image)
@@ -96,6 +97,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 		ch <- entity.ErrUnsupportedImage
 	}
 	size, err := bimg.NewImage(image).Size()
+	fmt.Println(err)
 	if err != nil {
 		ch <- entity.ErrImageProcessing
 	}
@@ -110,6 +112,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 		Interlace: true,
 	}
 	newImage, err := bimg.NewImage(image).Process(options)
+	fmt.Println(err)
 	if err != nil {
 		ch <- entity.ErrImageProcessing
 	}
@@ -125,6 +128,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 		Body:        imageReader,
 		ContentType: aws.String(imgType),
 	})
+	fmt.Println(err)
 
 	if err != nil {
 		ch <- entity.ErrImageProcessing

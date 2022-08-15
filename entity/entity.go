@@ -10,10 +10,11 @@ import (
 type ID = primitive.ObjectID
 
 type Comment struct {
+	ID         ID        `json:"id" bson:"_id,omitempty"`
 	UserID     ID        `json:"user_id" bson:"user_id"`
 	Comment    string    `json:"comment"`
 	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
-	Likes      []ID      `json:"likes"`
+	Likes      []ID      `json:"likes" bson:"likes, omitempty"`
 	LikesCount int       `json:"likes_count" bson:"likes_count"`
 }
 
