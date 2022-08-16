@@ -258,8 +258,8 @@
     "other": "Failed to create a couple profile"
   },
   "RequestPartiallyCompleted": {
-    "description":"not able to update partner",
-    "other":"partially completed"
+    "description": "not able to update partner",
+    "other": "partially completed"
   },
   "NoRequest": {
     "description": "soemthign",
@@ -277,7 +277,7 @@
     "description": "message when couple change their cover picture",
     "other": "Cover picture updated"
   },
-  "InvalidCommencedDate":{
+  "InvalidCommencedDate": {
     "description": "not a past date",
     "other": "Date relationship started can not be a past date"
   },
@@ -288,13 +288,33 @@
   "InvalidWebsite": {
     "description": "Not a website",
     "other": "website can not be longer than 100 characters"
- },
- "InvalidPronouns": {
-   "description": "Wrong pronoun format",
-   "other": "Wrong pronouns format"
- },
- "InvalidStatus": {
- "description": "not a valid status",
- "other": "Status can not be longer than 30 characters"
- }
+  },
+  "InvalidPronouns": {
+    "description": "Wrong pronoun format",
+    "other": "Wrong pronouns format"
+  },
+  "InvalidStatus": {
+    "description": "not a valid status",
+    "other": "Status can not be longer than 30 characters"
+  },
+  "FileTooLarge": {
+    "description": "user posting a large file",
+    "other": "File is too large"
+  },
+  "UnsupportedFile": {
+    "description": "unsurpoted file",
+    "other": "File type is unsupported"
+  },
+  "VideoTooLong": {
+    "description": "Long video",
+    "other": "Video can not be longer 60 seconds"
+  },
+  "VideoProcessingFailed": {
+    "description": "Failed to process video",
+    "other": "Sorry, we couln't process your video"
+  },
+  "FileUploadFailed": {
+    "description": "Failed to uplaod file",
+    "other": "We couldn't uplaod some file but it's our fault, give it some time nad try again"
+  }
 }

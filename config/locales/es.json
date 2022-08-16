@@ -1,4 +1,3 @@
-
 {
   "LoginRequired": {
     "description": "User is required to login",
@@ -37,7 +36,7 @@
     "other": "Algo salió mal, es culpa nuestra, dale un poco de tiempo e inténtalo de nuevo."
   },
   "BadRequest": {
-    "description":"Bad request message",
+    "description": "Bad request message",
     "other": "Algo está mal con su solicitud, compruébelo y vuelva a intentarlo."
   },
   "RequestCreated": {
@@ -48,7 +47,7 @@
     "description": "Notify user when partner accepts their request",
     "other": "{{.FirstName}} {{.LastName}} aceptado su solicitud de relación"
   },
-  "NewCoupleRequest":{
+  "NewCoupleRequest": {
     "description": "Notify user when the get a couple request",
     "other": "{{.FirstName}} {{.LastName}} te envié una solicitud de relación"
   },
@@ -92,9 +91,7 @@
     "description": "edit profile Changes reflected",
     "other": "Foto de perfil subida con éxito"
   },
-  "AccountDeleted": {
-
-  },
+  "AccountDeleted": {},
   "ProfilePicUpdated": {
     "description": "Change profile picture",
     "other": "Foto de perfil cambiada"
@@ -109,7 +106,7 @@
   },
   "PostMentionedNotif": {
     "description": "When user is tagged in a post or video",
-    "other":"{{.UserName}} te mencione en una publicacion"
+    "other": "{{.UserName}} te mencione en una publicacion"
   },
   "PartnerNewPostNotif": {
     "description": "Notify user when partner makes a new post",
@@ -120,7 +117,7 @@
     "other": "Nueva publicación subido con éxito"
   },
   "NotFoundComment": {
-    "description":"Comment not found",
+    "description": "Comment not found",
     "other": "comentario no encontrado"
   },
   "PostCommentNotif": {
@@ -129,7 +126,7 @@
   },
   "CommentAdded": {
     "description": "comment was successfull",
-    "other":"Comentario añadido"
+    "other": "Comentario añadido"
   },
   "PostLikeNotif": {
     "description": "Post like notif",
@@ -147,9 +144,7 @@
     "description": "Edit post caption message",
     "other": "Subtítulo editado con éxito"
   },
-  "VideoCommentNotif": {
-
-  },
+  "VideoCommentNotif": {},
   "VideoLiked": {
     "description": "Post comment notif",
     "other": "{{.UserName}} respondió a tu publicación."
@@ -183,19 +178,19 @@
     "other": "Nombre de pareja no esta desponible"
   },
   "ChangedCoupleName": {
-    "description":"change couple name",
+    "description": "change couple name",
     "other": "Nombre cambiado"
   },
   "IsSingle": {
-    "description":"You are single already",
+    "description": "You are single already",
     "other": "No en una relación"
   },
   "YourPartnerBrokeUpWithYou": {
-    "description":"Your ass has been dumped",
+    "description": "Your ass has been dumped",
     "other": "{{.FirstName}} {{.LastName}} ya no quiere tener un perfil de pareja"
   },
   "BreakedUp": {
-    "description":"breakup message",
+    "description": "breakup message",
     "other": "You are no longer in a relationship"
   },
   "LogedOut": {
@@ -210,7 +205,7 @@
     "description": "user tried to login but it wasn't successfull",
     "other": "Error de inicio de sesión, nombre de usuario o contraseña incorrectos"
   },
-  "LoginSuccessfull":{
+  "LoginSuccessfull": {
     "description": "user tried to login and it  was successfull",
     "other": "Conectado"
   },
@@ -257,45 +252,65 @@
   "LanguageUpdated": {
     "description": "user changed their preffered langauge",
     "other": "Idioma cambiado con exito"
- },
- "InvalidPartnerRequest":{
-  "description": "Creating a couple with an invalid or  no request",
-  "other":"Failed to create a couple profile"
- },
- "RequestPartiallyCompleted": {
-  "description":"not able to update partner",
-  "other":"partially completed"
-},
-"NoRequest": {
-  "description": "soemthign",
-  "other": "no reuqewst"
-},
-"RequestCancelled": {
-  "description": "hahahah",
-  "other": "request cancelled"
-},
-"RequestRejected": {
-  "description": "rejected request",
-  "other": "request rejected"
-},
-"CoverPicUpdated": {
-  "description": "message when couple change their cover picture",
-  "other": "Cover picture updated"
-},
-"InvalidCommencedDate":{
-  "description": "not a past date",
-  "other": "Date relationship started can not be a past date"
-},
-"InvalidWebsite": {
-  "description": "Not a website",
-  "other": "website can not be longer than 100 characters"
-},
-"InvalidPronouns": {
- "description": "Wrong pronoun format",
- "other": "Wrong pronouns format"
-},
-"InvalidStatus": {
-"description": "not a valid status",
-"other": "Status can not be longer than 30 characters"
-}
+  },
+  "InvalidPartnerRequest": {
+    "description": "Creating a couple with an invalid or  no request",
+    "other": "Failed to create a couple profile"
+  },
+  "RequestPartiallyCompleted": {
+    "description": "not able to update partner",
+    "other": "partially completed"
+  },
+  "NoRequest": {
+    "description": "soemthign",
+    "other": "no reuqewst"
+  },
+  "RequestCancelled": {
+    "description": "hahahah",
+    "other": "request cancelled"
+  },
+  "RequestRejected": {
+    "description": "rejected request",
+    "other": "request rejected"
+  },
+  "CoverPicUpdated": {
+    "description": "message when couple change their cover picture",
+    "other": "Cover picture updated"
+  },
+  "InvalidCommencedDate": {
+    "description": "not a past date",
+    "other": "Date relationship started can not be a past date"
+  },
+  "InvalidWebsite": {
+    "description": "Not a website",
+    "other": "website can not be longer than 100 characters"
+  },
+  "InvalidPronouns": {
+    "description": "Wrong pronoun format",
+    "other": "Wrong pronouns format"
+  },
+  "InvalidStatus": {
+    "description": "not a valid status",
+    "other": "Status can not be longer than 30 characters"
+  },
+  "FileTooLarge": {
+    "description": "user posting a large file",
+    "other": "File is too large"
+  },
+  "UnsupportedFile": {
+    "description": "unsurpoted file",
+    "other": "File type is unsupported"
+  },
+  "VideoTooLong": {
+    "description": "Long video",
+    "other": "Video can not be longer 60 seconds"
+  },
+  "VideoProcessingFailed": {
+    "description": "Failed to process video",
+    "other": "Sorry, we couln't process your video"
+  },
+  "FileUploadFailed": {
+    "description": "Failed to uplaod file",
+    "other": "We couldn't uplaod some file but it's our fault, give it some time nad try again"
+  }
 }

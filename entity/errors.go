@@ -18,7 +18,7 @@ var (
 	ErrCoupleNotFound     = errors.New("CoupleNotFound")
 	ErrAWSUpload          = errors.New("FileUploadFailed")
 	ErrFileProcessing     = errors.New("FailedToProccessFile")
-	ErrVideoTooLong       = errors.New("VideoLongerThan60")
+	ErrVideoTooLong       = errors.New("VideoTooLong")
 	ErrVideoProcessing    = errors.New("VideoProcessingFailed")
 )
 
