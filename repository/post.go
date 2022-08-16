@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -82,7 +81,6 @@ func (p *PostMongo) Comments(videoID string, skip int) ([]presentation.Comment, 
 		context.TODO(),
 		mongo.Pipeline{matchStage, unwindStage, skipStage, limitStage, joinStage, unwindStage2, projectStage},
 	)
-	fmt.Println(err)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +118,6 @@ func (p *PostMongo) List(ids []entity.ID) ([]*entity.Post, error) {
 
 func (p *PostMongo) Create(post *entity.Post) (entity.ID, error) {
 	result, err := p.collection.InsertOne(context.TODO(), post)
-	fmt.Println(err)
 	if err != nil {
 		return primitive.ObjectID{}, err
 	}

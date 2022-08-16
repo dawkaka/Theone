@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -107,7 +106,6 @@ func login(service user.UseCase) gin.HandlerFunc {
 		}
 		user, err := service.Login(login.UserName)
 		if err != nil {
-			fmt.Println(err)
 			if err == entity.ErrUserNotFound {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "LoginFailed"))
 				return
@@ -553,7 +551,6 @@ func updateShowPicture(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		fileHeader, err := ctx.FormFile("show_picture")
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return

@@ -3,7 +3,6 @@ package myaws
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -141,7 +140,6 @@ func upload(file *multipart.FileHeader, ch chan any) {
 			ch <- entity.CustomError{Code: http.StatusUnprocessableEntity, Message: entity.ErrVideoProcessing.Error()}
 			return
 		}
-		fmt.Println(vStreamMeta)
 		vMeta := vStreamMeta.Streams[0]
 		vDuration, err := strconv.ParseFloat(vMeta.Duration, 64)
 		if err != nil {
@@ -190,7 +188,6 @@ func upload(file *multipart.FileHeader, ch chan any) {
 			Body:        imageReader,
 			ContentType: aws.String(fType),
 		})
-		fmt.Println(err)
 
 		if err != nil {
 			ch <- entity.CustomError{Code: http.StatusInternalServerError, Message: entity.ErrAWSUpload.Error()}

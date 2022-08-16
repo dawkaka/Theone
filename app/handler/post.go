@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -30,7 +29,6 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		form, err := ctx.MultipartForm()
 		files := form.File["post_image"]
 		caption := strings.TrimSpace(ctx.PostForm("caption"))
-		fmt.Println(form.Value)
 		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
 		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
@@ -40,8 +38,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "OnlyCoupleCanPost"))
 		}
 		filesMetadata, cErr := myaws.UploadMultipleFiles(files)
-		fmt.Println(cErr)
-		if err != nil {
+		if cErr != nil {
 			ctx.JSON(cErr.Code, presentation.Error(lang, cErr.Error()))
 			return
 		}
@@ -64,7 +61,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		//Post error created, whether notifications are successful or not user does't need to know
+		//Post created, whether notifications are successful or not user does't need to know
 		go func() {
 			notif := entity.Notification{
 				Type:       "PostMentioned",
@@ -84,10 +81,8 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			}
 
 		}()
-
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "NewPostAdded"))
 	}
-
 }
 
 func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
@@ -135,7 +130,6 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 			return
 		}
 		post, err := service.GetPostByID(postID)
-		fmt.Println(err)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "NotFoundComment"))
@@ -146,12 +140,10 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 		}
 		var comment entity.Comment
 		err = ctx.ShouldBindJSON(&comment)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		fmt.Println(strings.TrimSpace(comment.Comment))
 		if !validator.IsCaption(comment.Comment) {
 			ctx.JSON(http.StatusUnprocessableEntity, "InvalidComment")
 			return
@@ -161,7 +153,6 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 		comment.CreatedAt = time.Now()
 		comment.Likes = []entity.ID{}
 		err = service.NewComment(postID, comment)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -186,7 +177,6 @@ func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 			return
 		}
 		post, err := service.GetPostByID(postID)
-		fmt.Println(err)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "NotFoundComment"))
@@ -197,7 +187,6 @@ func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 		}
 
 		err = service.LikePost(postID, user.ID.Hex())
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -222,7 +211,6 @@ func postComments(service post.UseCase) gin.HandlerFunc {
 		}
 		postID := ctx.Param("postID")
 		comments, err := service.GetComments(postID, skip)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return

@@ -111,7 +111,6 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 		}
 		couple, err := service.GetCouple(coupleName)
 		if err != nil {
-			fmt.Println(err)
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
 				return
