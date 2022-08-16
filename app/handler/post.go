@@ -39,10 +39,10 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		if !user.HasPartner {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "OnlyCoupleCanPost"))
 		}
-		filesMetadata, err := myaws.UploadMultipleFiles(files)
-		fmt.Println(err)
+		filesMetadata, cErr := myaws.UploadMultipleFiles(files)
+		fmt.Println(cErr)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(cErr.Code, presentation.Error(lang, cErr.Error()))
 			return
 		}
 		mentions := utils.ExtracMentions(caption)

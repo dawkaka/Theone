@@ -13,5 +13,20 @@ var (
 	ErrImageProcessing    = errors.New("ImageProcessingFailed")
 	ErrInvalidID          = errors.New("InvalidBsonID")
 	ErrUnsupportedImage   = errors.New("UnsupportedImage")
+	ErrUnsupportedFile    = errors.New("UnsupportedFile")
+	ErrFileTooLarge       = errors.New("FileTooLarge")
 	ErrCoupleNotFound     = errors.New("CoupleNotFound")
+	ErrAWSUpload          = errors.New("FileUploadFailed")
+	ErrFileProcessing     = errors.New("FailedToProccessFile")
+	ErrVideoTooLong       = errors.New("VideoLongerThan60")
+	ErrVideoProcessing    = errors.New("VideoProcessingFailed")
 )
+
+type CustomError struct {
+	Code    int
+	Message string
+}
+
+func (c CustomError) Error() string {
+	return c.Message
+}

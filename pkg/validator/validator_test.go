@@ -185,7 +185,7 @@ func TestIsValidSetting(t *testing.T) {
 
 }
 
-func TestIsSupportedImageType(t *testing.T) {
+func TestIsSupportedFileType(t *testing.T) {
 	image, err := os.Open("/home/dawkaka/Pictures/yz series.jpg")
 	if err != nil {
 		panic(err)
@@ -200,11 +200,11 @@ func TestIsSupportedImageType(t *testing.T) {
 	pdf.Read(pdfBuffer)
 	image.Read(imgBuffer)
 
-	if i, val := IsSupportedImageType(imgBuffer); !val {
+	if i, val := IsSupportedFileType(imgBuffer); !val {
 		t.Fatalf("Testing %s. Expected %t got %t", i, true, false)
 	}
 
-	if i, val := IsSupportedImageType(pdfBuffer); val {
+	if i, val := IsSupportedFileType(pdfBuffer); val {
 		t.Fatalf("Testing %s. Expected %t got %t", i, false, true)
 	}
 }

@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"net/http"
 	"net/mail"
 	"regexp"
@@ -150,10 +151,11 @@ func IsValidDateOfBirth(date time.Time) (bool, string) {
 	return true, ""
 }
 
-func IsSupportedImageType(content []byte) (imageType string, supported bool) {
-	imageType = http.DetectContentType(content)
-	for _, val := range []string{"image/gif", "image/jpeg", "image/jpg", "image/png"} {
-		if val == imageType {
+func IsSupportedFileType(content []byte) (fType string, supported bool) {
+	fType = http.DetectContentType(content)
+	fmt.Println(fType)
+	for _, val := range []string{"image/gif", "image/jpeg", "image/jpg", "image/png", "video/mp4", "video/webm"} {
+		if val == fType {
 			supported = true
 			return
 		}

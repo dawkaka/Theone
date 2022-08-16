@@ -43,3 +43,14 @@ type PostMetadata struct {
 	Width  int64  `json:"witdth"`
 	Height int64  `json:"height"`
 }
+
+type VideoMetadata struct {
+	Width       uint16 `json:"width"`
+	Height      uint16 `json:"height"`
+	AspectRatio string `json:"display_aspect_ratio"`
+	Duration    string `json:"duration"`
+}
+
+type VideoStream struct {
+	Streams []VideoMetadata `json:"streams"`
+}
