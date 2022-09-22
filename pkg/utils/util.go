@@ -17,7 +17,10 @@ func GetLang(userLang string, header http.Header) string {
 	lang := header.Get("Accept-Language")
 
 	if lang != "" {
-		return lang
+		l := strings.Split(lang, "-")[0]
+		if validator.IsSupportedLanguage(l) {
+			return l
+		}
 	}
 	return "en"
 }

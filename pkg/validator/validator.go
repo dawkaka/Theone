@@ -180,3 +180,12 @@ func Is18Plus(date time.Time) bool {
 	AgeDiff := Today - UserAge
 	return AgeDiff >= 18
 }
+
+func IsSupportedLanguage(lang string) bool {
+	for _, value := range SUPPORTED_LANGUAGES {
+		if value == lang {
+			return true
+		}
+	}
+	return false
+}
