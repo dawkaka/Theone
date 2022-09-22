@@ -316,5 +316,9 @@
   "FileUploadFailed": {
     "description": "Failed to uplaod file",
     "other": "We couldn't uplaod some file but it's our fault, give it some time nad try again"
+  },
+  "PasswordsDontMatch": {
+    "description": "Signup password and Reapeat password don't match",
+    "other": "Passwords don't match, check password and try again"
   }
 }

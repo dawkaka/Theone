@@ -79,12 +79,13 @@ type UserSession struct {
 }
 
 type Signup struct {
-	Email       string    `json:"email"`
-	FirstName   string    `json:"first_name" bson:"first_name"`
-	LastName    string    `json:"last_name" bson:"last_name"`
-	UserName    string    `json:"user_name" bson:"user_name"`
-	Password    string    `json:"password"`
-	DateOfBirth time.Time `json:"date_of_birth" bson:"date_of_birth"`
+	Email          string    `json:"email"`
+	FirstName      string    `json:"first_name" bson:"first_name"`
+	LastName       string    `json:"last_name" bson:"last_name"`
+	UserName       string    `json:"user_name" bson:"user_name"`
+	Password       string    `json:"password"`
+	RepeatPassword string    `json:"repeat_password"`
+	DateOfBirth    time.Time `json:"date_of_birth" bson:"date_of_birth"`
 }
 
 func (s Signup) Validate() []error {
@@ -100,6 +101,9 @@ func (s Signup) Validate() []error {
 	}
 	if !validator.IsPassword(s.Password) {
 		errs = append(errs, errors.New("WrongPasswordFormat"))
+	}
+	if s.Password != s.RepeatPassword {
+		errs = append(errs, errors.New("PasswordsDontMatch"))
 	}
 	if !validator.IsUserName(s.UserName) {
 		errs = append(errs, errors.New("WrongUserNameFormat"))
