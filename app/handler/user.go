@@ -104,10 +104,10 @@ func login(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
 			return
 		}
-		user, err := service.Login(login.UserName)
+		user, err := service.Login(login.UserNameOrEmail)
 		if err != nil {
 			if err == entity.ErrUserNotFound {
-				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "LoginFailed"))
+				ctx.JSON(http.StatusUnauthorized, presentation.Error(lang, "LoginFailed"))
 				return
 			}
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, entity.ErrSomethingWentWrong.Error()))
@@ -115,7 +115,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 		}
 		err = password.Compare(user.Password, login.Password)
 		if err != nil {
-			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "LoginFailed"))
+			ctx.JSON(http.StatusUnauthorized, presentation.Error(lang, "LoginFailed"))
 			return
 		}
 		if user.Lang != "" {

@@ -123,9 +123,8 @@ func (s *Signup) Sanitize() {
 }
 
 type Login struct {
-	Email    string `json:"email"`
-	UserName string `json:"user_name" bson:"user_name"`
-	Password string `json:"password"`
+	UserNameOrEmail string `json:"user_name_or_email"`
+	Password        string `json:"password"`
 }
 
 type NotifyRequest struct {
