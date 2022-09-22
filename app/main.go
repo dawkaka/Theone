@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/dawkaka/theone/app/handler"
+	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/config"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/repository"
@@ -58,6 +59,7 @@ func main() {
 	coupleService := couple.NewService(couplesRepo)
 	gob.Register(entity.UserSession{})
 	r.Use(sessions.Sessions("session", store))
+	r.Use(middlewares.CORSMiddleware())
 	handler.MakeUserHandlers(r, userService, coupleService, userMessageRepo)
 	handler.MakeCoupleHandlers(r, coupleService, userService, coupleMessageReop, userMessageRepo)
 	handler.MakePostHandlers(r, postService, coupleService, userService)
