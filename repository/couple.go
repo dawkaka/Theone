@@ -179,7 +179,6 @@ func (u *CoupleMongo) Update(coupleID entity.ID, update entity.UpdateCouple) err
 			"updated_at":     update.UpdatedAt,
 			"website":        update.Website,
 			"date_commenced": update.DateCommenced,
-			"status":         update.Status,
 		}}},
 	)
 	return err
