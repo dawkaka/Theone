@@ -26,7 +26,6 @@ type Couple struct {
 	Separated      bool      `json:"separated"`
 	FollowersCount uint64    `json:"followers_count" bson:"followers_count"`
 	PostCount      uint64    `json:"post_count" bson:"post_count"`
-	Status         string    `json:"status"`
 }
 
 type UpdateCouple struct {
