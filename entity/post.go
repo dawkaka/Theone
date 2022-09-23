@@ -17,6 +17,7 @@ type Post struct {
 	PostedBy      ID             `json:"posted_by" bson:"posted_by"`
 	Files         []PostMetadata `json:"file_name" bson:"file_name"`
 	Caption       string         `json:"caption"`
+	Location      string         `json:"location" bson:"location,omitempty"`
 	Mentioned     []string       `json:"mentioned"`
 	Likes         []ID           `json:"likes"`
 	LikesCount    int64          `json:"likes_count" bson:"likes_count"`
@@ -42,6 +43,7 @@ type PostMetadata struct {
 	Type   string `json:"type"`
 	Width  int64  `json:"witdth"`
 	Height int64  `json:"height"`
+	Alt    string `json:"alt" bson:"alt"`
 }
 
 type VideoMetadata struct {
@@ -53,4 +55,11 @@ type VideoMetadata struct {
 
 type VideoStream struct {
 	Streams []VideoMetadata `json:"streams"`
+}
+
+type ReportPost struct {
+	PostID    ID        `json:"post_id" bson:"post_id"`
+	UserID    ID        `json:"user_id" bson:"user_id"`
+	Reports   []uint8   `json:"reports" bson:"reports"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }

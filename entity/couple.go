@@ -60,3 +60,9 @@ func (u *UpdateCouple) Sanitize() {
 	u.Website = strings.TrimSpace(u.Website)
 	u.Status = strings.TrimSpace(u.Status)
 }
+
+type ReportCouple struct {
+	CoupleID  ID        `json:"couple_id" bson:"couple_id"`
+	Report    []uint8   `json:"reports" bson:"reports"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+}

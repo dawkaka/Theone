@@ -12,6 +12,7 @@ import (
 	"github.com/dawkaka/theone/pkg/myaws"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
+	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/dawkaka/theone/usecase/post"
 	"github.com/dawkaka/theone/usecase/user"
@@ -30,18 +31,23 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		files := form.File["post_image"]
 		caption := strings.TrimSpace(ctx.PostForm("caption"))
 		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
-		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) {
+		location := strings.TrimSpace(ctx.PostForm("location"))
+
+		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		if !user.HasPartner {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "OnlyCoupleCanPost"))
 		}
+
 		filesMetadata, cErr := myaws.UploadMultipleFiles(files)
+
 		if cErr != nil {
 			ctx.JSON(cErr.Code, presentation.Error(lang, cErr.Error()))
 			return
 		}
+
 		mentions := utils.ExtracMentions(caption)
 		post := entity.Post{
 			PostID:      utils.GenerateID(),
@@ -51,12 +57,14 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			PostedBy:    user.ID,
 			Files:       filesMetadata,
 			Caption:     caption,
+			Location:    location,
 			Mentioned:   mentions,
 			CreatedAt:   time.Now(),
 			Likes:       []entity.ID{},
 			Comments:    []entity.Comment{},
 		}
 		_, err = service.CreatePost(&post)
+
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -349,24 +357,52 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 		postID := ctx.Param("postID")
 		lang := user.Lang
 		if postID == "" {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
 		}
 		err := service.DeletePost(user.CoupleID, postID)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				ctx.AbortWithStatusJSON(http.StatusForbidden, "Forbidden")
+				ctx.JSON(http.StatusForbidden, "Forbidden")
+				return
 			}
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, "SomethingWentWrongInternal")
+			ctx.JSON(http.StatusInternalServerError, "SomethingWentWrongInternal")
+			return
 		}
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "PostDeleted"))
 	}
 }
 
-func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase) {
-	r.GET("/post/:coupleName/:postID", getPost(service, coupleService))      //tested
-	r.GET("/post/comments/:postID/:skip", postComments(service))             //tested
-	r.POST("/post", newPost(service, coupleService, userService))            //tested
-	r.POST("/post/comment/:postID", newComment(service, userService))        //tested
+func reportPost(service post.UseCase, reportRepo repository.Reports) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		r := struct {
+			Reports []uint8 `json:"reports"`
+		}{Reports: []uint8{}}
+
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		postID, err := entity.StringToID(ctx.Param("postID"))
+		err2 := ctx.ShouldBindJSON(&r)
+		lang := user.Lang
+		if err2 != nil || err != nil || !validator.IsValidPostReport(r.Reports) {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		report := entity.ReportPost{PostID: postID, UserID: user.ID, Reports: r.Reports, CreatedAt: time.Now()}
+		err = reportRepo.ReportPost(report)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "PostReported"))
+	}
+}
+
+func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase, reportsRepo repository.Reports) {
+	r.GET("/post/:coupleName/:postID", getPost(service, coupleService)) //tested
+	r.GET("/post/comments/:postID/:skip", postComments(service))        //tested
+	r.POST("/post", newPost(service, coupleService, userService))       //tested
+	r.POST("/post/comment/:postID", newComment(service, userService))   //tested
+	r.POST("/post/report/:postID", reportPost(service, reportsRepo))
 	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service)) //tested
 	r.PATCH("/post/like/:postID", like(service, userService))                //tested
 	r.PATCH("/post/unlike/:postID", unLikePost(service))                     //tested

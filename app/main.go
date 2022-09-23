@@ -51,7 +51,8 @@ func main() {
 	postsRepo := repository.NewPostMongo(db.Collection("posts"))
 	videosRepo := repository.NewVideoMongo(db.Collection("videos"))
 	userMessageRepo := repository.NewUserCoupleMessageRepo(db.Collection(("group-messages")))
-	coupleMessageReop := repository.NewCoupleMessageRepo(db.Collection("couple-messages"))
+	coupleMessageRepo := repository.NewCoupleMessageRepo(db.Collection("couple-messages"))
+	reportsRepo := repository.NewReportRepo(db.Collection("reports"))
 
 	videoService := video.NewService(videosRepo)
 	userService := user.NewService(usersRepo)
@@ -61,8 +62,8 @@ func main() {
 	r.Use(sessions.Sessions("session", store))
 	r.Use(middlewares.CORSMiddleware())
 	handler.MakeUserHandlers(r, userService, coupleService, userMessageRepo)
-	handler.MakeCoupleHandlers(r, coupleService, userService, coupleMessageReop, userMessageRepo)
-	handler.MakePostHandlers(r, postService, coupleService, userService)
+	handler.MakeCoupleHandlers(r, coupleService, userService, coupleMessageRepo, userMessageRepo)
+	handler.MakePostHandlers(r, postService, coupleService, userService, reportsRepo)
 	handler.MakeVideoHandlers(r, videoService, coupleService, userService)
 	r.Run(fmt.Sprintf(":%d", config.API_PORT))
 }

@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	SUPPORTED_LANGUAGES = []string{"en", "es", "ch", "fr", "ar", "ru"}
+	SUPPORTED_LANGUAGES = []string{"en", "es"}
+	POST_REPORT_WEIGHT  = [5]uint8{5, 4, 3, 2, 1}
 	Settings            = map[string][]string{"language": SUPPORTED_LANGUAGES}
 )
 
@@ -188,4 +189,13 @@ func IsSupportedLanguage(lang string) bool {
 		}
 	}
 	return false
+}
+
+func IsValidPostReport(total []uint8) bool {
+	for _, val := range total {
+		if val > 5 || val < 1 {
+			return false
+		}
+	}
+	return true
 }
