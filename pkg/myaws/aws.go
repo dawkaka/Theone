@@ -3,6 +3,7 @@ package myaws
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -83,17 +84,25 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 
 func UploadMultipleFiles(files []*multipart.FileHeader) ([]entity.PostMetadata, *entity.CustomError) {
 	ch := make(chan any, len(files))
-	for _, file := range files {
-		go upload(file, ch)
+	filesMeta := make([]entity.PostMetadata, len(files))
+	doneCount := 0
+
+	for i := 0; i < len(files); i++ {
+		go upload(files[i], ch, i)
 	}
-	filesMeta := []entity.PostMetadata{}
+
 	for val := range ch {
 		switch v := val.(type) {
 		case entity.CustomError:
-			return nil, &v
+			return filesMeta, &v
 		case entity.PostMetadata:
-			filesMeta = append(filesMeta, v)
-			if len(filesMeta) == len(files) {
+			ind, err := strconv.Atoi(v.Alt)
+			if err != nil {
+				return filesMeta, &entity.CustomError{Code: 500, Message: "SomethingWentWrongInternal"}
+			}
+			filesMeta[ind] = v
+			doneCount++
+			if doneCount == len(files) {
 				return filesMeta, nil
 			}
 		}
@@ -101,7 +110,7 @@ func UploadMultipleFiles(files []*multipart.FileHeader) ([]entity.PostMetadata, 
 	return filesMeta, nil
 }
 
-func upload(file *multipart.FileHeader, ch chan any) {
+func upload(file *multipart.FileHeader, ch chan any, i int) {
 	f, err := file.Open()
 	if err != nil {
 		ch <- entity.ErrImageProcessing
@@ -193,7 +202,7 @@ func upload(file *multipart.FileHeader, ch chan any) {
 			ch <- entity.CustomError{Code: http.StatusInternalServerError, Message: entity.ErrAWSUpload.Error()}
 			return
 		}
-		ch <- entity.PostMetadata{Name: fileName, Height: int64(height), Width: int64(width), Type: fType}
+		ch <- entity.PostMetadata{Name: fileName, Height: int64(height), Width: int64(width), Type: fType, Alt: fmt.Sprint(i)}
 	}
 }
 
