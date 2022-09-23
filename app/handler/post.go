@@ -387,7 +387,7 @@ func reportPost(service post.UseCase, reportRepo repository.Reports) gin.Handler
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		report := entity.ReportPost{PostID: postID, UserID: user.ID, Reports: r.Reports, CreatedAt: time.Now()}
+		report := entity.ReportPost{PostID: postID, UserID: user.ID, Reports: r.Reports, CreatedAt: time.Now(), Type: "post"}
 		err = reportRepo.ReportPost(report)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))

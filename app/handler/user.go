@@ -768,12 +768,12 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/u/reject-request", rejectRequest(service))               //tested
 	r.POST("/user/couple-request/:userName", initiateRequest(service))     //tested
 	r.POST("/user/change-name", changeUserName(service))                   //tested
+	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
+	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
 	r.PUT("/user/request-status/:status", changeRequestStatus(service))    //tested
 	r.PUT("/user", updateUser(service))                                    //tested
 	r.PUT("/user/show-pictures/:index", updateShowPicture(service))        //tested
 	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))  //tested
-	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
-	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
 	r.PATCH("/user/update/profile-pic", updateUserProfilePic(service))     //tested
 	r.DELETE("/user", deleteUser(service))
 }

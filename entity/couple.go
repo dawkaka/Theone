@@ -63,6 +63,8 @@ func (u *UpdateCouple) Sanitize() {
 
 type ReportCouple struct {
 	CoupleID  ID        `json:"couple_id" bson:"couple_id"`
+	UserID    ID        `json:"user_id" bson:"user_id"`
 	Report    []uint8   `json:"reports" bson:"reports"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+	Type      string    `json:"type" bson:"type"`
 }

@@ -434,7 +434,33 @@ func userCoupleMessages(service couple.UseCase, userService user.UseCase, messag
 	}
 }
 
-func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage) {
+func reportCouple(reportRepo repository.Reports) gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+		r := struct {
+			Reports []uint8 `json:"reports"`
+		}{Reports: []uint8{}}
+
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		coupleID, err := entity.StringToID(ctx.Param("postID"))
+		err2 := ctx.ShouldBindJSON(&r)
+		lang := user.Lang
+		if err2 != nil || err != nil || !validator.IsValidPostReport(r.Reports) {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		report := entity.ReportCouple{CoupleID: coupleID, UserID: user.ID, Report: r.Reports, CreatedAt: time.Now(), Type: "couple"}
+		err = reportRepo.ReportCouple(report)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		ctx.JSON(http.StatusCreated, presentation.Success(lang, "PostReported"))
+	}
+}
+
+func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase,
+	coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage, reportRepo repository.Reports) {
 	r.GET("/:coupleName", getCouple(service)) //tested
 	r.GET("/:coupleName/posts/:skip", getCouplePosts(service))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
@@ -442,8 +468,9 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
 	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
-	r.POST("/couple/new/:partnerID", newCouple(service, userService))   //tested
-	r.POST("/couple/break-up", lastLastEdonCast(service, userService))  //tested
+	r.POST("/couple/new/:partnerID", newCouple(service, userService))  //tested
+	r.POST("/couple/break-up", lastLastEdonCast(service, userService)) //tested
+	r.POST("/couple/report", reportCouple(reportRepo))
 	r.PUT("/couple", updateCouple(service))                             //tested
 	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
 	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
