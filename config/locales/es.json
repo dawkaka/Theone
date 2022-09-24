@@ -320,5 +320,9 @@
   "PostReported": {
     "description": "Report",
     "other": "Thanks for helping make make the platform better"
+  },
+  "PostDeleted": {
+    "description": "post was deleted",
+    "other": "Post deleted successfully"
   }
 }
