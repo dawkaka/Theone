@@ -191,7 +191,7 @@ func IsSupportedLanguage(lang string) bool {
 	return false
 }
 
-func IsValidPostReport(total []uint8) bool {
+func IsValidPostReport(total []int) bool {
 	for _, val := range total {
 		if val > 5 || val < 1 {
 			return false

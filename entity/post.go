@@ -60,7 +60,7 @@ type VideoStream struct {
 type ReportPost struct {
 	PostID    ID        `json:"post_id" bson:"post_id"`
 	UserID    ID        `json:"user_id" bson:"user_id"`
-	Reports   []uint8   `json:"reports" bson:"reports"`
+	Reports   []int     `json:"reports" bson:"reports"`
 	Type      string    `json:"type" bson:"type"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }

@@ -437,8 +437,8 @@ func reportCouple(reportRepo repository.Reports) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		r := struct {
-			Reports []uint8 `json:"reports"`
-		}{Reports: []uint8{}}
+			Reports []int `json:"reports"`
+		}{Reports: []int{}}
 
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		coupleID, err := entity.StringToID(ctx.Param("postID"))

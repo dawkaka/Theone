@@ -320,5 +320,9 @@
   "PasswordsDontMatch": {
     "description": "Signup password and Reapeat password don't match",
     "other": "Passwords don't match, check password and try again"
+  },
+  "PostReported": {
+    "description": "Report",
+    "other": "Thanks for helping make make the platform better"
   }
 }

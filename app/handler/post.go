@@ -374,8 +374,8 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 func reportPost(service post.UseCase, reportRepo repository.Reports) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		r := struct {
-			Reports []uint8 `json:"reports"`
-		}{Reports: []uint8{}}
+			Reports []int `json:"reports"`
+		}{Reports: []int{}}
 
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		postID, err := entity.StringToID(ctx.Param("postID"))
@@ -383,6 +383,12 @@ func reportPost(service post.UseCase, reportRepo repository.Reports) gin.Handler
 		lang := user.Lang
 		if err2 != nil || err != nil || !validator.IsValidPostReport(r.Reports) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		_, err = service.GetPostByID(postID.Hex())
+
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		report := entity.ReportPost{PostID: postID, UserID: user.ID, Reports: r.Reports, CreatedAt: time.Now(), Type: "post"}
