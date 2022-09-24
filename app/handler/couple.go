@@ -122,7 +122,6 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			CoupleName:     couple.CoupleName,
 			AcceptedAt:     couple.AcceptedAt,
 			Bio:            couple.Bio,
-			Status:         couple.Status,
 			FollowersCount: couple.FollowersCount,
 			ProfilePicture: couple.ProfilePicture,
 			CoverPicture:   couple.CoverPicture,
