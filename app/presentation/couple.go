@@ -20,4 +20,5 @@ type CouplePreview struct {
 	CoupleName     string `json:"couple_name" bson:"couple_name"`
 	ProfilePicture string `json:"profile_picture" bson:"profile_picture"`
 	Married        bool   `json:"married"`
+	Verified       bool   `json:"verified"`
 }

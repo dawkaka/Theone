@@ -64,3 +64,8 @@ type ReportPost struct {
 	Type      string    `json:"type" bson:"type"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }
+
+type EditPost struct {
+	Caption  string `json:"caption"`
+	Location string `json:"location"`
+}

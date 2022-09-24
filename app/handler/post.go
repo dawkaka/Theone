@@ -274,16 +274,14 @@ func editPostCaption(service post.UseCase) gin.HandlerFunc {
 		postID := ctx.Param("postID")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
-		var Caption struct {
-			Caption string `json:"caption"`
-		}
-		err := ctx.ShouldBindJSON(&Caption)
+		edit := entity.EditPost{}
+		err := ctx.ShouldBindJSON(&edit)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		err = service.EditCaption(postID, user.CoupleID, Caption.Caption)
+		err = service.EditPost(postID, user.CoupleID, edit)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "Forbidden"))
 			return

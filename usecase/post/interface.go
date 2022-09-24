@@ -24,7 +24,7 @@ type Writer interface {
 	UnLike(postID, userID entity.ID) error
 	LikeComment(postID, commentID, userID entity.ID) error
 	UnLikeComment(postID, commentID, userID entity.ID) error
-	Edit(postID, coupleID entity.ID, newCaption string) error
+	Edit(postID, coupleID entity.ID, edit entity.EditPost) error
 }
 
 //Repository interface
@@ -48,5 +48,5 @@ type UseCase interface {
 	UnLikeComment(postID, commentID, userID entity.ID) error
 	LikePost(postID, userID string) error
 	UnLikePost(postID string, userID entity.ID) error
-	EditCaption(videoID string, coupleID entity.ID, newCaption string) error
+	EditPost(videoID string, coupleID entity.ID, edit entity.EditPost) error
 }

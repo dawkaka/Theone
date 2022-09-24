@@ -206,11 +206,12 @@ func (p *PostMongo) UnLike(postID, userID entity.ID) error {
 	return err
 }
 
-func (p *PostMongo) Edit(postID, coupleID entity.ID, newCaption string) error {
+func (p *PostMongo) Edit(postID, coupleID entity.ID, edit entity.EditPost) error {
+
 	_, err := p.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: postID}, {Key: "couple_id", Value: coupleID}},
-		bson.D{{Key: "$set", Value: bson.D{{Key: "caption", Value: newCaption}}}},
+		bson.M{"$set": bson.M{"caption": edit.Caption, "location": edit.Location}},
 	)
 
 	return err
