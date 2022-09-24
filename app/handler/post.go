@@ -269,7 +269,7 @@ func unLikePost(service post.UseCase) gin.HandlerFunc {
 	}
 }
 
-func editPostCaption(service post.UseCase) gin.HandlerFunc {
+func editPost(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		postID := ctx.Param("postID")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
@@ -410,7 +410,7 @@ func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.
 	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service)) //tested
 	r.PATCH("/post/like/:postID", like(service, userService))                //tested
 	r.PATCH("/post/unlike/:postID", unLikePost(service))                     //tested
-	r.PATCH("/post/edit/:postID", editPostCaption(service))                  //tested
+	r.PUT("/post/:postID", editPost(service))                                //tested
 	r.PATCH("/post/comment/like/:postID/:commentID", likeComment(service))
 	r.PATCH("/post/comment/unlike/:postID/:commentID", unlikeComment(service))
 	r.DELETE("/post/:postID", deletePost(service))
