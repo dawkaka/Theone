@@ -470,8 +470,8 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))  //tested
 	r.POST("/couple/break-up", lastLastEdonCast(service, userService)) //tested
 	r.POST("/couple/report", reportCouple(reportRepo))
-	r.PUT("/couple", updateCouple(service))                             //tested
-	r.PATCH("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
-	r.PATCH("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
-	r.PATCH("/couple/name", changeCoupleName(service))                  //tested
+	r.PUT("/couple", updateCouple(service))                            //tested
+	r.POST("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
+	r.POST("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
+	r.PATCH("/couple/name", changeCoupleName(service))                 //tested
 }
