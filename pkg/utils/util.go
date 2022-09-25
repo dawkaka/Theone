@@ -42,6 +42,9 @@ func GenerateID() string {
 //ExtractMentions extracts all users mention (@) so that they can be notified
 func ExtracMentions(caption string) []string {
 	mentions := []string{}
+	if len(strings.TrimSpace(caption)) == 0 {
+		return mentions
+	}
 	captionWords := strings.Split(caption, " ")
 	for _, val := range captionWords {
 		if val[0] == '@' {

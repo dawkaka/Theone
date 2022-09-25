@@ -28,19 +28,18 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		lang := user.Lang
 		form, err := ctx.MultipartForm()
-		files := form.File["post_image"]
+		files := form.File["files"]
 		caption := strings.TrimSpace(ctx.PostForm("caption"))
 		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
 		location := strings.TrimSpace(ctx.PostForm("location"))
 
-		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 {
+		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 || len(files) == 0 {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 		if !user.HasPartner {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "OnlyCoupleCanPost"))
 		}
-
 		filesMetadata, cErr := myaws.UploadMultipleFiles(files)
 
 		if cErr != nil {
