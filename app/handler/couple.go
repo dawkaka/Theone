@@ -473,5 +473,5 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.PUT("/couple", updateCouple(service))                            //tested
 	r.POST("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
 	r.POST("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
-	r.PATCH("/couple/name", changeCoupleName(service))                 //tested
+	r.POST("/couple/name", changeCoupleName(service))                  //tested
 }
