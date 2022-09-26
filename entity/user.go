@@ -133,6 +133,22 @@ type NotifyRequest struct {
 	Message  string `json:"message"`
 }
 
+type ChangePassword struct {
+	Current string `json:"current"`
+	New     string `json:"new"`
+	Repeat  string `json:"repeat"`
+}
+
+func (c ChangePassword) Validate() string {
+	if !validator.IsPassword(c.New) {
+		return "WrongPasswordFormat"
+	}
+	if c.New != c.Repeat {
+		return "PasswordsDontMatch"
+	}
+	return ""
+}
+
 type UpdateUser struct {
 	FirstName   string    `json:"first_name" bson:"first_name"`
 	LastName    string    `json:"last_name" bson:"last_name"`

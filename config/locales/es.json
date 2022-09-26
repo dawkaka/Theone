@@ -324,5 +324,9 @@
   "PostDeleted": {
     "description": "post was deleted",
     "other": "Post deleted successfully"
+  },
+  "PasswordChanged": {
+    "description": "User change their password",
+    "other": "Password changed successfully"
   }
 }

@@ -751,6 +751,46 @@ func notifications(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func changePassword(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		p := entity.ChangePassword{}
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		err := ctx.ShouldBindJSON(&p)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "BadRequest"))
+		}
+		msg := p.Validate()
+		if msg != "" {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(user.Lang, msg))
+			return
+		}
+		u, err := service.GetUser(user.Name)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+
+		err = password.Compare(u.Password, p.Current)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(user.Lang, "Forbidden"))
+			return
+		}
+
+		hash, err := password.Generate(p.New)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+
+		err = service.ChangeSettings(user.ID, "password", hash)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+		}
+
+		ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "PasswordChanged"))
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
 	r.POST("/user/u/signup", signup(service))                            //tested
 	r.POST("/user/u/login", login(service))                              //tested
@@ -770,10 +810,11 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
 	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
 	r.PUT("/user/name", changeUserName(service))                           //tested
-	r.PUT("/user/request-status/:status", changeRequestStatus(service))    //tested
-	r.PUT("/user", updateUser(service))                                    //tested
-	r.POST("/user/show-pictures/:index", updateShowPicture(service))       //tested
-	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))  //tested
-	r.POST("/user/profile-pic", updateUserProfilePic(service))             //tested
+	r.PUT("/user/password", changePassword(service))
+	r.PUT("/user/request-status/:status", changeRequestStatus(service))   //tested
+	r.PUT("/user", updateUser(service))                                   //tested
+	r.POST("/user/show-pictures/:index", updateShowPicture(service))      //tested
+	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service)) //tested
+	r.POST("/user/profile-pic", updateUserProfilePic(service))            //tested
 	r.DELETE("/user", deleteUser(service))
 }
