@@ -336,5 +336,9 @@
   "EmailChanged": {
     "description": "change email",
     "other": "Email changed successfully"
+  },
+  "OnlyCoupleCanPost": {
+    "description": "want to post but is single",
+    "other": "Only users with a couple profile can share a post"
   }
 }
