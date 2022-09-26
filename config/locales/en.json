@@ -9,7 +9,7 @@
   },
   "UserHasPartnerOrPendingRequest": {
     "description": "Can not send request because the user either is already in a relation or has a pending request",
-    "other": "User is already in a relationship or has a pending request"
+    "other": "You are already have a couple profile or a pending request"
   },
   "UserNotFound": {
     "description": "The user in reference doesn't exist, maybe due to a typo",
@@ -340,5 +340,9 @@
   "OnlyCoupleCanPost": {
     "description": "want to post but is single",
     "other": "Only users with a couple profile can share a post"
+  },
+  "PartnerHasPartnerOrPendingRequest": {
+    "description": "something",
+    "other": "User is already in a relationship or has a pending request"
   }
 }
