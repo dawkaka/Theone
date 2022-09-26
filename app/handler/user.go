@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -48,7 +49,13 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		firstName, lastName, userName, email, dateOfBirth, userPassword, lang :=
 			newUser.FirstName, newUser.LastName, newUser.UserName,
 			newUser.Email, newUser.DateOfBirth, newUser.Password, utils.GetLang("", ctx.Request.Header)
+
 		user, err := service.CheckSignup(userName, email)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+
 		if user.UserName == userName {
 			ctx.JSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
 			return
@@ -56,11 +63,6 @@ func signup(service user.UseCase) gin.HandlerFunc {
 
 		if user.Email == email {
 			ctx.JSON(http.StatusConflict, presentation.Error(lang, "EmailAlreadyExists"))
-			return
-		}
-
-		if err == entity.ErrSomethingWentWrong {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 
@@ -791,6 +793,44 @@ func changePassword(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func changeEmail(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		e := struct {
+			Email string `json:"email"`
+		}{}
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		err := ctx.ShouldBindJSON(&e)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "BadRequest"))
+			return
+		}
+		if !validator.IsEmail(e.Email) {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(user.Lang, "BadRequest"))
+			return
+		}
+
+		u, err := service.CheckSignup("somethingrandom", e.Email)
+		fmt.Println(err)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
+			return
+		}
+
+		if u.Email == e.Email {
+			ctx.JSON(http.StatusConflict, presentation.Error(user.Lang, "EmailAlreadyExists"))
+			return
+		}
+
+		err = service.ChangeSettings(user.ID, "email", e.Email)
+		fmt.Println(err)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+		}
+
+		ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "EmailChanged"))
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
 	r.POST("/user/u/signup", signup(service))                            //tested
 	r.POST("/user/u/login", login(service))                              //tested
@@ -810,7 +850,8 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
 	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
 	r.PUT("/user/name", changeUserName(service))                           //tested
-	r.PUT("/user/password", changePassword(service))
+	r.PUT("/user/password", changePassword(service))                       //tested
+	r.PUT("/user/email", changeEmail(service))
 	r.PUT("/user/request-status/:status", changeRequestStatus(service))   //tested
 	r.PUT("/user", updateUser(service))                                   //tested
 	r.POST("/user/show-pictures/:index", updateShowPicture(service))      //tested

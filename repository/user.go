@@ -144,12 +144,10 @@ func (u *UserMongo) CheckSignup(userName, email string) (entity.User, error) {
 		opts,
 	).Decode(&user)
 
-	if err == mongo.ErrNoDocuments {
-		return user, entity.ErrUserNotFound
+	if err != nil && err != mongo.ErrNoDocuments {
+		return user, entity.ErrSomethingWentWrong
 	}
-
-	return user, entity.ErrSomethingWentWrong
-
+	return user, nil
 }
 
 func (u *UserMongo) Following(userName string, skip int) ([]entity.ID, error) {

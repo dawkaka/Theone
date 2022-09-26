@@ -332,5 +332,9 @@
   "PasswordChanged": {
     "description": "User change their password",
     "other": "Password changed successfully"
+  },
+  "EmailChanged": {
+    "description": "change email",
+    "other": "Email changed successfully"
   }
 }
