@@ -43,7 +43,7 @@ type User struct {
 	Following            []ID           `json:"following,omitempty"`
 	FollowingCount       uint64         `json:"following_count,omitempty" bson:"following_count"`
 	Notifications        []Notification `json:"notifications,omitempty"`
-	Lang                 string         `json:"lang,omitempty"`
+	Language             string         `json:"language,omitempty"`
 	LastVisited          time.Time      `json:"last_visited,omitempty"`
 	LoginIPs             []string       `json:"login_ips,omitempty" bson:"loging_ips"`
 	ContentPriorityQueue []ID           `json:"content_priority_queue,omitempty" bson:"content_priority_queue"`
@@ -214,6 +214,6 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		LastVisited:          time.Now(),
 		LoginIPs:             []string{},
 		ContentPriorityQueue: []primitive.ObjectID{},
-		Lang:                 lang,
+		Language:             lang,
 	}
 }

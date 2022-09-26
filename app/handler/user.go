@@ -120,8 +120,8 @@ func login(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusUnauthorized, presentation.Error(lang, "LoginFailed"))
 			return
 		}
-		if user.Lang != "" {
-			lang = user.Lang
+		if user.Language != "" {
+			lang = user.Language
 		}
 		session := sessions.Default(ctx)
 		userSession := entity.UserSession{
