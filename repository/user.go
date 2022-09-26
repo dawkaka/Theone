@@ -410,10 +410,10 @@ func (u *UserMongo) ChangeSettings(userID entity.ID, setting, value string) erro
 func (u *UserMongo) BreakedUp(couple [2]entity.ID) error {
 	_, err := u.collection.UpdateMany(
 		context.TODO(),
-		bson.M{"_id": bson.M{"$in": couple}},
+		bson.M{"_id": bson.M{"$in": []entity.ID{couple[0], couple[1]}}},
 		bson.D{
 			{Key: "$set", Value: bson.M{"has_partner": false, "open_to_request": true}},
-			{Key: "$addToSet", Value: bson.M{"previous_relationships": bson.M{"$each": couple}}},
+			{Key: "$addToSet", Value: bson.M{"previous_relationships": bson.M{"$each": []entity.ID{couple[0], couple[1]}}}},
 			{Key: "$unset", Value: bson.M{"partner_id": 1, "couple_id": 1}},
 		},
 	)
