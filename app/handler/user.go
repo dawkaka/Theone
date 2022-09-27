@@ -317,7 +317,7 @@ func getPendingRequest(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		if res.PendingRequest == entity.NO_REQUEST {
-			ctx.JSON(http.StatusOK, gin.H{"request": []string{}})
+			ctx.JSON(http.StatusOK, gin.H{"request": nil})
 			return
 		}
 		users, err := service.ListUsers([]entity.ID{user.PartnerID})
