@@ -25,6 +25,7 @@ import (
 )
 
 var sess *session.Session
+var acl = "public-read"
 
 func init() {
 	se, err := session.NewSession(&aws.Config{
@@ -167,6 +168,7 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 			Key:         aws.String(fileName),
 			Body:        videoReader,
 			ContentType: aws.String(fType),
+			ACL:         &acl,
 		})
 
 		if err != nil {
