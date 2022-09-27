@@ -79,6 +79,7 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 		Key:         aws.String(fileName),
 		Body:        bytes.NewReader(newImage),
 		ContentType: aws.String(imgType),
+		ACL:         &acl,
 	})
 	return fileName, err
 }
@@ -198,6 +199,7 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 			Key:         aws.String(fileName),
 			Body:        imageReader,
 			ContentType: aws.String(fType),
+			ACL:         &acl,
 		})
 
 		if err != nil {
