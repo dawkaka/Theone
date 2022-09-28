@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -33,13 +32,17 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		caption := strings.TrimSpace(ctx.PostForm("caption"))
 		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
 		location := strings.TrimSpace(ctx.PostForm("location"))
-		fmt.Println(ctx.PostForm(("alts")))
 
 		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 || len(files) == 0 {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		if !user.HasPartner {
+		u, err := userService.GetUser(user.Name)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+		if !u.HasPartner {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "OnlyCoupleCanPost"))
 			return
 		}
@@ -55,7 +58,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			PostID:      utils.GenerateID(),
 			CoupleID:    user.CoupleID,
 			InitiatedID: user.ID,
-			AcceptedID:  user.PartnerID,
+			AcceptedID:  u.PartnerID,
 			PostedBy:    user.ID,
 			Files:       filesMetadata,
 			Caption:     caption,
