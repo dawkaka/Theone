@@ -344,5 +344,13 @@
   "PartnerHasPartnerOrPendingRequest": {
     "description": "something",
     "other": "User is already in a relationship or has a pending request"
+  },
+  "CantChangeStatus": {
+    "description": "user change request status",
+    "other": "You can't change request status when you have a pending request"
+  },
+  "PartnerNotOpen": {
+    "description": "blocked",
+    "other": "The person is not open to requests"
   }
 }

@@ -351,13 +351,19 @@ func cancelRequest(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 		user := session.Get("user").(entity.UserSession)
-		if user.PendingRequest != entity.SENT_REQUEST {
+		u, err := service.GetUser(user.Name)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
+			return
+		}
+		if u.PendingRequest != entity.SENT_REQUEST {
 			ctx.JSON(http.StatusForbidden, presentation.Error(user.Lang, "BadRequest"))
 			return
 		}
-		err := service.NullifyRequest([2]entity.ID{user.ID, user.PartnerID})
+		err = service.NullifyRequest([2]entity.ID{user.ID, user.PartnerID})
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
+			return
 		}
 		user.PendingRequest = entity.NO_REQUEST
 		session.Set("user", user)
@@ -593,16 +599,28 @@ func changeRequestStatus(service user.UseCase) gin.HandlerFunc {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		status := ctx.Param("status")
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
-		if status != "ON" && status != "OFF" {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+		u, err := service.GetUser(user.Name)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		err := service.ChangeUserRequestStatus(user.ID, status)
+		if u.HasPartner || u.PendingRequest != entity.NO_REQUEST {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "CantChangeStatus"))
+			return
+		}
+		if status != "ON" && status != "OFF" {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
+		}
+
+		err = service.ChangeUserRequestStatus(user.ID, status)
+
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		ctx.JSON(http.StatusAccepted, presentation.Success(lang, "RequestStatus"+status))
+		ctx.JSON(http.StatusOK, presentation.Success(lang, "RequestStatus"+status))
 	}
 }
 
