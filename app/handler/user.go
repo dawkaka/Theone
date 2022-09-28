@@ -252,7 +252,12 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "UserLessThan18"))
 			return
 		}
-		if thisUser.HasPartner || thisUser.PendingRequest != entity.NO_REQUEST {
+		u, err := service.GetUser(thisUser.Name)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+		if u.HasPartner || u.PendingRequest != entity.NO_REQUEST {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "UserHasPartnerOrPendingRequest"))
 			return
 		}
