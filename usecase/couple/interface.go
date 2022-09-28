@@ -15,6 +15,8 @@ type Writer interface {
 	UpdateProfilePic(fileName string, coupleID entity.ID) error
 	UpdateCoverPic(fileName string, coupleID entity.ID) error
 	ChangeName(coupleID entity.ID, coupleName string) error
+	MakeUp(coupleID entity.ID) error
+	Dated(userID, partnerID entity.ID) (entity.ID, error)
 }
 
 //Reader couple reader methods
@@ -46,5 +48,7 @@ type UseCase interface {
 	UpdateCoupleCoverPic(fileName string, coupleID entity.ID) error
 	ChangeCoupleName(coupleID entity.ID, coupleName string) error
 	BreakUp(coupleID entity.ID) error
+	MakeUp(coupleID entity.ID) error
+	WhereACouple(userID, partnerID entity.ID) (entity.ID, error)
 	ListCouple(coupleIDs []entity.ID) ([]presentation.CouplePreview, error)
 }

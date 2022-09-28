@@ -230,3 +230,42 @@ func (c *CoupleMongo) BreakUp(coupleId entity.ID) error {
 	)
 	return err
 }
+
+func (c *CoupleMongo) MakeUp(coupleID entity.ID) error {
+	_, err := c.collection.UpdateByID(
+		context.TODO(),
+		coupleID,
+		bson.D{
+			{
+				Key:   "$set",
+				Value: bson.D{{Key: "separated", Value: false}},
+			},
+		},
+	)
+	return err
+}
+
+func (c *CoupleMongo) Dated(userID, partnerID entity.ID) (entity.ID, error) {
+	opts := options.FindOne().SetProjection(bson.M{"_id": 1})
+	result := entity.Couple{}
+	err := c.collection.FindOne(
+		context.TODO(),
+		bson.D{
+			{
+				Key: "$or",
+				Value: bson.A{
+					bson.D{
+						{Key: "initiated", Value: userID},
+						{Key: "accepted", Value: partnerID},
+					},
+					bson.D{
+						{Key: "initiated", Value: partnerID},
+						{Key: "accepted", Value: userID},
+					},
+				},
+			},
+		},
+		opts,
+	).Decode(&result)
+	return result.ID, err
+}

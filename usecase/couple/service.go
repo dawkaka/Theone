@@ -94,3 +94,11 @@ func (s *Service) ChangeCoupleName(coupleID entity.ID, coupleName string) error 
 func (s *Service) BreakUp(coupleID entity.ID) error {
 	return s.repo.BreakUp(coupleID)
 }
+
+func (s *Service) MakeUp(coupleID entity.ID) error {
+	return s.repo.MakeUp(coupleID)
+}
+
+func (s *Service) WhereACouple(userID, partnerID entity.ID) (entity.ID, error) {
+	return s.repo.Dated(userID, partnerID)
+}

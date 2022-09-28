@@ -47,6 +47,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			partner presentation.UserPreview
 			user    presentation.UserPreview
 		)
+
 		for i := 0; i < len(users); i++ {
 			if users[i].ID == userId {
 				user = users[i]
@@ -54,24 +55,39 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 				partner = users[i]
 			}
 		}
+
 		if partner.PendingRequest != entity.SENT_REQUEST || user.ID != partner.PartnerID {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
-		coupleName := fmt.Sprintf("%s.and.%s", strings.ToLower(partner.FirstName), strings.ToLower(user.FirstName))
-		_, err = service.GetCouple(coupleName)
-		if err == nil {
-			coupleName += fmt.Sprint(time.Now().Unix())
-		} else {
-			if err != mongo.ErrNoDocuments {
-				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+
+		coupleID, err := service.WhereACouple(user.ID, partner.ID)
+
+		if err == nil { //used to have a couple profile
+			err = service.MakeUp(coupleID)
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 				return
 			}
-		}
-		Id, err := service.CreateCouple(userb.ID.Hex(), partnerID.Hex(), coupleName)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
-			return
+
+		} else {
+
+			coupleName := fmt.Sprintf("%s.and.%s", strings.ToLower(partner.FirstName), strings.ToLower(user.FirstName))
+			_, err = service.GetCouple(coupleName)
+			if err == nil {
+				coupleName += fmt.Sprint(time.Now().Unix())
+			} else {
+				if err != mongo.ErrNoDocuments {
+					ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+					return
+				}
+			}
+			coupleID, err = service.CreateCouple(userb.ID.Hex(), partnerID.Hex(), coupleName)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
+				return
+			}
+
 		}
 		notif := entity.Notification{
 			Type: "Request accepted",
@@ -84,16 +100,16 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		}
 
 		go func() {
-			_ = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, Id)
+			_ = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, coupleID)
 			_ = userService.NotifyUser(partner.UserName, notif)
 		}()
 
-		userb.CoupleID = Id
+		userb.CoupleID = coupleID
 		userb.HasPartner = true
 		userb.PendingRequest = entity.NO_REQUEST
 		session.Set("user", userb)
 		session.Save()
-		ctx.SetCookie("couple_ID", Id.Hex(), 500, "/", "", false, true)
+		ctx.SetCookie("couple_ID", coupleID.Hex(), 500, "/", "", false, true)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CoupleCreated"))
 	}
 
