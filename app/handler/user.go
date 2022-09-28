@@ -365,7 +365,13 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 		user := session.Get("user").(entity.UserSession)
-		if user.PendingRequest != entity.RECIEVED_REQUEST {
+		u, err := service.GetUser(user.Name)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethinWentWrong"))
+			return
+		}
+
+		if u.PendingRequest != entity.RECIEVED_REQUEST {
 			ctx.JSON(http.StatusForbidden, presentation.Error(user.Lang, "BadRequest"))
 			return
 		}
