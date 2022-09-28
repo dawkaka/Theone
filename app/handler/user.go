@@ -325,9 +325,9 @@ func getPendingRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusOK, gin.H{"request": nil})
 			return
 		}
-		users, err := service.ListUsers([]entity.ID{user.PartnerID})
+		users, err := service.ListUsers([]entity.ID{res.PartnerID})
 		if len(users) != 1 {
-			ctx.JSON(http.StatusUnprocessableEntity, "SomethingWentWrong")
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(user.Lang, "SomethingWentWrong"))
 			return
 		}
 		partner := users[0]
