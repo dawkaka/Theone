@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -32,6 +33,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		caption := strings.TrimSpace(ctx.PostForm("caption"))
 		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
 		location := strings.TrimSpace(ctx.PostForm("location"))
+		fmt.Println(ctx.PostForm(("alts")))
 
 		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 || len(files) == 0 {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
@@ -39,6 +41,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		}
 		if !user.HasPartner {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "OnlyCoupleCanPost"))
+			return
 		}
 		filesMetadata, cErr := myaws.UploadMultipleFiles(files)
 

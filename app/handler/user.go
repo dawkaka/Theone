@@ -736,6 +736,9 @@ func logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	user := session.Get("user").(entity.UserSession)
 	session.Clear()
+	session.Options(sessions.Options{Path: "/", MaxAge: -1}) // this sets the cookie with a MaxAge of 0
+	session.Save()
+	ctx.SetCookie("user_ID", "", -500, "/", "", false, true)
 	ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "LogedOut"))
 }
 
