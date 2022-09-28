@@ -349,11 +349,17 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 		session := sessions.Default(ctx)
 		user := session.Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
-		if !user.HasPartner {
+		u, err := userService.GetUser(user.Name)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		if !u.HasPartner {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "IsSingle"))
 			return
 		}
-		err := service.BreakUp(user.CoupleID)
+		err = service.BreakUp(u.CoupleID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -364,8 +370,8 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 				Type:    "breakUp",
 				Message: inter.LocalizeWithFullName(lang, user.FirstName, user.LastName, "YourPartnerBrokeUpWithYou"),
 			}
-			userService.BreakedUp([2]entity.ID{user.ID, user.PartnerID})
-			_ = userService.NotifyCouple([2]entity.ID{user.PartnerID, primitive.NewObjectID()}, notif)
+			userService.BreakedUp([2]entity.ID{u.ID, u.PartnerID})
+			_ = userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, notif)
 		}()
 		user.HasPartner = false
 		user.PartnerID = primitive.ObjectID{}
