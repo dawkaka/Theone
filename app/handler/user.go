@@ -165,6 +165,7 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
 			return
 		}
+
 		pUser := presentation.UserProfile{
 			FirstName:      user.FirstName,
 			LastName:       user.LastName,
@@ -173,9 +174,10 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			Bio:            user.Bio,
 			FollowingCount: user.FollowingCount,
 			ShowPictures:   user.ShowPictures,
+			IsThisUser:     thisUser.ID == user.ID,
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{"user": pUser})
+		ctx.JSON(http.StatusOK, pUser)
 	}
 }
 

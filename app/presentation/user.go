@@ -11,6 +11,7 @@ type UserProfile struct {
 	FollowingCount uint64   `json:"following_count"`
 	ShowPictures   []string `json:"show_pictures"`
 	HasPartener    bool     `json:"has_partner"`
+	IsThisUser     bool     `json:"is_this_user"`
 }
 
 type UserPreview struct {
