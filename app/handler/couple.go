@@ -146,7 +146,7 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			Married:        couple.Married,
 			Verified:       couple.Verified,
 		}
-		ctx.JSON(http.StatusOK, gin.H{"couple": pCouple})
+		ctx.JSON(http.StatusOK, pCouple)
 	}
 }
 
