@@ -56,10 +56,10 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		mentions := utils.ExtracMentions(caption)
 		post := entity.Post{
 			PostID:      utils.GenerateID(),
-			CoupleID:    user.CoupleID,
+			CoupleID:    u.CoupleID,
 			InitiatedID: user.ID,
 			AcceptedID:  u.PartnerID,
-			PostedBy:    user.ID,
+			PostedBy:    u.ID,
 			Files:       filesMetadata,
 			Caption:     caption,
 			Location:    location,
@@ -364,8 +364,9 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 			return
 		}
 		err := service.DeletePost(user.CoupleID, postID)
+
 		if err != nil {
-			if err == mongo.ErrNoDocuments {
+			if err == entity.ErrNotFound {
 				ctx.JSON(http.StatusForbidden, "Forbidden")
 				return
 			}
