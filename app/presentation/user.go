@@ -17,8 +17,8 @@ type UserProfile struct {
 type UserPreview struct {
 	ID             entity.ID `json:"id" bson:"_id"`
 	FirstName      string    `json:"first_name" bson:"first_name"`
-	LastName       string    `json:"Last_naem" bson:"last_name"`
-	UserName       string    `json:"user_naame" bson:"user_name"`
+	LastName       string    `json:"last_name" bson:"last_name"`
+	UserName       string    `json:"user_name" bson:"user_name"`
 	HasPartner     bool      `json:"has_partner" bson:"has_partner"`
 	ProfilePicture string    `json:"profile_picture" bson:"profile_picture"`
 	PendingRequest int8      `json:"pending_request" bson:"pending_request"`
