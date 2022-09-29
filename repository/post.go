@@ -248,3 +248,18 @@ func (p *PostMongo) Delete(coupleID, postID entity.ID) error {
 	}
 	return nil
 }
+
+func (p *PostMongo) GetPosts(coupleID entity.ID, postIDs []string) ([]entity.Post, error) {
+	opts := options.Find().SetProjection(bson.M{"likes": 0, "comments": 0})
+	var result []entity.Post
+	cursor, err := p.collection.Find(
+		context.TODO(),
+		bson.M{"couple_id": coupleID, "post_id": bson.M{"$in": postIDs}},
+		opts,
+	)
+	if err != nil {
+		return result, err
+	}
+	err = cursor.All(context.TODO(), &result)
+	return result, err
+}

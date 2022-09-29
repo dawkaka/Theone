@@ -54,8 +54,9 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		}
 
 		mentions := utils.ExtracMentions(caption)
+		postID := utils.GenerateID()
 		post := entity.Post{
-			PostID:      utils.GenerateID(),
+			PostID:      postID,
 			CoupleID:    u.CoupleID,
 			InitiatedID: user.ID,
 			AcceptedID:  u.PartnerID,
@@ -68,12 +69,19 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			Likes:       []entity.ID{},
 			Comments:    []entity.Comment{},
 		}
-		_, err = service.CreatePost(&post)
 
+		_, err = service.CreatePost(&post)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+
+		err = coupleService.AddPost(u.CoupleID, postID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+
 		//Post created, whether notifications are successful or not user does't need to know
 		go func() {
 			notif := entity.Notification{
@@ -354,7 +362,7 @@ func unlikeComment(service post.UseCase) gin.HandlerFunc {
 	}
 }
 
-func deletePost(service post.UseCase) gin.HandlerFunc {
+func deletePost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		postID := ctx.Param("postID")
@@ -373,6 +381,7 @@ func deletePost(service post.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+		coupleService.RemovePost(user.CoupleID, postID)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "PostDeleted"))
 	}
 }
@@ -419,5 +428,5 @@ func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.
 	r.PUT("/post/:postID", editPost(service))                                //tested
 	r.PATCH("/post/comment/like/:postID/:commentID", likeComment(service))
 	r.PATCH("/post/comment/unlike/:postID/:commentID", unlikeComment(service))
-	r.DELETE("/post/:postID", deletePost(service))
+	r.DELETE("/post/:postID", deletePost(service, coupleService))
 }

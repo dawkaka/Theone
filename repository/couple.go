@@ -25,7 +25,7 @@ func NewCoupleMongo(col *mongo.Collection) *CoupleMongo {
 
 //Read Operations
 func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
-	opts := options.FindOne().SetProjection(bson.M{"followers": 0})
+	opts := options.FindOne().SetProjection(bson.M{"followers": 0, "posts": 0})
 	result := entity.Couple{}
 	err := c.collection.FindOne(
 		context.TODO(),
@@ -49,36 +49,43 @@ func (c *CoupleMongo) List(IDs []entity.ID) ([]presentation.CouplePreview, error
 	return results, nil
 }
 
-func (c *CoupleMongo) GetCouplePosts(coupleName string, skip int) ([]entity.Post, error) {
-	var result []entity.Post
+func (c *CoupleMongo) GetCouplePosts(coupleName string, skip int) (entity.Couple, error) {
+	var result entity.Couple
+	opts := options.FindOne().SetProjection(bson.M{"followers": 0})
 	//opts := options.Find().SetSkip(int64(skip)).SetLimit(15)
-	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
-	skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: entity.LimitP + 1}}
-	joinStage := bson.D{
-		{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "posts"},
-				{Key: "localfield", Value: "_id"},
-				{Key: "foreignfield", Value: "couple_id"},
-				{Key: "as", Value: "couple_posts"},
-			},
-		},
-	}
-	unwindStage := bson.D{{Key: "$unwind", Value: "$couple_posts"}}
+	// matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}}}}
 
-	cursor, err := c.collection.Aggregate(
-		context.TODO(),
-		mongo.Pipeline{matchStage, skipLimitStage, joinStage, unwindStage},
-	)
-	if err != nil {
-		return nil, err
-	}
+	// skipLimitStage := bson.D{{Key: "$skip", Value: int64(skip)}, {Key: "$limit", Value: entity.LimitP + 1}}
+	// joinStage := bson.D{
+	// 	{
+	// 		Key: "$lookup",
+	// 		Value: bson.D{
+	// 			{Key: "from", Value: "posts"},
+	// 			{Key: "localfield", Value: "_id"},
+	// 			{Key: "foreignfield", Value: "couple_id"},
+	// 			{Key: "as", Value: "couple_posts"},
+	// 		},
+	// 	},
+	// }
+	// unwindStage := bson.D{{Key: "$unwind", Value: "$couple_posts"}}
 
-	if err = cursor.All(context.TODO(), &result); err != nil {
-		return nil, err
-	}
+	// cursor, err := c.collection.Aggregate(
+	// 	context.TODO(),
+	// 	mongo.Pipeline{matchStage, skipLimitStage, joinStage, unwindStage},
+	// )
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if err = cursor.All(context.TODO(), &result); err != nil {
+	// 	return nil, err
+	// }
+	// return result, err
+
+	err := c.collection.FindOne(context.TODO(), bson.M{"couple_name": coupleName}, opts).Decode(&result)
+
 	return result, err
+
 }
 
 func (c *CoupleMongo) GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error) {
@@ -268,4 +275,22 @@ func (c *CoupleMongo) Dated(userID, partnerID entity.ID) (entity.ID, error) {
 		opts,
 	).Decode(&result)
 	return result.ID, err
+}
+
+func (c *CoupleMongo) AddPost(coupleID entity.ID, postID string) error {
+	_, err := c.collection.UpdateByID(
+		context.TODO(),
+		coupleID,
+		bson.M{"$push": bson.M{"posts": postID}},
+	)
+	return err
+}
+
+func (c *CoupleMongo) RemovePost(coupleID entity.ID, postID string) error {
+	_, err := c.collection.UpdateByID(
+		context.TODO(),
+		coupleID,
+		bson.M{"$pull": bson.M{"posts": postID}},
+	)
+	return err
 }

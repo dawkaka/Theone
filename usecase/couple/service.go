@@ -22,7 +22,7 @@ func (s *Service) GetCouple(coupleName string) (entity.Couple, error) {
 	return s.repo.Get(coupleName)
 }
 
-func (s *Service) GetCouplePosts(coupleName string, skip int) ([]entity.Post, error) {
+func (s *Service) GetCouplePosts(coupleName string, skip int) (entity.Couple, error) {
 	return s.repo.GetCouplePosts(coupleName, skip)
 }
 
@@ -101,4 +101,12 @@ func (s *Service) MakeUp(coupleID entity.ID) error {
 
 func (s *Service) WhereACouple(userID, partnerID entity.ID) (entity.ID, error) {
 	return s.repo.Dated(userID, partnerID)
+}
+
+func (s *Service) AddPost(coupleID entity.ID, postID string) error {
+	return s.repo.AddPost(coupleID, postID)
+}
+
+func (s *Service) RemovePost(coupleID entity.ID, postID string) error {
+	return s.repo.RemovePost(coupleID, postID)
 }

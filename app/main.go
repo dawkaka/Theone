@@ -62,7 +62,7 @@ func main() {
 	r.Use(sessions.Sessions("session", store))
 	r.Use(middlewares.CORSMiddleware())
 	handler.MakeUserHandlers(r, userService, coupleService, userMessageRepo)
-	handler.MakeCoupleHandlers(r, coupleService, userService, coupleMessageRepo, userMessageRepo, reportsRepo)
+	handler.MakeCoupleHandlers(r, coupleService, userService, postService, coupleMessageRepo, userMessageRepo, reportsRepo)
 	handler.MakePostHandlers(r, postService, coupleService, userService, reportsRepo)
 	handler.MakeVideoHandlers(r, videoService, coupleService, userService)
 	r.Run(fmt.Sprintf(":%d", config.API_PORT))

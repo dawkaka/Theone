@@ -15,6 +15,7 @@ import (
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
+	"github.com/dawkaka/theone/usecase/post"
 	"github.com/dawkaka/theone/usecase/user"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -149,7 +150,7 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
-func getCouplePosts(service couple.UseCase) gin.HandlerFunc {
+func getCouplePosts(service couple.UseCase, postService post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		coupleName, skip := ctx.Param("coupleName"), ctx.Param("skip")
 		skipPosts, err := strconv.Atoi(skip)
@@ -163,14 +164,30 @@ func getCouplePosts(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		posts, err := service.GetCouplePosts(coupleName, skipPosts)
+		couple, err := service.GetCouplePosts(coupleName, skipPosts)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
+		st, ed := len(couple.Posts)-skipPosts-entity.Limit, len(couple.Posts)-skipPosts
+
+		if st < 0 {
+			st = 0
+		}
+		if ed < 0 {
+			ed = 0
+		}
+		postIDs := couple.Posts[st:ed]
+		posts, err := postService.GetPosts(couple.ID, postIDs)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+
 		page := entity.Pagination{
-			Next: skipPosts + entity.Limit,
-			End:  len(posts) < entity.Limit,
+			Next: skipPosts + entity.LimitP,
+			End:  len(postIDs) < entity.LimitP,
 		}
 		ctx.JSON(http.StatusBadRequest, gin.H{"posts": posts, "pagination": page})
 	}
@@ -480,10 +497,10 @@ func reportCouple(reportRepo repository.Reports) gin.HandlerFunc {
 	}
 }
 
-func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase,
+func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, postService post.UseCase,
 	coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage, reportRepo repository.Reports) {
 	r.GET("/:coupleName", getCouple(service)) //tested
-	r.GET("/:coupleName/posts/:skip", getCouplePosts(service))
+	r.GET("/:coupleName/posts/:skip", getCouplePosts(service, postService))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/:coupleName/followers/:skip", getFollowers(service, userService)) //tested
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))

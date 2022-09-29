@@ -17,12 +17,14 @@ type Writer interface {
 	ChangeName(coupleID entity.ID, coupleName string) error
 	MakeUp(coupleID entity.ID) error
 	Dated(userID, partnerID entity.ID) (entity.ID, error)
+	AddPost(coupleID entity.ID, postID string) error
+	RemovePost(coupleID entity.ID, postID string) error
 }
 
 //Reader couple reader methods
 type Reader interface {
 	Get(coupleName string) (entity.Couple, error)
-	GetCouplePosts(coupleName string, skip int) ([]entity.Post, error)
+	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	Followers(coupleName string, skip int) ([]entity.ID, error)
 	List(coupleIDs []entity.ID) ([]presentation.CouplePreview, error)
@@ -39,7 +41,7 @@ type UseCase interface {
 	CreateCouple(userId, partnerrId, coupleName string) (entity.ID, error)
 	UpdateCouple(coupleID entity.ID, update entity.UpdateCouple) error
 	GetCouple(coupleName string) (entity.Couple, error)
-	GetCouplePosts(coupleName string, skip int) ([]entity.Post, error)
+	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	GetFollowers(coupleName string, skip int) ([]entity.ID, error)
 	NewFollower(userID, coupleID entity.ID) error
@@ -51,4 +53,6 @@ type UseCase interface {
 	MakeUp(coupleID entity.ID) error
 	WhereACouple(userID, partnerID entity.ID) (entity.ID, error)
 	ListCouple(coupleIDs []entity.ID) ([]presentation.CouplePreview, error)
+	AddPost(coupleID entity.ID, postID string) error
+	RemovePost(coupleID entity.ID, postID string) error
 }

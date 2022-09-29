@@ -105,3 +105,7 @@ func (s *Service) DeletePost(coupleID entity.ID, postID string) error {
 	}
 	return s.repo.Delete(coupleID, newPostID)
 }
+
+func (s *Service) GetPosts(coupleID entity.ID, postIDs []string) ([]entity.Post, error) {
+	return s.repo.GetPosts(coupleID, postIDs)
+}
