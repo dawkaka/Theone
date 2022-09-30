@@ -136,8 +136,9 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			LikesCount:    post.LikesCount,
 			CommentsCount: post.CommentsCount,
 			Files:         post.Files,
+			IsThisCouple:  user.ID == couple.Initiated || couple.ID == couple.Accepted,
 		}
-		ctx.JSON(http.StatusOK, gin.H{"post": p})
+		ctx.JSON(http.StatusOK, p)
 	}
 }
 

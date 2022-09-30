@@ -165,7 +165,7 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 		videoReader := bytes.NewReader(pFile)
 		uploader := s3manager.NewUploader(sess)
 		_, err = uploader.Upload(&s3manager.UploadInput{
-			Bucket:      aws.String("theone-postfiles"),
+			Bucket:      aws.String("theone-profile-images"),
 			Key:         aws.String(fileName),
 			Body:        videoReader,
 			ContentType: aws.String(fType),
@@ -195,7 +195,7 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 		imageReader := bytes.NewReader(newImage)
 		uploader := s3manager.NewUploader(sess)
 		_, err = uploader.Upload(&s3manager.UploadInput{
-			Bucket:      aws.String("theone-postfiles"),
+			Bucket:      aws.String("theone-profile-images"),
 			Key:         aws.String(fileName),
 			Body:        imageReader,
 			ContentType: aws.String(fType),

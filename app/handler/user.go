@@ -175,6 +175,10 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			FollowingCount: user.FollowingCount,
 			ShowPictures:   user.ShowPictures,
 			IsThisUser:     thisUser.ID == user.ID,
+			Website:        user.Website,
+		}
+		if pUser.IsThisUser {
+			pUser.DateOfBirth = user.DateOfBirth
 		}
 
 		ctx.JSON(http.StatusOK, pUser)
