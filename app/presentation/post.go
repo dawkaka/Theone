@@ -26,4 +26,6 @@ type Comment struct {
 	UserName       string `json:"user_name" bson:"user_name"`
 	HasPartner     bool   `json:"has_partner" bson:"has_partner"`
 	LikesCount     int    `json:"likes_count" bson:"likes_count"`
+	ProfilePicture string `json:"profile_picture" bson:"profile_picture"`
+	HasLiked       bool   `json:"has_liked" bson:"has_liked"`
 }

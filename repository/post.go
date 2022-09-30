@@ -42,8 +42,8 @@ func (p *PostMongo) Get(coupleID, postID string) (*entity.Post, error) {
 	).Decode(&result)
 	return &result, err
 }
-func (p *PostMongo) Comments(videoID string, skip int) ([]presentation.Comment, error) {
-	ID, err := entity.StringToID(videoID)
+func (p *PostMongo) Comments(postID string, skip int) ([]presentation.Comment, error) {
+	ID, err := entity.StringToID(postID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +67,15 @@ func (p *PostMongo) Comments(videoID string, skip int) ([]presentation.Comment, 
 		{
 			Key: "$project",
 			Value: bson.M{
-				"_id":         1,
-				"comment":     "$comments.comment",
-				"created_at":  "$comments.created_at",
-				"likes_count": bson.M{"$size": "$comments.likes"},
-				"user_name":   "$user.user_name",
-				"has_partner": "$user.has_partner",
+				"comment":         "$comments.comment",
+				"_id":             "$comments._id",
+				"created_at":      "$comments.created_at",
+				"likes_count":     bson.M{"$size": "$comments.likes"},
+				"user_id":         "$comments.user_id",
+				"user_name":       "$user.user_name",
+				"has_partner":     "$user.has_partner",
+				"profile_picture": "$user.profile_picture",
+				"has_liked":       bson.M{"$in": bson.A{"dads", "$comments.likes"}},
 			},
 		},
 	}
