@@ -137,6 +137,7 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			CommentsCount: post.CommentsCount,
 			Files:         post.Files,
 			IsThisCouple:  user.ID == couple.Initiated || couple.ID == couple.Accepted,
+			Location:      post.Location,
 		}
 		ctx.JSON(http.StatusOK, p)
 	}

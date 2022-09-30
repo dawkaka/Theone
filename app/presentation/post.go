@@ -15,6 +15,7 @@ type Post struct {
 	CommentsCount int64                 `json:"comments_count"`
 	Files         []entity.PostMetadata `json:"files"`
 	IsThisCouple  bool                  `json:"is_this_couple"`
+	Location      string                `json:"location"`
 }
 
 type Comment struct {
