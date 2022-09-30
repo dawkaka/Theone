@@ -129,15 +129,18 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			return
 		}
 		p := presentation.Post{
-			CoupleName:    couple.CoupleName,
-			ID:            post.ID,
-			CreatedAt:     post.CreatedAt,
-			Caption:       post.Caption,
-			LikesCount:    post.LikesCount,
-			CommentsCount: post.CommentsCount,
-			Files:         post.Files,
-			IsThisCouple:  user.ID == couple.Initiated || couple.ID == couple.Accepted,
-			Location:      post.Location,
+			CoupleName:     couple.CoupleName,
+			Married:        couple.Married,
+			Verified:       couple.Verified,
+			ProfilePicture: couple.ProfilePicture,
+			ID:             post.ID,
+			CreatedAt:      post.CreatedAt,
+			Caption:        post.Caption,
+			LikesCount:     post.LikesCount,
+			CommentsCount:  post.CommentsCount,
+			Files:          post.Files,
+			IsThisCouple:   user.ID == couple.Initiated || couple.ID == couple.Accepted,
+			Location:       post.Location,
 		}
 		ctx.JSON(http.StatusOK, p)
 	}

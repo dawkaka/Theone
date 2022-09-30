@@ -7,15 +7,18 @@ import (
 )
 
 type Post struct {
-	ID            entity.ID             `json:"id"`
-	CoupleName    string                `json:"couple_name"`
-	CreatedAt     time.Time             `json:"created_at"`
-	Caption       string                `json:"caption"`
-	LikesCount    int64                 `json:"likes_count"`
-	CommentsCount int64                 `json:"comments_count"`
-	Files         []entity.PostMetadata `json:"files"`
-	IsThisCouple  bool                  `json:"is_this_couple"`
-	Location      string                `json:"location"`
+	ID             entity.ID             `json:"id"`
+	CoupleName     string                `json:"couple_name"`
+	Married        bool                  `json:"married"`
+	Verified       bool                  `json:"verified"`
+	ProfilePicture string                `json:"profile_picture"`
+	CreatedAt      time.Time             `json:"created_at"`
+	Caption        string                `json:"caption"`
+	LikesCount     int64                 `json:"likes_count"`
+	CommentsCount  int64                 `json:"comments_count"`
+	Files          []entity.PostMetadata `json:"files"`
+	IsThisCouple   bool                  `json:"is_this_couple"`
+	Location       string                `json:"location"`
 }
 
 type Comment struct {
