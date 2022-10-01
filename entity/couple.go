@@ -24,6 +24,7 @@ type Couple struct {
 	Bio            string    `json:"bio"`
 	Followers      []ID      `json:"followers" bson:"followers"`
 	Separated      bool      `json:"separated"`
+	Website        string    `json:"website"`
 	FollowersCount uint64    `json:"followers_count" bson:"followers_count"`
 	PostCount      uint64    `json:"post_count" bson:"post_count"`
 	Posts          []string  `json:"posts" bson:"posts"`

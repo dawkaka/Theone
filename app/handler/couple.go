@@ -146,6 +146,8 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			PostCount:      couple.PostCount,
 			Married:        couple.Married,
 			Verified:       couple.Verified,
+			Website:        couple.Website,
+			DateCommenced:  couple.DateCommenced,
 			IsThisCouple:   user.ID == couple.Initiated || couple.ID == couple.Accepted,
 		}
 		ctx.JSON(http.StatusOK, pCouple)
