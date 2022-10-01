@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -64,7 +63,6 @@ func (p *PostMongo) Get(coupleID, userID, postID string) (entity.Post, error) {
 	if err = cursor.All(context.TODO(), &r); err != nil {
 		return result, err
 	}
-	fmt.Println(r)
 	if len(r) > 0 {
 		result = r[0]
 	}

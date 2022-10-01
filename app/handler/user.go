@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -847,8 +846,7 @@ func changeEmail(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		u, err := service.CheckSignup("somethingrandom", e.Email)
-		fmt.Println(err)
+		u, err := service.CheckSignup("justSoOnlyEmailMatchesThisIsNotAValidUserName", e.Email)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
 			return
@@ -860,7 +858,6 @@ func changeEmail(service user.UseCase) gin.HandlerFunc {
 		}
 
 		err = service.ChangeSettings(user.ID, "email", e.Email)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
 		}
