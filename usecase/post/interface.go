@@ -7,7 +7,7 @@ import (
 
 //Reader interface
 type Reader interface {
-	Get(coupleID, postID string) (*entity.Post, error)
+	Get(coupleID, userID, postID string) (entity.Post, error)
 	List(id []entity.ID) ([]*entity.Post, error)
 	GetByID(id entity.ID) (entity.Post, error)
 	Comments(postID, userID string, skip int) ([]presentation.Comment, error)
@@ -36,7 +36,7 @@ type Repository interface {
 
 //Post use case
 type UseCase interface {
-	GetPost(coupleID, postID string) (*entity.Post, error)
+	GetPost(coupleID, userID, postID string) (entity.Post, error)
 	GetComments(postID, userID string, skip int) ([]presentation.Comment, error)
 	GetPostByID(postID string) (entity.Post, error)
 	CreatePost(e *entity.Post) (entity.ID, error)

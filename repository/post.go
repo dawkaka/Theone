@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -25,22 +26,49 @@ func NewPostMongo(col *mongo.Collection) *PostMongo {
 
 //Read opertions
 
-func (p *PostMongo) Get(coupleID, postID string) (*entity.Post, error) {
+func (p *PostMongo) Get(coupleID, userID, postID string) (entity.Post, error) {
 	var result entity.Post
 	ID, err := entity.StringToID(coupleID)
+	u, _ := entity.StringToID(userID)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
-	opts := options.FindOne().SetProjection(bson.M{"likes": 0, "comments": 0})
-	err = p.collection.FindOne(
-		context.TODO(),
-		bson.D{
-			{Key: "post_id", Value: postID},
-			{Key: "couple_id", Value: ID},
+
+	matchStage := bson.D{{Key: "$match", Value: bson.M{"post_id": postID, "couple_id": ID}}}
+	projectStage := bson.D{
+		{
+			Key: "$project",
+			Value: bson.M{
+				"_id":            1,
+				"post_id":        1,
+				"couple_id":      1,
+				"file_name":      1,
+				"caption":        1,
+				"location":       1,
+				"likes_count":    1,
+				"comments_count": 1,
+				"created_at":     1,
+				"has_liked":      bson.M{"$in": bson.A{u, "$likes"}},
+			},
 		},
-		opts,
-	).Decode(&result)
-	return &result, err
+	}
+
+	cursor, err := p.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, projectStage},
+	)
+	if err != nil {
+		return result, err
+	}
+	r := []entity.Post{}
+	if err = cursor.All(context.TODO(), &r); err != nil {
+		return result, err
+	}
+	fmt.Println(r)
+	if len(r) > 0 {
+		result = r[0]
+	}
+	return result, err
 }
 func (p *PostMongo) Comments(postID, userID string, skip int) ([]presentation.Comment, error) {
 	uID, _ := entity.StringToID(userID)

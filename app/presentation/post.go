@@ -19,6 +19,7 @@ type Post struct {
 	Files          []entity.PostMetadata `json:"files"`
 	IsThisCouple   bool                  `json:"is_this_couple"`
 	Location       string                `json:"location"`
+	HasLiked       bool                  `json:"has_liked"`
 }
 
 type Comment struct {

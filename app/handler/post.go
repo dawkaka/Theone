@@ -123,7 +123,7 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 				return
 			}
 		}
-		post, err := service.GetPost(couple.ID.Hex(), postID)
+		post, err := service.GetPost(couple.ID.Hex(), user.ID.Hex(), postID)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
@@ -137,6 +137,7 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			CreatedAt:      post.CreatedAt,
 			Caption:        post.Caption,
 			LikesCount:     post.LikesCount,
+			HasLiked:       post.HasLiked,
 			CommentsCount:  post.CommentsCount,
 			Files:          post.Files,
 			IsThisCouple:   user.ID == couple.Initiated || couple.ID == couple.Accepted,

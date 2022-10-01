@@ -24,6 +24,7 @@ type Post struct {
 	Comments      []Comment      `json:"comment"`
 	CommentsCount int64          `json:"comments_count" bson:"comments_count"`
 	CreatedAt     time.Time      `json:"created_at" bson:"created_at"`
+	HasLiked      bool           `json:"has_liked" bson:"has_liked,omitempty"`
 }
 
 func (p *Post) Sanitize() {
