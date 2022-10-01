@@ -236,7 +236,7 @@ func postComments(service post.UseCase) gin.HandlerFunc {
 			return
 		}
 		postID := ctx.Param("postID")
-		comments, err := service.GetComments(postID, skip)
+		comments, err := service.GetComments(postID, user.ID.Hex(), skip)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
@@ -427,11 +427,11 @@ func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.
 	r.POST("/post", newPost(service, coupleService, userService))       //tested
 	r.POST("/post/comment/:postID", newComment(service, userService))   //tested
 	r.POST("/post/report/:postID", reportPost(service, reportsRepo))
-	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service)) //tested
-	r.PATCH("/post/like/:postID", like(service, userService))                //tested
-	r.PATCH("/post/unlike/:postID", unLikePost(service))                     //tested
-	r.PUT("/post/:postID", editPost(service))                                //tested
+	r.PATCH("/post/like/:postID", like(service, userService)) //tested
+	r.PATCH("/post/unlike/:postID", unLikePost(service))      //tested
+	r.PUT("/post/:postID", editPost(service))                 //tested
 	r.PATCH("/post/comment/like/:postID/:commentID", likeComment(service))
 	r.PATCH("/post/comment/unlike/:postID/:commentID", unlikeComment(service))
+	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service)) //tested
 	r.DELETE("/post/:postID", deletePost(service, coupleService))
 }

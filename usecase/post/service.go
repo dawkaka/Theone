@@ -30,8 +30,8 @@ func (s *Service) GetPostByID(id string) (entity.Post, error) {
 	return s.repo.GetByID((ID))
 }
 
-func (s *Service) GetComments(postid string, skip int) ([]presentation.Comment, error) {
-	return s.repo.Comments(postid, skip)
+func (s *Service) GetComments(postID, userID string, skip int) ([]presentation.Comment, error) {
+	return s.repo.Comments(postID, userID, skip)
 }
 
 func (s *Service) CreatePost(p *entity.Post) (entity.ID, error) {
