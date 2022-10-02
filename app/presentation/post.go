@@ -19,7 +19,8 @@ type Post struct {
 	Files          []entity.PostMetadata `json:"files" bson:"files"`
 	IsThisCouple   bool                  `json:"is_this_couple"`
 	Location       string                `json:"location"`
-	HasLiked       bool                  `json:"has_liked"`
+	PostID         string                `json:"postId" bson:"post_id"`
+	HasLiked       bool                  `json:"has_liked" bson:"has_liked"`
 }
 
 type Comment struct {

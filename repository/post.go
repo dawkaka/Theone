@@ -283,6 +283,7 @@ func (p *PostMongo) Delete(coupleID, postID entity.ID) error {
 func (p *PostMongo) GetPosts(coupleID entity.ID, userID entity.ID, postIDs []string) ([]presentation.Post, error) {
 	result := []presentation.Post{}
 	matchStage := bson.D{{Key: "$match", Value: bson.M{"couple_id": coupleID, "post_id": bson.M{"$in": postIDs}}}}
+	sortStage := bson.D{{Key: "$sort", Value: bson.M{"created_at": -1}}}
 
 	projectStage := bson.D{
 		{
@@ -295,6 +296,7 @@ func (p *PostMongo) GetPosts(coupleID entity.ID, userID entity.ID, postIDs []str
 				"caption":        1,
 				"files":          1,
 				"location":       1,
+				"post_id":        1,
 				"has_liked":      bson.M{"$in": bson.A{userID, "$likes"}},
 			},
 		},
@@ -302,7 +304,7 @@ func (p *PostMongo) GetPosts(coupleID entity.ID, userID entity.ID, postIDs []str
 
 	cursor, err := p.collection.Aggregate(
 		context.TODO(),
-		mongo.Pipeline{matchStage, projectStage},
+		mongo.Pipeline{matchStage, sortStage, projectStage},
 	)
 	if err != nil {
 		return nil, err

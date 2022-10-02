@@ -42,7 +42,7 @@ func (p Post) Validate() []error {
 type PostMetadata struct {
 	Name   string `json:"name"`
 	Type   string `json:"type"`
-	Width  int64  `json:"witdth"`
+	Width  int64  `json:"width"`
 	Height int64  `json:"height"`
 	Alt    string `json:"alt" bson:"alt"`
 }
