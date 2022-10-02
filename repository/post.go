@@ -40,7 +40,7 @@ func (p *PostMongo) Get(coupleID, userID, postID string) (entity.Post, error) {
 				"_id":            1,
 				"post_id":        1,
 				"couple_id":      1,
-				"file_name":      1,
+				"files":          1,
 				"caption":        1,
 				"location":       1,
 				"likes_count":    1,
@@ -55,6 +55,7 @@ func (p *PostMongo) Get(coupleID, userID, postID string) (entity.Post, error) {
 		context.TODO(),
 		mongo.Pipeline{matchStage, projectStage},
 	)
+
 	if err != nil {
 		return result, err
 	}
@@ -62,10 +63,10 @@ func (p *PostMongo) Get(coupleID, userID, postID string) (entity.Post, error) {
 	if err = cursor.All(context.TODO(), &r); err != nil {
 		return result, err
 	}
-	if len(r) > 0 {
-		result = r[0]
+	if len(r) < 1 {
+		return result, mongo.ErrNoDocuments
 	}
-	return result, err
+	return r[0], err
 }
 
 func (p *PostMongo) Comments(postID, userID string, skip int) ([]presentation.Comment, error) {
@@ -292,7 +293,7 @@ func (p *PostMongo) GetPosts(coupleID entity.ID, userID entity.ID, postIDs []str
 				"likes_count":    1,
 				"comments_count": 1,
 				"caption":        1,
-				"file_name":      1,
+				"files":          1,
 				"location":       1,
 				"has_liked":      bson.M{"$in": bson.A{userID, "$likes"}},
 			},

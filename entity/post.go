@@ -15,9 +15,9 @@ type Post struct {
 	InitiatedID   ID             `json:"initiated_id" bson:"initiated_id"`
 	AcceptedID    ID             `json:"accepted_id" bson:"accepted_id"`
 	PostedBy      ID             `json:"posted_by" bson:"posted_by"`
-	Files         []PostMetadata `json:"file_name" bson:"file_name"`
+	Files         []PostMetadata `json:"files"`
 	Caption       string         `json:"caption"`
-	Location      string         `json:"location" bson:"location,omitempty"`
+	Location      string         `json:"location" bson:"location"`
 	Mentioned     []string       `json:"mentioned"`
 	Likes         []ID           `json:"likes"`
 	LikesCount    int64          `json:"likes_count" bson:"likes_count"`
@@ -70,3 +70,9 @@ type EditPost struct {
 	Caption  string `json:"caption"`
 	Location string `json:"location"`
 }
+
+var (
+	Landscape = 1.8
+	Potrait   = 0.8
+	Thumbnail = 1.0
+)

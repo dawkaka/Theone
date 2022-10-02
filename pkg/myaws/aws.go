@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -60,10 +61,7 @@ func UploadImageFile(fileHeader *multipart.FileHeader, bucket string) (string, e
 		return fileName, entity.ErrUnsupportedImage
 	}
 	options := bimg.Options{
-		Width:     400,
-		Height:    400,
-		Crop:      true,
-		Quality:   90,
+		Quality:   50,
 		Interlace: true,
 	}
 	newImage, err := bimg.NewImage(image).Process(options)
@@ -183,9 +181,21 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 		if err != nil {
 			ch <- entity.CustomError{Code: http.StatusUnprocessableEntity, Message: entity.ErrImageProcessing.Error()}
 		}
-		height := getPrefDimention(size.Height, "h")
-		width := getPrefDimention(size.Width, "w")
-		options := bimg.Options{Width: height, Height: width, Crop: true, Quality: 100, Interlace: true}
+
+		height := size.Height
+		width := size.Width
+		aspR := math.Round(float64(size.Width)/float64(size.Height)*10) / 10 // round to one decimal place
+		options := bimg.Options{Quality: 90, Interlace: true}
+
+		if aspR != entity.Thumbnail && aspR != entity.Landscape && aspR != entity.Potrait {
+			if width > height {
+				width = height
+			} else {
+				height = width
+			}
+			options = bimg.Options{Width: height, Height: width, Crop: true, Quality: 90, Interlace: true}
+		}
+
 		newImage, err := bimg.NewImage(pFile).Process(options)
 		if err != nil {
 			ch <- entity.CustomError{Code: http.StatusUnprocessableEntity, Message: entity.ErrImageProcessing.Error()}
@@ -210,26 +220,26 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 	}
 }
 
-func getPrefDimention(curr int, d string) int {
-	var dimen int
-	if d == "h" {
-		if curr < 566 {
-			dimen = 566
-		} else if curr > 1350 {
-			dimen = 1350
-		} else {
-			dimen = curr
-		}
-	}
-	if d == "w" {
-		if curr < 320 {
-			dimen = 320
-		} else if curr > 1080 {
-			dimen = 1080
-		} else {
-			dimen = curr
-		}
-	}
+// func getPrefDimention(curr int, d string) int {
+// 	var dimen int
+// 	if d == "h" {
+// 		if curr < 566 {
+// 			dimen = 566
+// 		} else if curr > 1350 {
+// 			dimen = 1350
+// 		} else {
+// 			dimen = curr
+// 		}
+// 	}
+// 	if d == "w" {
+// 		if curr < 320 {
+// 			dimen = 320
+// 		} else if curr > 1080 {
+// 			dimen = 1080
+// 		} else {
+// 			dimen = curr
+// 		}
+// 	}
 
-	return dimen
-}
+// 	return dimen
+// }

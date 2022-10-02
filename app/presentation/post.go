@@ -16,7 +16,7 @@ type Post struct {
 	Caption        string                `json:"caption"`
 	LikesCount     int64                 `json:"likes_count" bson:"likes_count"`
 	CommentsCount  int64                 `json:"comments_count" bson:"comments_count"`
-	Files          []entity.PostMetadata `json:"files" bson:"file_name"`
+	Files          []entity.PostMetadata `json:"files" bson:"files"`
 	IsThisCouple   bool                  `json:"is_this_couple"`
 	Location       string                `json:"location"`
 	HasLiked       bool                  `json:"has_liked"`

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -32,11 +33,14 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		caption := strings.TrimSpace(ctx.PostForm("caption"))
 		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
 		location := strings.TrimSpace(ctx.PostForm("location"))
+		alts := [10]string{}
 
-		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 || len(files) == 0 {
+		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 || len(files) == 0 || len(files) > 10 {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
+
+		err = json.Unmarshal([]byte(ctx.PostForm("alts")), &alts)
 		u, err := userService.GetUser(user.Name)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
@@ -47,6 +51,9 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			return
 		}
 		filesMetadata, cErr := myaws.UploadMultipleFiles(files)
+		for i := 0; i < len(filesMetadata); i++ {
+			filesMetadata[i].Alt = alts[i]
+		}
 
 		if cErr != nil {
 			ctx.JSON(cErr.Code, presentation.Error(lang, cErr.Error()))
@@ -128,6 +135,7 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
+
 		p := presentation.Post{
 			CoupleName:     couple.CoupleName,
 			Married:        couple.Married,
@@ -241,6 +249,9 @@ func postComments(service post.UseCase) gin.HandlerFunc {
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
+		}
+		if len(comments) == 0 {
+			comments = []presentation.Comment{}
 		}
 		page := entity.Pagination{
 			Next: skip + entity.Limit,
