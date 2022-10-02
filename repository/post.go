@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type PostMongo struct {
@@ -68,6 +67,7 @@ func (p *PostMongo) Get(coupleID, userID, postID string) (entity.Post, error) {
 	}
 	return result, err
 }
+
 func (p *PostMongo) Comments(postID, userID string, skip int) ([]presentation.Comment, error) {
 	uID, _ := entity.StringToID(userID)
 	ID, err := entity.StringToID(postID)
@@ -279,17 +279,35 @@ func (p *PostMongo) Delete(coupleID, postID entity.ID) error {
 	return nil
 }
 
-func (p *PostMongo) GetPosts(coupleID entity.ID, postIDs []string) ([]entity.Post, error) {
-	opts := options.Find().SetProjection(bson.M{"likes": 0, "comments": 0})
-	var result []entity.Post
-	cursor, err := p.collection.Find(
+func (p *PostMongo) GetPosts(coupleID entity.ID, userID entity.ID, postIDs []string) ([]presentation.Post, error) {
+	result := []presentation.Post{}
+	matchStage := bson.D{{Key: "$match", Value: bson.M{"couple_id": coupleID, "post_id": bson.M{"$in": postIDs}}}}
+
+	projectStage := bson.D{
+		{
+			Key: "$project",
+			Value: bson.M{
+				"_id":            1,
+				"created_at":     1,
+				"likes_count":    1,
+				"comments_count": 1,
+				"caption":        1,
+				"file_name":      1,
+				"location":       1,
+				"has_liked":      bson.M{"$in": bson.A{userID, "$likes"}},
+			},
+		},
+	}
+
+	cursor, err := p.collection.Aggregate(
 		context.TODO(),
-		bson.M{"couple_id": coupleID, "post_id": bson.M{"$in": postIDs}},
-		opts,
+		mongo.Pipeline{matchStage, projectStage},
 	)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
+
 	err = cursor.All(context.TODO(), &result)
+
 	return result, err
 }

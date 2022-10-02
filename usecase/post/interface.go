@@ -11,7 +11,7 @@ type Reader interface {
 	List(id []entity.ID) ([]*entity.Post, error)
 	GetByID(id entity.ID) (entity.Post, error)
 	Comments(postID, userID string, skip int) ([]presentation.Comment, error)
-	GetPosts(coupleID entity.ID, postIDs []string) ([]entity.Post, error)
+	GetPosts(coupleID, userID entity.ID, postIDs []string) ([]presentation.Post, error)
 }
 
 //Writer user writer
@@ -40,7 +40,7 @@ type UseCase interface {
 	GetComments(postID, userID string, skip int) ([]presentation.Comment, error)
 	GetPostByID(postID string) (entity.Post, error)
 	CreatePost(e *entity.Post) (entity.ID, error)
-	GetPosts(coupleID entity.ID, postIDs []string) ([]entity.Post, error)
+	GetPosts(coupleID, userID entity.ID, postIDs []string) ([]presentation.Post, error)
 	ListPosts(id []entity.ID) ([]*entity.Post, error)
 	UpdatePost(e *entity.Post) error
 	DeletePost(coupleID entity.ID, postID string) error

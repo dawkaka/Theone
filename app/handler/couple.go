@@ -159,7 +159,7 @@ func getCouplePosts(service couple.UseCase, postService post.UseCase) gin.Handle
 		coupleName, skip := ctx.Param("coupleName"), ctx.Param("skip")
 		skipPosts, err := strconv.Atoi(skip)
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		lang := user.Lang
 		if !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -181,19 +181,27 @@ func getCouplePosts(service couple.UseCase, postService post.UseCase) gin.Handle
 		if ed < 0 {
 			ed = 0
 		}
+
 		postIDs := couple.Posts[st:ed]
-		posts, err := postService.GetPosts(couple.ID, postIDs)
+		posts, err := postService.GetPosts(couple.ID, user.ID, postIDs)
 
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 
+		for i := 0; i < len(posts); i++ {
+			posts[i].CoupleName = couple.CoupleName
+			posts[i].IsThisCouple = couple.Initiated == user.ID || couple.Accepted == user.ID
+			posts[i].Verified = couple.Verified
+			posts[i].Married = couple.Married
+			posts[i].ProfilePicture = couple.ProfilePicture
+		}
 		page := entity.Pagination{
 			Next: skipPosts + entity.LimitP,
 			End:  len(postIDs) < entity.LimitP,
 		}
-		ctx.JSON(http.StatusBadRequest, gin.H{"posts": posts, "pagination": page})
+		ctx.JSON(http.StatusOK, gin.H{"posts": posts, "pagination": page})
 	}
 }
 

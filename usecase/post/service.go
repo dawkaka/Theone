@@ -27,7 +27,7 @@ func (s *Service) GetPostByID(id string) (entity.Post, error) {
 	if err != nil {
 		return entity.Post{}, errors.New("parsing ID: not a mongodb id")
 	}
-	return s.repo.GetByID((ID))
+	return s.repo.GetByID(ID)
 }
 
 func (s *Service) GetComments(postID, userID string, skip int) ([]presentation.Comment, error) {
@@ -106,6 +106,6 @@ func (s *Service) DeletePost(coupleID entity.ID, postID string) error {
 	return s.repo.Delete(coupleID, newPostID)
 }
 
-func (s *Service) GetPosts(coupleID entity.ID, postIDs []string) ([]entity.Post, error) {
-	return s.repo.GetPosts(coupleID, postIDs)
+func (s *Service) GetPosts(coupleID, userID entity.ID, postIDs []string) ([]presentation.Post, error) {
+	return s.repo.GetPosts(coupleID, userID, postIDs)
 }

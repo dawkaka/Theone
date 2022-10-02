@@ -7,16 +7,16 @@ import (
 )
 
 type Post struct {
-	ID             entity.ID             `json:"id"`
+	ID             entity.ID             `json:"id" bson:"_id"`
 	CoupleName     string                `json:"couple_name"`
 	Married        bool                  `json:"married"`
 	Verified       bool                  `json:"verified"`
 	ProfilePicture string                `json:"profile_picture"`
-	CreatedAt      time.Time             `json:"created_at"`
+	CreatedAt      time.Time             `json:"created_at" bson:"created_at"`
 	Caption        string                `json:"caption"`
-	LikesCount     int64                 `json:"likes_count"`
-	CommentsCount  int64                 `json:"comments_count"`
-	Files          []entity.PostMetadata `json:"files"`
+	LikesCount     int64                 `json:"likes_count" bson:"likes_count"`
+	CommentsCount  int64                 `json:"comments_count" bson:"comments_count"`
+	Files          []entity.PostMetadata `json:"files" bson:"file_name"`
 	IsThisCouple   bool                  `json:"is_this_couple"`
 	Location       string                `json:"location"`
 	HasLiked       bool                  `json:"has_liked"`
