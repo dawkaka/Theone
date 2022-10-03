@@ -110,3 +110,7 @@ func (s *Service) AddPost(coupleID entity.ID, postID string) error {
 func (s *Service) RemovePost(coupleID entity.ID, postID string) error {
 	return s.repo.RemovePost(coupleID, postID)
 }
+
+func (s *Service) SearchCouples(query string) ([]presentation.CouplePreview, error) {
+	return s.repo.Search(query)
+}

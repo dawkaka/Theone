@@ -34,13 +34,12 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
 		location := strings.TrimSpace(ctx.PostForm("location"))
 		alts := [10]string{}
-
 		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 || len(files) == 0 || len(files) > 10 {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
 
-		err = json.Unmarshal([]byte(ctx.PostForm("alts")), &alts)
+		_ = json.Unmarshal([]byte(ctx.PostForm("alts")), &alts)
 		u, err := userService.GetUser(user.Name)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))

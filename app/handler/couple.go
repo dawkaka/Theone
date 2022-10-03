@@ -509,11 +509,35 @@ func reportCouple(reportRepo repository.Reports) gin.HandlerFunc {
 	}
 }
 
+func searchCouples(service couple.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		query := ctx.Param("query")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+
+		//TODO:
+		// if !validator.IsUserName(query) && !validator.IsRealName(query) {
+		// 	ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "WrongUserNameFormat"))
+		// 	return
+		// }
+		couples, err := service.SearchCouples(query)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+		if couples == nil {
+			ctx.JSON(http.StatusOK, []string{})
+			return
+		}
+		ctx.JSON(http.StatusOK, couples)
+	}
+}
+
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, postService post.UseCase,
 	coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage, reportRepo repository.Reports) {
 	r.GET("/:coupleName", getCouple(service)) //tested
 	r.GET("/:coupleName/posts/:skip", getCouplePosts(service, postService))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
+	r.GET("/couple/search/:query", searchCouples(service))
 	r.GET("/:coupleName/followers/:skip", getFollowers(service, userService)) //tested
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
@@ -521,8 +545,8 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))  //tested
 	r.POST("/couple/break-up", lastLastEdonCast(service, userService)) //tested
 	r.POST("/couple/report", reportCouple(reportRepo))
-	r.PUT("/couple", updateCouple(service))                            //tested
 	r.POST("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
 	r.POST("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
 	r.POST("/couple/name", changeCoupleName(service))                  //tested
+	r.PUT("/couple", updateCouple(service))                            //tested
 }

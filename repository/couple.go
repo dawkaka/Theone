@@ -49,6 +49,24 @@ func (c *CoupleMongo) List(IDs []entity.ID) ([]presentation.CouplePreview, error
 	return results, nil
 }
 
+func (c *CoupleMongo) Search(query string) ([]presentation.CouplePreview, error) {
+	opts := options.Find().SetSort(bson.D{{Key: "followers_count", Value: -1}}).SetProjection(bson.M{"couple_name": 1, "profile_picture": 1, "verified": 1, "married": 1})
+	results := []presentation.CouplePreview{}
+	cursor, err := c.collection.Find(
+		context.TODO(),
+		bson.M{"couple_name": bson.M{"$regex": primitive.Regex{Pattern: "^" + query, Options: "i"}}},
+		opts,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+	return results, err
+
+}
+
 func (c *CoupleMongo) GetCouplePosts(coupleName string, skip int) (entity.Couple, error) {
 	var result entity.Couple
 	opts := options.FindOne().SetProjection(bson.M{"followers": 0})

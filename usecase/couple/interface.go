@@ -26,6 +26,7 @@ type Reader interface {
 	Get(coupleName string) (entity.Couple, error)
 	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
+	Search(query string) ([]presentation.CouplePreview, error)
 	Followers(coupleName string, skip int) ([]entity.ID, error)
 	List(coupleIDs []entity.ID) ([]presentation.CouplePreview, error)
 }
@@ -44,6 +45,7 @@ type UseCase interface {
 	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	GetFollowers(coupleName string, skip int) ([]entity.ID, error)
+	SearchCouples(query string) ([]presentation.CouplePreview, error)
 	NewFollower(userID, coupleID entity.ID) error
 	RemoveFollower(coupleID, userID entity.ID) error
 	UpdateCoupleProfilePic(fileName string, coupleID entity.ID) error
