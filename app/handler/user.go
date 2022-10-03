@@ -173,6 +173,7 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			Bio:            user.Bio,
 			FollowingCount: user.FollowingCount,
 			ShowPictures:   user.ShowPictures,
+			HasPartner:     user.HasPartner,
 			IsThisUser:     thisUser.ID == user.ID,
 			Website:        user.Website,
 		}
@@ -200,10 +201,10 @@ func searchUsers(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		if users == nil {
-			ctx.JSON(http.StatusOK, gin.H{"users": []string{}})
+			ctx.JSON(http.StatusOK, []string{})
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"users": users})
+		ctx.JSON(http.StatusOK, users)
 	}
 }
 

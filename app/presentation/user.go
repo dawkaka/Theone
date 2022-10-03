@@ -14,7 +14,7 @@ type UserProfile struct {
 	Bio            string    `json:"bio"`
 	FollowingCount uint64    `json:"following_count"`
 	ShowPictures   []string  `json:"show_pictures"`
-	HasPartener    bool      `json:"has_partner"`
+	HasPartner     bool      `json:"has_partner" bson:"has_partner"`
 	IsThisUser     bool      `json:"is_this_user"`
 	Website        string    `json:"website"`
 	DateOfBirth    time.Time `json:"date_of_birth"`
