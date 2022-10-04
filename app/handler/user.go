@@ -79,14 +79,17 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		session := sessions.Default(ctx)
 		userSession := entity.UserSession{
 			ID:             insertedID,
-			Email:          email,
 			Name:           userName,
+			Email:          email,
+			ProfilePicture: "defaultProfile.jpg",
+			HasPartner:     false,
+			PartnerID:      [12]byte{},
+			CoupleID:       [12]byte{},
+			PendingRequest: entity.NO_REQUEST,
 			FirstName:      firstName,
 			LastName:       lastName,
-			HasPartner:     false,
-			PendingRequest: entity.NO_REQUEST,
-			DateOfBirth:    dateOfBirth,
 			Lang:           lang,
+			DateOfBirth:    dateOfBirth,
 			LastVisited:    time.Now(),
 		}
 		session.Set("user", userSession)
@@ -127,6 +130,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 			ID:             user.ID,
 			Name:           user.UserName,
 			Email:          user.Email,
+			ProfilePicture: user.ProfilePicture,
 			HasPartner:     user.HasPartner,
 			PartnerID:      user.PartnerID,
 			CoupleID:       user.CoupleID,
@@ -298,22 +302,26 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "RequestPartiallyCompleted"))
 			return
 		}
-		notification := entity.NotifyRequest{
-			Type:     "Couple Request",
-			UserName: thisUser.Name,
-			Message: inter.LocalizeWithFullName(
+		notification := entity.Notification{
+			Type:    "Couple Request",
+			Name:    thisUser.Name,
+			Profile: thisUser.ProfilePicture,
+			Title: inter.LocalizeWithFullName(
 				lang,
 				thisUser.FirstName,
 				thisUser.LastName,
 				"NewCoupleRequest",
 			),
 		}
-		_ = service.NotifyUser(userName, notification)
+
 		thisUser.PendingRequest = entity.SENT_REQUEST
 		thisUser.PartnerID = partner.ID
-
 		session.Set("user", thisUser)
 		session.Save()
+
+		go func() {
+			_ = service.NotifyUser(userName, notification)
+		}()
 
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "RequestCreated"))
 	}
@@ -406,7 +414,8 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 		go func() {
 			notif := entity.Notification{
 				Type:    "Request Rejected",
-				Message: inter.LocalizeWithFullName(initiator.Lang, user.FirstName, user.LastName, "RequestRejected"),
+				Profile: user.ProfilePicture,
+				Title:   inter.LocalizeWithFullName(initiator.Lang, user.FirstName, user.LastName, "RequestRejected"),
 			}
 			service.NotifyUser(initiator.UserName, notif)
 		}()
@@ -450,7 +459,8 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 		}
 		notif := entity.Notification{
 			Type:    "follow",
-			Message: inter.LocalizeWithUserName(lang, userName, "NewFollower"),
+			Title:   inter.LocalizeWithUserName(lang, userName, "NewFollower"),
+			Profile: user.ProfilePicture,
 		}
 		_ = service.NotifyCouple([2]primitive.ObjectID{couple.Accepted, couple.Initiated}, notif)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "Followed"))
@@ -542,7 +552,8 @@ func deleteUser(service user.UseCase) gin.HandlerFunc {
 func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		fileHeader, err := ctx.FormFile("profile-picture")
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		userS := sessions.Default(ctx)
+		user := userS.Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
@@ -558,6 +569,9 @@ func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "Forbidden"))
 			return
 		}
+		user.ProfilePicture = fileName
+		userS.Set("user", user)
+		userS.Save()
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicUpdated"))
 	}
 }

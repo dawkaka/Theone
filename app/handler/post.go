@@ -91,18 +91,18 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		//Post created, whether notifications are successful or not user does't need to know
 		go func() {
 			notif := entity.Notification{
-				Type:       "PostMentioned",
-				Message:    inter.LocalizeWithUserName(lang, coupleName, "PostMentionedNotif"),
-				PostID:     post.PostID,
-				CoupleName: coupleName,
+				Type:    "PostMentioned",
+				Message: inter.LocalizeWithUserName(lang, coupleName, "PostMentionedNotif"),
+				PostID:  post.PostID,
+				Name:    coupleName,
 			}
 			partnerNotif := entity.Notification{
-				Type:       "PartnerPosted",
-				Message:    inter.LocalizeWithUserName(lang, user.Name, "PartnerNewPostNotif"),
-				PostID:     post.PostID,
-				CoupleName: coupleName,
+				Type:    "PartnerPosted",
+				Message: inter.LocalizeWithUserName(lang, user.Name, "PartnerNewPostNotif"),
+				PostID:  post.PostID,
+				Name:    coupleName,
 			}
-			userService.NotifyCouple([2]entity.ID{user.PartnerID, primitive.NewObjectID()}, partnerNotif)
+			userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, partnerNotif)
 			if len(mentions) > 0 {
 				userService.NotifyMultipleUsers(mentions, notif)
 			}
@@ -154,11 +154,12 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 	}
 }
 
-func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
+func newComment(service post.UseCase, userService user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		postID := ctx.Param("postID")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+
 		if strings.TrimSpace(postID) == "" {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -191,11 +192,24 @@ func newComment(service post.UseCase, userService user.UseCase) gin.HandlerFunc 
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		notif := entity.Notification{
-			Type:    "comment",
-			Message: inter.LocalizeWithUserName(lang, user.Name, "PostCommentNotif"),
-		}
-		_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
+
+		go func() {
+			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID})
+			var name string
+			if len(couple) > 0 {
+				name = couple[0].CoupleName
+			}
+			notif := entity.Notification{
+				Type:    "comment",
+				Title:   inter.LocalizeWithUserName(lang, user.Name, "PostCommentNotif"),
+				Message: comment.Comment,
+				Profile: user.ProfilePicture,
+				PostID:  post.PostID,
+				Name:    name,
+			}
+			_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
+
+		}()
 
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CommentAdded"))
 	}
@@ -227,7 +241,8 @@ func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 		}
 		notif := entity.Notification{
 			Type:    "like",
-			Message: inter.LocalizeWithUserName(lang, user.Name, "PostLikeNotif"),
+			Profile: user.ProfilePicture,
+			Title:   inter.LocalizeWithUserName(lang, user.Name, "PostLikeNotif"),
 		}
 		_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "PostLiked"))
@@ -433,10 +448,10 @@ func reportPost(service post.UseCase, reportRepo repository.Reports) gin.Handler
 }
 
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase, reportsRepo repository.Reports) {
-	r.GET("/post/:coupleName/:postID", getPost(service, coupleService)) //tested
-	r.GET("/post/comments/:postID/:skip", postComments(service))        //tested
-	r.POST("/post", newPost(service, coupleService, userService))       //tested
-	r.POST("/post/comment/:postID", newComment(service, userService))   //tested
+	r.GET("/post/:coupleName/:postID", getPost(service, coupleService))              //tested
+	r.GET("/post/comments/:postID/:skip", postComments(service))                     //tested
+	r.POST("/post", newPost(service, coupleService, userService))                    //tested
+	r.POST("/post/comment/:postID", newComment(service, userService, coupleService)) //tested
 	r.POST("/post/report/:postID", reportPost(service, reportsRepo))
 	r.PATCH("/post/like/:postID", like(service, userService)) //tested
 	r.PATCH("/post/unlike/:postID", unLikePost(service))      //tested

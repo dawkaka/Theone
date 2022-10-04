@@ -11,10 +11,12 @@ import (
 )
 
 type Notification struct {
-	Type       string `json:"type"`
-	Message    string `json:"message"`
-	PostID     string `json:"post_id,omitempty" bson:"post_id,omitempty"`
-	CoupleName string `json:"couple_name,omitempty" bson:"couple_name,omitempty"`
+	Type    string `json:"type"`
+	Title   string `json:"title"`
+	Message string `json:"message"`
+	Profile string `json:"profile"`
+	PostID  string `json:"post_id,omitempty" bson:"post_id,omitempty"`
+	Name    string `json:"name,omitempty" bson:"name,omitempty"`
 }
 
 //User data
@@ -67,6 +69,7 @@ type UserSession struct {
 	ID             ID        `json:"id" bson:"_id"`
 	Name           string    `json:"name"`
 	Email          string    `json:"email"`
+	ProfilePicture string    `json:"profile_picture"`
 	HasPartner     bool      `json:"has_partner"`
 	PartnerID      ID        `json:"partner_id"`
 	CoupleID       ID        `json:"couple_id"`
@@ -125,12 +128,6 @@ func (s *Signup) Sanitize() {
 type Login struct {
 	UserNameOrEmail string `json:"user_name_or_email"`
 	Password        string `json:"password"`
-}
-
-type NotifyRequest struct {
-	UserName string `json:"user_name" bons:"user_name"`
-	Type     string `json:"type"`
-	Message  string `json:"message"`
 }
 
 type ChangePassword struct {

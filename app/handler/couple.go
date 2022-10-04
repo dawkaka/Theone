@@ -91,8 +91,9 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 
 		}
 		notif := entity.Notification{
-			Type: "Request accepted",
-			Message: inter.LocalizeWithFullName(
+			Type:    "Request accepted",
+			Profile: user.ProfilePicture,
+			Title: inter.LocalizeWithFullName(
 				lang,
 				user.FirstName,
 				user.LastName,
@@ -101,9 +102,13 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		}
 
 		go func() {
-			_ = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, coupleID)
 			_ = userService.NotifyUser(partner.UserName, notif)
 		}()
+		err = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, coupleID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
 
 		userb.CoupleID = coupleID
 		userb.HasPartner = true
