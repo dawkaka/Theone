@@ -92,13 +92,16 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		go func() {
 			notif := entity.Notification{
 				Type:    "PostMentioned",
-				Message: inter.LocalizeWithUserName(lang, coupleName, "PostMentionedNotif"),
+				Title:   inter.LocalizeWithUserName(lang, coupleName, "PostMentionedNotif"),
+				Message: caption,
 				PostID:  post.PostID,
 				Name:    coupleName,
 			}
 			partnerNotif := entity.Notification{
 				Type:    "PartnerPosted",
-				Message: inter.LocalizeWithUserName(lang, user.Name, "PartnerNewPostNotif"),
+				Profile: user.ProfilePicture,
+				Title:   inter.LocalizeWithUserName(lang, user.Name, "PartnerNewPostNotif"),
+				Message: caption,
 				PostID:  post.PostID,
 				Name:    coupleName,
 			}
