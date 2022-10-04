@@ -31,10 +31,10 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		form, err := ctx.MultipartForm()
 		files := form.File["files"]
 		caption := strings.TrimSpace(ctx.PostForm("caption"))
-		coupleName := strings.TrimSpace(ctx.PostForm("couple_name"))
 		location := strings.TrimSpace(ctx.PostForm("location"))
 		alts := [10]string{}
-		if !validator.IsCaption(caption) || err != nil || !validator.IsCoupleName(coupleName) || len(location) > 50 || len(files) == 0 || len(files) > 10 {
+
+		if !validator.IsCaption(caption) || err != nil || len(location) > 50 || len(files) == 0 || len(files) > 10 {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
@@ -90,12 +90,17 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 
 		//Post created, whether notifications are successful or not user does't need to know
 		go func() {
+			couple, _ := coupleService.ListCouple([]entity.ID{u.CoupleID})
+			var name string
+			if len(couple) > 0 {
+				name = couple[0].CoupleName
+			}
 			notif := entity.Notification{
 				Type:    "PostMentioned",
-				Title:   inter.LocalizeWithUserName(lang, coupleName, "PostMentionedNotif"),
+				Title:   inter.LocalizeWithUserName(lang, name, "PostMentionedNotif"),
 				Message: caption,
 				PostID:  post.PostID,
-				Name:    coupleName,
+				Name:    name,
 			}
 			partnerNotif := entity.Notification{
 				Type:    "PartnerPosted",
@@ -103,7 +108,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				Title:   inter.LocalizeWithUserName(lang, user.Name, "PartnerNewPostNotif"),
 				Message: caption,
 				PostID:  post.PostID,
-				Name:    coupleName,
+				Name:    name,
 			}
 			userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, partnerNotif)
 			if len(mentions) > 0 {
@@ -111,6 +116,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			}
 
 		}()
+
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "NewPostAdded"))
 	}
 }
