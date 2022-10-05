@@ -304,7 +304,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 		}
 		notification := entity.Notification{
 			Type:    "Couple Request",
-			Name:    thisUser.Name,
+			User:    thisUser.Name,
 			Profile: thisUser.ProfilePicture,
 			Title: inter.LocalizeWithFullName(
 				lang,
@@ -414,6 +414,7 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 		go func() {
 			notif := entity.Notification{
 				Type:    "Request Rejected",
+				User:    user.Name,
 				Profile: user.ProfilePicture,
 				Title:   inter.LocalizeWithFullName(initiator.Lang, user.FirstName, user.LastName, "RequestRejected"),
 			}
@@ -461,6 +462,7 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			Type:    "follow",
 			Title:   inter.LocalizeWithUserName(lang, userName, "NewFollower"),
 			Profile: user.ProfilePicture,
+			User:    user.Name,
 		}
 		_ = service.NotifyCouple([2]primitive.ObjectID{couple.Accepted, couple.Initiated}, notif)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "Followed"))
@@ -801,7 +803,10 @@ func notifications(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"notifications": notifs})
+		if len(notifs) == 0 {
+			notifs = []entity.Notification{}
+		}
+		ctx.JSON(http.StatusOK, notifs)
 	}
 }
 

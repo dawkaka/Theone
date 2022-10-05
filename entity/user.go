@@ -17,6 +17,7 @@ type Notification struct {
 	Profile string `json:"profile"`
 	PostID  string `json:"post_id,omitempty" bson:"post_id,omitempty"`
 	Name    string `json:"name,omitempty" bson:"name,omitempty"`
+	User    string `json:"user"`
 }
 
 //User data

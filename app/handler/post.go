@@ -101,6 +101,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				Message: caption,
 				PostID:  post.PostID,
 				Name:    name,
+				User:    user.Name,
 			}
 			partnerNotif := entity.Notification{
 				Type:    "PartnerPosted",
@@ -109,6 +110,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				Message: caption,
 				PostID:  post.PostID,
 				Name:    name,
+				User:    user.Name,
 			}
 			userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, partnerNotif)
 			if len(mentions) > 0 {
@@ -156,7 +158,7 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			HasLiked:       post.HasLiked,
 			CommentsCount:  post.CommentsCount,
 			Files:          post.Files,
-			IsThisCouple:   user.ID == couple.Initiated || couple.ID == couple.Accepted,
+			IsThisCouple:   user.ID == couple.Initiated || user.ID == couple.Accepted,
 			Location:       post.Location,
 		}
 		ctx.JSON(http.StatusOK, p)
@@ -215,6 +217,7 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 				Profile: user.ProfilePicture,
 				PostID:  post.PostID,
 				Name:    name,
+				User:    user.Name,
 			}
 			_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
 
@@ -224,7 +227,7 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 	}
 }
 
-func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
+func like(service post.UseCase, userService user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		postID := ctx.Param("postID")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
@@ -248,12 +251,23 @@ func like(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		notif := entity.Notification{
-			Type:    "like",
-			Profile: user.ProfilePicture,
-			Title:   inter.LocalizeWithUserName(lang, user.Name, "PostLikeNotif"),
-		}
-		_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
+		go func() {
+			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID})
+			var name string
+			if len(couple) > 0 {
+				name = couple[0].CoupleName
+			}
+			notif := entity.Notification{
+				Type:    "like",
+				Profile: user.ProfilePicture,
+				Title:   inter.LocalizeWithUserName(lang, user.Name, "PostLikeNotif"),
+				PostID:  post.PostID,
+				User:    user.Name,
+				Name:    name,
+			}
+			_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
+
+		}()
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "PostLiked"))
 	}
 }
@@ -462,9 +476,9 @@ func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.
 	r.POST("/post", newPost(service, coupleService, userService))                    //tested
 	r.POST("/post/comment/:postID", newComment(service, userService, coupleService)) //tested
 	r.POST("/post/report/:postID", reportPost(service, reportsRepo))
-	r.PATCH("/post/like/:postID", like(service, userService)) //tested
-	r.PATCH("/post/unlike/:postID", unLikePost(service))      //tested
-	r.PUT("/post/:postID", editPost(service))                 //tested
+	r.PATCH("/post/like/:postID", like(service, userService, coupleService)) //tested
+	r.PATCH("/post/unlike/:postID", unLikePost(service))                     //tested
+	r.PUT("/post/:postID", editPost(service))                                //tested
 	r.PATCH("/post/comment/like/:postID/:commentID", likeComment(service))
 	r.PATCH("/post/comment/unlike/:postID/:commentID", unlikeComment(service))
 	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service)) //tested
