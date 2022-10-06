@@ -97,6 +97,26 @@ func (u *UserMongo) List(users []entity.ID) ([]presentation.UserPreview, error) 
 	}
 	return results, nil
 }
+func (u *UserMongo) ListFollowers(flws []entity.ID) ([]entity.Follower, error) {
+	opts := options.Find().SetProjection(
+		bson.D{
+			{Key: "first_name", Value: 1}, {Key: "last_name", Value: 1},
+			{Key: "user_name", Value: 1}, {Key: "profile_picture", Value: 1},
+			{Key: "has_partner", Value: 1},
+		})
+	cursor, err := u.collection.Find(context.TODO(),
+		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: flws}}}},
+		opts,
+	)
+	if err != nil {
+		return nil, err
+	}
+	results := []entity.Follower{}
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+	return results, nil
+}
 
 //Confirm if the parnter actually requested to be a couple
 func (u *UserMongo) ConfirmCouple(userID, partnerID entity.ID) bool {

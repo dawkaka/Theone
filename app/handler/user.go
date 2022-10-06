@@ -215,14 +215,14 @@ func searchUsers(service user.UseCase) gin.HandlerFunc {
 func getFollowing(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		userName := user.Name
+		name := ctx.Param("name")
 		skip, err := strconv.Atoi(ctx.Param("skip"))
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethinWentWrong"))
 			return
 		}
-		following, err := service.UserFollowing(userName, skip)
+		following, err := service.UserFollowing(name, skip)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "UserNotFound"))
@@ -887,14 +887,14 @@ func changeEmail(service user.UseCase) gin.HandlerFunc {
 }
 
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
-	r.POST("/user/u/signup", signup(service))                            //tested
-	r.POST("/user/u/login", login(service))                              //tested
-	r.Use(middlewares.Authenticate())                                    //tested
-	r.GET("/user/u/session", userSession)                                //tested
-	r.GET("/user/:userName", getUser(service))                           //tested
-	r.GET("/user/search/:query", searchUsers(service))                   //tested
-	r.GET("/user/following/:skip", getFollowing(service, coupleService)) //tested
-	r.GET("/user/u/pending-request", getPendingRequest(service))         //tested
+	r.POST("/user/u/signup", signup(service))                                  //tested
+	r.POST("/user/u/login", login(service))                                    //tested
+	r.Use(middlewares.Authenticate())                                          //tested
+	r.GET("/user/u/session", userSession)                                      //tested
+	r.GET("/user/:userName", getUser(service))                                 //tested
+	r.GET("/user/search/:query", searchUsers(service))                         //tested
+	r.GET("/user/following/:name/:skip", getFollowing(service, coupleService)) //tested
+	r.GET("/user/u/pending-request", getPendingRequest(service))               //tested
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
 	r.GET("/user/notifications/:skip", notifications(service))             //tested

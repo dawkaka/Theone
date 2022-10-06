@@ -256,7 +256,7 @@ func getFollowers(service couple.UseCase, userService user.UseCase) gin.HandlerF
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		users, err := userService.ListUsers(followers)
+		users, err := userService.ListFollowers(followers)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return

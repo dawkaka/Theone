@@ -12,6 +12,7 @@ type Reader interface {
 	Get(userName string) (entity.User, error)
 	Search(query string) ([]presentation.UserPreview, error)
 	List(users []entity.ID) ([]presentation.UserPreview, error)
+	ListFollowers(flws []entity.ID) ([]entity.Follower, error)
 	ConfirmCouple(userID, partnerID entity.ID) bool
 	Following(userName string, skip int) ([]entity.ID, error)
 	Login(param string) (entity.User, error)
@@ -52,6 +53,7 @@ type UseCase interface {
 	GetUser(userName string) (entity.User, error)
 	SearchUsers(query string) ([]presentation.UserPreview, error)
 	ListUsers([]entity.ID) ([]presentation.UserPreview, error)
+	ListFollowers(flws []entity.ID) ([]entity.Follower, error)
 	UserFollowing(userName string, skip int) ([]entity.ID, error)
 	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) (entity.ID, error)
 	SendRequest(from, to entity.ID) error

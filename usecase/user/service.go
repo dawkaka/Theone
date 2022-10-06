@@ -50,6 +50,10 @@ func (s *Service) ListUsers(users []entity.ID) ([]presentation.UserPreview, erro
 	return s.repo.List(users)
 }
 
+func (s *Service) ListFollowers(flw []entity.ID) ([]entity.Follower, error) {
+	return s.repo.ListFollowers(flw)
+}
+
 func (s *Service) UserFollowing(userName string, skip int) ([]entity.ID, error) {
 	return s.repo.Following(userName, skip)
 }
