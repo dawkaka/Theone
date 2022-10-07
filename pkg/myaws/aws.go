@@ -155,7 +155,7 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 			ch <- entity.CustomError{Code: http.StatusUnprocessableEntity, Message: entity.ErrVideoProcessing.Error()}
 			return
 		}
-		if vDuration > 60.00 {
+		if vDuration > 30.00 {
 			ch <- entity.CustomError{Code: http.StatusForbidden, Message: entity.ErrVideoTooLong.Error()}
 			return
 		}
