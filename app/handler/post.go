@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -55,6 +56,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		}
 
 		if cErr != nil {
+			fmt.Println(cErr.Error())
 			ctx.JSON(cErr.Code, presentation.Error(lang, cErr.Error()))
 			return
 		}
@@ -77,12 +79,14 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		}
 
 		_, err = service.CreatePost(&post)
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 
 		err = coupleService.AddPost(u.CoupleID, postID)
+		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return

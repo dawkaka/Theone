@@ -169,12 +169,11 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 			ContentType: aws.String(fType),
 			ACL:         &acl,
 		})
-
 		if err != nil {
 			ch <- entity.CustomError{Code: http.StatusInternalServerError, Message: entity.ErrAWSUpload.Error()}
 			return
 		}
-		ch <- entity.PostMetadata{Name: fileName, Height: int64(vMeta.Height), Width: int64(vMeta.Width), Type: fType}
+		ch <- entity.PostMetadata{Name: fileName, Height: int64(vMeta.Height), Width: int64(vMeta.Width), Type: fType, Alt: fmt.Sprint(i)}
 
 	} else if strings.Split(fType, "/")[0] == "image" {
 		size, err := bimg.NewImage(pFile).Size()
