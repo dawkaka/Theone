@@ -58,7 +58,7 @@ type CoupleMessage struct {
 }
 
 func (m *CoupleMessage) Get(coupleID entity.ID, skip int) ([]entity.CoupleMessage, error) {
-	curr, err := m.col.Find(context.TODO(), bson.D{{Key: "couple_id", Value: coupleID}})
+	curr, err := m.col.Find(context.TODO(), bson.D{{Key: "couple_id", Value: "63418496b2458f195b3b91ec"}})
 	if err != nil {
 		return nil, err
 	}

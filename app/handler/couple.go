@@ -418,17 +418,24 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 }
 
 //Messages between partners
-func coupleMessages(coupleMessage repository.CoupleMessage) gin.HandlerFunc {
+func coupleMessages(coupleMessage repository.CoupleMessage, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		skip, err := strconv.Atoi(ctx.Param("skip"))
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
 		}
-		messages, err := coupleMessage.Get(user.CoupleID, skip)
+		u, err := userService.GetUser(user.Name)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+		messages, err := coupleMessage.Get(u.CoupleID, skip)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
 		}
 		page := entity.Pagination{
 			Next: skip + entity.Limit,
@@ -544,7 +551,7 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/couple/search/:query", searchCouples(service))
 	r.GET("/:coupleName/followers/:skip", getFollowers(service, userService)) //tested
-	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage))
+	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage, userService))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
 	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))  //tested
