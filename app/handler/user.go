@@ -142,9 +142,9 @@ func login(service user.UseCase) gin.HandlerFunc {
 			LastVisited:    user.LastVisited,
 		}
 		if user.HasPartner {
-			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", "", false, true)
+			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", "", false, false)
 		}
-		ctx.SetCookie("user_ID", user.ID.Hex(), 500, "/", "", false, true)
+		ctx.SetCookie("user_ID", user.ID.Hex(), 500000, "/", "", false, false)
 		session.Set("user", userSession)
 		_ = session.Save()
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "LoginSuccessfull"))

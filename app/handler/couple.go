@@ -432,6 +432,7 @@ func coupleMessages(coupleMessage repository.CoupleMessage, userService user.Use
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
+		fmt.Println(u.CoupleID)
 		messages, err := coupleMessage.Get(u.CoupleID, skip)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
