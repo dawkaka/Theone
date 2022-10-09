@@ -439,10 +439,10 @@ func coupleMessages(coupleMessage repository.CoupleMessage, userService user.Use
 			return
 		}
 		page := entity.Pagination{
-			Next: skip + entity.Limit,
-			End:  len(messages) < entity.Limit,
+			Next: skip + entity.LimitP,
+			End:  len(messages) < entity.LimitP,
 		}
-		ctx.JSON(http.StatusOK, gin.H{"messages": messages, "page": page})
+		ctx.JSON(http.StatusOK, gin.H{"messages": messages, "pagination": page})
 	}
 }
 

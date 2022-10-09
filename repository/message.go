@@ -6,6 +6,7 @@ import (
 	"github.com/dawkaka/theone/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type UserCoupleMessage struct {
@@ -58,7 +59,8 @@ type CoupleMessage struct {
 }
 
 func (m *CoupleMessage) Get(coupleID entity.ID, skip int) ([]entity.CoupleMessage, error) {
-	curr, err := m.col.Find(context.TODO(), bson.D{{Key: "couple_id", Value: coupleID.Hex()}})
+	opts := options.Find().SetSort(bson.D{{Key: "date", Value: -1}}).SetSkip(int64(skip)).SetLimit(entity.LimitP)
+	curr, err := m.col.Find(context.TODO(), bson.D{{Key: "couple_id", Value: coupleID.Hex()}}, opts)
 	if err != nil {
 		return nil, err
 	}
