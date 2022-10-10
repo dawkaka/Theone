@@ -202,14 +202,30 @@ func (u *UserMongo) Notifications(userName string, page int) ([]entity.Notificat
 
 //Write Methods
 func (u *UserMongo) Notify(userName string, notif any) error {
-	result, err := u.collection.UpdateOne(
+	_, err := u.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "user_name", Value: userName}},
-		bson.D{{Key: "$push", Value: bson.D{{Key: "notifications", Value: notif}}}},
+		bson.A{
+			bson.D{
+				{
+					Key: "$set", Value: bson.D{
+						{
+							Key: "notifications",
+							Value: bson.M{
+								"$concatArrays": bson.A{
+									bson.A{notif},
+									bson.M{
+										"$slice": bson.A{"$notifications", 0, 98},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	)
-	if result.ModifiedCount != 1 {
-		return errors.New("notify: couldn't update user notifications")
-	}
+
 	return err
 }
 func (u *UserMongo) SendRequest(from, to entity.ID) error {
@@ -260,14 +276,29 @@ func (u *UserMongo) NullifyRequest(userIDs [2]entity.ID) error {
 }
 
 func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif any) error {
-	result, err := u.collection.UpdateMany(
+	_, err := u.collection.UpdateMany(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: c}}}},
-		bson.D{{Key: "$push", Value: bson.D{{Key: "notifications", Value: notif}}}},
+		bson.A{
+			bson.D{
+				{
+					Key: "$set", Value: bson.D{
+						{
+							Key: "notifications",
+							Value: bson.M{
+								"$concatArrays": bson.A{
+									bson.A{notif},
+									bson.M{
+										"$slice": bson.A{"$notifications", 0, 98},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	)
-	if result.ModifiedCount < 2 {
-		return errors.New("notify: couldn't update user notifications")
-	}
 	return err
 }
 
@@ -275,7 +306,25 @@ func (u *UserMongo) NotifyUsers(users []string, notif any) error {
 	_, err := u.collection.UpdateMany(
 		context.TODO(),
 		bson.D{{Key: "user_name", Value: bson.D{{Key: "$in", Value: users}}}},
-		bson.D{{Key: "$push", Value: bson.D{{Key: "notifications", Value: notif}}}},
+		bson.A{
+			bson.D{
+				{
+					Key: "$set", Value: bson.D{
+						{
+							Key: "notifications",
+							Value: bson.M{
+								"$concatArrays": bson.A{
+									bson.A{notif},
+									bson.M{
+										"$slice": bson.A{"$notifications", 0, 98},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	)
 
 	return err

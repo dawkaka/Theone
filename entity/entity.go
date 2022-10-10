@@ -28,8 +28,8 @@ type Pagination struct {
 }
 
 const (
-	Limit          = 30
-	LimitP         = 15
+	Limit          = 5
+	LimitP         = 10
 	EIGHTEEN_YEARS = 18
 )
 const (

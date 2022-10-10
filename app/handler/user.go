@@ -806,7 +806,11 @@ func notifications(service user.UseCase) gin.HandlerFunc {
 		if len(notifs) == 0 {
 			notifs = []entity.Notification{}
 		}
-		ctx.JSON(http.StatusOK, notifs)
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(notifs) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"notifications": notifs, "pagination": page})
 	}
 }
 
