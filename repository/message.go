@@ -59,7 +59,7 @@ type CoupleMessage struct {
 }
 
 func (m *CoupleMessage) Get(coupleID entity.ID, skip int) ([]entity.CoupleMessage, error) {
-	opts := options.Find().SetSort(bson.D{{Key: "date", Value: -1}}).SetSkip(int64(skip)).SetLimit(entity.LimitP)
+	opts := options.Find().SetSort(bson.D{{Key: "date", Value: -1}}).SetSkip(int64(skip)).SetLimit(entity.Limit)
 	curr, err := m.col.Find(context.TODO(), bson.D{{Key: "couple_id", Value: coupleID.Hex()}}, opts)
 	if err != nil {
 		return nil, err

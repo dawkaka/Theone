@@ -432,15 +432,15 @@ func coupleMessages(coupleMessage repository.CoupleMessage, userService user.Use
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		fmt.Println(u.CoupleID)
+
 		messages, err := coupleMessage.Get(u.CoupleID, skip)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 		page := entity.Pagination{
-			Next: skip + entity.LimitP,
-			End:  len(messages) < entity.LimitP,
+			Next: skip + entity.Limit,
+			End:  len(messages) < entity.Limit,
 		}
 		ctx.JSON(http.StatusOK, gin.H{"messages": messages, "pagination": page})
 	}
