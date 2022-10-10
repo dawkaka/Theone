@@ -178,7 +178,7 @@ func getCouplePosts(service couple.UseCase, postService post.UseCase) gin.Handle
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		st, ed := len(couple.Posts)-skipPosts-entity.Limit, len(couple.Posts)-skipPosts
+		st, ed := len(couple.Posts)-skipPosts-entity.LimitP, len(couple.Posts)-skipPosts
 
 		if st < 0 {
 			st = 0
