@@ -28,7 +28,7 @@ type Reader interface {
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	Search(query string) ([]presentation.CouplePreview, error)
 	Followers(coupleName string, skip int) ([]entity.ID, error)
-	List(coupleIDs []entity.ID) ([]presentation.CouplePreview, error)
+	List(coupleIDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error)
 }
 
 //Repository all couple methods
@@ -54,7 +54,7 @@ type UseCase interface {
 	BreakUp(coupleID entity.ID) error
 	MakeUp(coupleID entity.ID) error
 	WhereACouple(userID, partnerID entity.ID) (entity.ID, error)
-	ListCouple(coupleIDs []entity.ID) ([]presentation.CouplePreview, error)
+	ListCouple(coupleIDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error)
 	AddPost(coupleID entity.ID, postID string) error
 	RemovePost(coupleID entity.ID, postID string) error
 }

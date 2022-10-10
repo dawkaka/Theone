@@ -35,9 +35,22 @@ func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
 	return result, err
 }
 
-func (c *CoupleMongo) List(IDs []entity.ID) ([]presentation.CouplePreview, error) {
-	cursor, err := c.collection.Find(context.TODO(),
-		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: IDs}}}, {Key: "separated", Value: false}},
+func (c *CoupleMongo) List(IDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error) {
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: IDs}}}, {Key: "separated", Value: false}}}}
+	projectStage := bson.D{{
+		Key: "$project",
+		Value: bson.M{
+			"couple_name":     1,
+			"profile_picture": 1,
+			"married":         1,
+			"verified":        1,
+			"is_following":    bson.M{"$in": bson.A{userID, "$followers"}},
+		},
+	}}
+
+	cursor, err := c.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, projectStage},
 	)
 	if err != nil {
 		return nil, err

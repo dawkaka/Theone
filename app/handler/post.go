@@ -93,7 +93,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 
 		//Post created, whether notifications are successful or not user does't need to know
 		go func() {
-			couple, _ := coupleService.ListCouple([]entity.ID{u.CoupleID})
+			couple, _ := coupleService.ListCouple([]entity.ID{u.CoupleID}, primitive.NewObjectID())
 			var name string
 			if len(couple) > 0 {
 				name = couple[0].CoupleName
@@ -206,7 +206,7 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 		}
 
 		go func() {
-			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID})
+			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID}, primitive.NewObjectID())
 			var name string
 			if len(couple) > 0 {
 				name = couple[0].CoupleName
@@ -252,7 +252,7 @@ func like(service post.UseCase, userService user.UseCase, coupleService couple.U
 			return
 		}
 		go func() {
-			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID})
+			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID}, primitive.NewObjectID())
 			var name string
 			if len(couple) > 0 {
 				name = couple[0].CoupleName

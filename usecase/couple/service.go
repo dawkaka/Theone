@@ -30,8 +30,8 @@ func (s *Service) GetCoupleVideos(coupleName string, skip int) ([]entity.Video, 
 	return s.repo.GetCoupleVideos(coupleName, skip)
 }
 
-func (s *Service) ListCouple(IDs []entity.ID) ([]presentation.CouplePreview, error) {
-	return s.repo.List(IDs)
+func (s *Service) ListCouple(IDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error) {
+	return s.repo.List(IDs, userID)
 }
 
 func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID, error) {

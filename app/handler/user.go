@@ -231,7 +231,7 @@ func getFollowing(service user.UseCase, coupleService couple.UseCase) gin.Handle
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		couples, err := coupleService.ListCouple(following)
+		couples, err := coupleService.ListCouple(following, user.ID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 		}
