@@ -99,14 +99,14 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				name = couple[0].CoupleName
 			}
 			notif := entity.Notification{
-				Type:    "PostMentioned",
+				Type:    "Mentioned",
 				Message: caption,
 				PostID:  post.PostID,
 				Name:    name,
-				User:    user.Name,
+				User:    name,
 			}
 			partnerNotif := entity.Notification{
-				Type:    "PartnerPosted",
+				Type:    "Partner Posted",
 				Profile: user.ProfilePicture,
 				Message: caption,
 				PostID:  post.PostID,

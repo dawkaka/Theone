@@ -396,9 +396,10 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 
 		go func() {
 			notif := entity.Notification{
-				Type: "breakUp",
-				User: user.Name,
-				Name: user.FirstName + user.LastName,
+				Type:    "Break Up",
+				Profile: user.ProfilePicture,
+				User:    user.Name,
+				Name:    user.FirstName + user.LastName,
 			}
 			userService.BreakedUp([2]entity.ID{u.ID, u.PartnerID})
 			_ = userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, notif)
