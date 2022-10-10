@@ -12,7 +12,6 @@ import (
 
 type Notification struct {
 	Type    string `json:"type"`
-	Title   string `json:"title"`
 	Message string `json:"message"`
 	Profile string `json:"profile"`
 	PostID  string `json:"post_id,omitempty" bson:"post_id,omitempty"`

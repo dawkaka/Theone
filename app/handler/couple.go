@@ -9,7 +9,6 @@ import (
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
-	"github.com/dawkaka/theone/inter"
 	"github.com/dawkaka/theone/pkg/myaws"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
@@ -63,7 +62,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		}
 
 		coupleID, err := service.WhereACouple(user.ID, partner.ID)
-
+		var coupleName string
 		if err == nil { //used to have a couple profile
 			err = service.MakeUp(coupleID)
 			if err != nil {
@@ -73,7 +72,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 
 		} else {
 
-			coupleName := fmt.Sprintf("%s.and.%s", strings.ToLower(partner.FirstName), strings.ToLower(user.FirstName))
+			coupleName = fmt.Sprintf("%s.and.%s", strings.ToLower(partner.FirstName), strings.ToLower(user.FirstName))
 			_, err = service.GetCouple(coupleName)
 			if err == nil {
 				coupleName += fmt.Sprint(time.Now().Unix())
@@ -93,12 +92,8 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		notif := entity.Notification{
 			Type:    "Request accepted",
 			Profile: user.ProfilePicture,
-			Title: inter.LocalizeWithFullName(
-				lang,
-				user.FirstName,
-				user.LastName,
-				"RequestAccepted",
-			),
+			User:    user.UserName,
+			Name:    coupleName,
 		}
 
 		go func() {
@@ -401,8 +396,9 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 
 		go func() {
 			notif := entity.Notification{
-				Type:    "breakUp",
-				Message: inter.LocalizeWithFullName(lang, user.FirstName, user.LastName, "YourPartnerBrokeUpWithYou"),
+				Type: "breakUp",
+				User: user.Name,
+				Name: user.FirstName + user.LastName,
 			}
 			userService.BreakedUp([2]entity.ID{u.ID, u.PartnerID})
 			_ = userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, notif)

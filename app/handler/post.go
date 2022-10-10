@@ -10,7 +10,6 @@ import (
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
-	"github.com/dawkaka/theone/inter"
 	"github.com/dawkaka/theone/pkg/myaws"
 	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/pkg/validator"
@@ -101,7 +100,6 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			}
 			notif := entity.Notification{
 				Type:    "PostMentioned",
-				Title:   inter.LocalizeWithUserName(lang, name, "PostMentionedNotif"),
 				Message: caption,
 				PostID:  post.PostID,
 				Name:    name,
@@ -110,7 +108,6 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			partnerNotif := entity.Notification{
 				Type:    "PartnerPosted",
 				Profile: user.ProfilePicture,
-				Title:   inter.LocalizeWithUserName(lang, user.Name, "PartnerNewPostNotif"),
 				Message: caption,
 				PostID:  post.PostID,
 				Name:    name,
@@ -216,7 +213,6 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 			}
 			notif := entity.Notification{
 				Type:    "comment",
-				Title:   inter.LocalizeWithUserName(lang, user.Name, "PostCommentNotif"),
 				Message: comment.Comment,
 				Profile: user.ProfilePicture,
 				PostID:  post.PostID,
@@ -264,7 +260,6 @@ func like(service post.UseCase, userService user.UseCase, coupleService couple.U
 			notif := entity.Notification{
 				Type:    "like",
 				Profile: user.ProfilePicture,
-				Title:   inter.LocalizeWithUserName(lang, user.Name, "PostLikeNotif"),
 				PostID:  post.PostID,
 				User:    user.Name,
 				Name:    name,

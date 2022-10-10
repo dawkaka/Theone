@@ -306,12 +306,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			Type:    "Couple Request",
 			User:    thisUser.Name,
 			Profile: thisUser.ProfilePicture,
-			Title: inter.LocalizeWithFullName(
-				lang,
-				thisUser.FirstName,
-				thisUser.LastName,
-				"NewCoupleRequest",
-			),
+			Name:    thisUser.FirstName + thisUser.LastName,
 		}
 
 		thisUser.PendingRequest = entity.SENT_REQUEST
@@ -416,7 +411,7 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 				Type:    "Request Rejected",
 				User:    user.Name,
 				Profile: user.ProfilePicture,
-				Title:   inter.LocalizeWithFullName(initiator.Lang, user.FirstName, user.LastName, "RequestRejected"),
+				Name:    user.FirstName + user.LastName,
 			}
 			service.NotifyUser(initiator.UserName, notif)
 		}()
@@ -460,7 +455,6 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 		}
 		notif := entity.Notification{
 			Type:    "follow",
-			Title:   inter.LocalizeWithUserName(lang, userName, "NewFollower"),
 			Profile: user.ProfilePicture,
 			User:    user.Name,
 		}
