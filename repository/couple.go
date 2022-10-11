@@ -25,14 +25,40 @@ func NewCoupleMongo(col *mongo.Collection) *CoupleMongo {
 
 //Read Operations
 func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
-	opts := options.FindOne().SetProjection(bson.M{"followers": 0, "posts": 0})
 	result := entity.Couple{}
-	err := c.collection.FindOne(
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}, {Key: "separated", Value: false}}}}
+	projectStage := bson.D{{
+		Key: "$project",
+		Value: bson.M{
+			"couple_name":     1,
+			"profile_picture": 1,
+			"married":         1,
+			"cover_picture":   1,
+			"date_commenced":  1,
+			"verified":        1,
+			"_id":             1,
+			"initiated":       1,
+			"accepted":        1,
+			"bio":             1,
+			"followers_count": 1,
+			"post_count":      bson.M{"$size": "$posts"}},
+	}}
+
+	cursor, err := c.collection.Aggregate(
 		context.TODO(),
-		bson.D{{Key: "couple_name", Value: coupleName}, {Key: "separated", Value: false}},
-		opts,
-	).Decode(&result)
-	return result, err
+		mongo.Pipeline{matchStage, projectStage},
+	)
+	if err != nil {
+		return result, err
+	}
+	results := []entity.Couple{}
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return result, err
+	}
+	if len(results) > 0 {
+		return results[0], nil
+	}
+	return result, entity.ErrCoupleNotFound
 }
 
 func (c *CoupleMongo) List(IDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error) {
