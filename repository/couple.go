@@ -40,6 +40,7 @@ func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
 			"initiated":       1,
 			"accepted":        1,
 			"bio":             1,
+			"website":         1,
 			"followers_count": 1,
 			"post_count":      bson.M{"$size": "$posts"}},
 	}}
