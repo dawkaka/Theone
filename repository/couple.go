@@ -352,3 +352,8 @@ func (c *CoupleMongo) RemovePost(coupleID entity.ID, postID string) error {
 	)
 	return err
 }
+
+func (c *CoupleMongo) UpdateStatus(coupleID entity.ID, married bool) error {
+	_, err := c.collection.UpdateByID(context.TODO(), coupleID, bson.D{{Key: "$set", Value: bson.M{"married": married}}})
+	return err
+}

@@ -344,5 +344,9 @@
   "PartnerNotOpen": {
     "description": "blocked",
     "other": "The person is not open to requests"
+  },
+  "StatusUpdated": {
+    "description": "change relationship status",
+    "other": "Relationship status updated"
   }
 }

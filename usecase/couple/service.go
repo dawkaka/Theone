@@ -114,3 +114,7 @@ func (s *Service) RemovePost(coupleID entity.ID, postID string) error {
 func (s *Service) SearchCouples(query string) ([]presentation.CouplePreview, error) {
 	return s.repo.Search(query)
 }
+
+func (s *Service) UpdateStatus(coupleID entity.ID, married bool) error {
+	return s.repo.UpdateStatus(coupleID, married)
+}

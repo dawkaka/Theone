@@ -19,6 +19,7 @@ type Writer interface {
 	Dated(userID, partnerID entity.ID) (entity.ID, error)
 	AddPost(coupleID entity.ID, postID string) error
 	RemovePost(coupleID entity.ID, postID string) error
+	UpdateStatus(coupleID entity.ID, married bool) error
 }
 
 //Reader couple reader methods
@@ -57,4 +58,5 @@ type UseCase interface {
 	ListCouple(coupleIDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error)
 	AddPost(coupleID entity.ID, postID string) error
 	RemovePost(coupleID entity.ID, postID string) error
+	UpdateStatus(coupleID entity.ID, married bool) error
 }

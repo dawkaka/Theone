@@ -542,6 +542,33 @@ func searchCouples(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
+func updateRelationshipStatus(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		status := ctx.Param("status")
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		if status != "YES" && status != "NO" {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(user.Lang, "BadRequest"))
+			return
+		}
+		u, err := userService.GetUser(user.Name)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
+			return
+		}
+		var married bool
+		if status == "YES" {
+			married = true
+		}
+		err = service.UpdateStatus(u.CoupleID, married)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
+			return
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "StatusUpdated"))
+	}
+}
+
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, postService post.UseCase,
 	coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage, reportRepo repository.Reports) {
 	r.GET("/:coupleName", getCouple(service)) //tested
@@ -558,5 +585,6 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.POST("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
 	r.POST("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
 	r.POST("/couple/name", changeCoupleName(service))                  //tested
-	r.PUT("/couple", updateCouple(service))                            //tested
+	r.POST("/couple/status/:status", updateRelationshipStatus(service, userService))
+	r.PUT("/couple", updateCouple(service)) //tested
 }
