@@ -220,6 +220,10 @@ func (u *UserMongo) Notify(userName string, notif any) error {
 								},
 							},
 						},
+						{
+							Key:   "new_notifications_count",
+							Value: bson.M{"$add": bson.A{"$new_notifications_count", 1}},
+						},
 					},
 				},
 			},
@@ -294,11 +298,16 @@ func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif any) error {
 								},
 							},
 						},
+						{
+							Key:   "new_notifications_count",
+							Value: bson.M{"$add": bson.A{"$new_notifications_count", 1}},
+						},
 					},
 				},
 			},
 		},
 	)
+	fmt.Println(err)
 	return err
 }
 
@@ -320,6 +329,10 @@ func (u *UserMongo) NotifyUsers(users []string, notif any) error {
 									},
 								},
 							},
+						},
+						{
+							Key:   "new_notifications_count",
+							Value: bson.M{"$add": bson.A{"$new_notifications_count", 1}},
 						},
 					},
 				},
@@ -487,4 +500,11 @@ func (u *UserMongo) BreakedUp(couple [2]entity.ID) error {
 		},
 	)
 	return err
+}
+
+func (u *UserMongo) Startup(userID entity.ID) (presentation.StartupInfo, error) {
+	result := presentation.StartupInfo{}
+	opts := options.FindOne().SetProjection(bson.M{"has_partner": 1, "new_notifications_count": 1, "user_name": 1})
+	err := u.collection.FindOne(context.TODO(), bson.D{{Key: "_id", Value: userID}}, opts).Decode(&result)
+	return result, err
 }

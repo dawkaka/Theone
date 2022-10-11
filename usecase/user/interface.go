@@ -17,6 +17,7 @@ type Reader interface {
 	Following(userName string, skip int) ([]entity.ID, error)
 	Login(param string) (entity.User, error)
 	CheckSignup(userName, email string) (entity.User, error)
+	Startup(userID entity.ID) (presentation.StartupInfo, error)
 }
 
 //Writer user writer
@@ -77,4 +78,5 @@ type UseCase interface {
 	NullifyRequest([2]entity.ID) error
 	GetNotifications(userName string, page int) ([]entity.Notification, error)
 	BreakedUp(couple [2]entity.ID) error
+	StartupInfo(userID entity.ID) (presentation.StartupInfo, error)
 }

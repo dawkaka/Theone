@@ -145,3 +145,7 @@ func (s *Service) GetNotifications(userName string, skip int) ([]entity.Notifica
 func (s *Service) BreakedUp(couple [2]entity.ID) error {
 	return s.repo.BreakedUp(couple)
 }
+
+func (s *Service) StartupInfo(userID entity.ID) (presentation.StartupInfo, error) {
+	return s.repo.Startup(userID)
+}
