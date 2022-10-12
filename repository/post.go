@@ -77,8 +77,18 @@ func (p *PostMongo) Comments(postID, userID string, skip int) ([]presentation.Co
 	}
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: ID}}}}
 	unwindStage := bson.D{{Key: "$unwind", Value: "$comments"}}
+	sortStage := bson.D{{Key: "$sort", Value: bson.M{"likes_count": -1}}}
 	skipStage := bson.D{{Key: "$skip", Value: skip}}
 	limitStage := bson.D{{Key: "$limit", Value: entity.Limit}}
+
+	projectStage := bson.D{{
+		Key: "$project",
+		Value: bson.M{
+			"comments":    1,
+			"likes_count": bson.M{"$size": "$comments.likes"},
+		},
+	}}
+
 	joinStage := bson.D{
 		{
 			Key: "$lookup",
@@ -91,14 +101,14 @@ func (p *PostMongo) Comments(postID, userID string, skip int) ([]presentation.Co
 		},
 	}
 	unwindStage2 := bson.D{{Key: "$unwind", Value: "$user"}}
-	projectStage := bson.D{
+	projectStage2 := bson.D{
 		{
 			Key: "$project",
 			Value: bson.M{
 				"comment":         "$comments.comment",
 				"_id":             "$comments._id",
 				"created_at":      "$comments.created_at",
-				"likes_count":     bson.M{"$size": "$comments.likes"},
+				"likes_count":     1,
 				"user_id":         "$comments.user_id",
 				"user_name":       "$user.user_name",
 				"has_partner":     "$user.has_partner",
@@ -110,7 +120,7 @@ func (p *PostMongo) Comments(postID, userID string, skip int) ([]presentation.Co
 
 	cursor, err := p.collection.Aggregate(
 		context.TODO(),
-		mongo.Pipeline{matchStage, unwindStage, skipStage, limitStage, joinStage, unwindStage2, projectStage},
+		mongo.Pipeline{matchStage, unwindStage, projectStage, sortStage, skipStage, limitStage, joinStage, unwindStage2, projectStage2},
 	)
 	if err != nil {
 		return nil, err
