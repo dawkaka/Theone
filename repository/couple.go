@@ -24,7 +24,7 @@ func NewCoupleMongo(col *mongo.Collection) *CoupleMongo {
 }
 
 //Read Operations
-func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
+func (c *CoupleMongo) Get(coupleName string, userID entity.ID) (entity.Couple, error) {
 	result := entity.Couple{}
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "couple_name", Value: coupleName}, {Key: "separated", Value: false}}}}
 	projectStage := bson.D{{
@@ -42,6 +42,7 @@ func (c *CoupleMongo) Get(coupleName string) (entity.Couple, error) {
 			"bio":             1,
 			"website":         1,
 			"followers_count": 1,
+			"is_following":    bson.M{"$in": bson.A{userID, "$followers"}},
 			"post_count":      bson.M{"$size": "$posts"}},
 	}}
 

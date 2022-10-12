@@ -28,6 +28,7 @@ type Couple struct {
 	FollowersCount uint64    `json:"followers_count" bson:"followers_count"`
 	PostCount      uint64    `json:"post_count" bson:"post_count"`
 	Posts          []string  `json:"posts" bson:"posts"`
+	IsFollowing    bool      `json:"is_following" bson:"is_following, omitempty"`
 }
 
 type UpdateCouple struct {

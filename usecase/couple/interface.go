@@ -24,7 +24,7 @@ type Writer interface {
 
 //Reader couple reader methods
 type Reader interface {
-	Get(coupleName string) (entity.Couple, error)
+	Get(coupleName string, userID entity.ID) (entity.Couple, error)
 	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	Search(query string) ([]presentation.CouplePreview, error)
@@ -42,7 +42,7 @@ type Repository interface {
 type UseCase interface {
 	CreateCouple(userId, partnerrId, coupleName string) (entity.ID, error)
 	UpdateCouple(coupleID entity.ID, update entity.UpdateCouple) error
-	GetCouple(coupleName string) (entity.Couple, error)
+	GetCouple(coupleName string, userID entity.ID) (entity.Couple, error)
 	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	GetFollowers(coupleName string, skip int) ([]entity.ID, error)

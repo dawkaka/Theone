@@ -434,7 +434,7 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		couple, err := coupleService.GetCouple(coupleName)
+		couple, err := coupleService.GetCouple(coupleName, userID)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
@@ -475,7 +475,7 @@ func unfollow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFun
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		couple, err := coupleService.GetCouple(coupleName)
+		couple, err := coupleService.GetCouple(coupleName, userID)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
@@ -697,7 +697,7 @@ func userToACoupleMessages(service user.UseCase, coupleService couple.UseCase, m
 			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		couple, err := coupleService.GetCouple(coupleName)
+		couple, err := coupleService.GetCouple(coupleName, user.ID)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))

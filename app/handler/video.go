@@ -16,6 +16,7 @@ import (
 	"github.com/dawkaka/theone/usecase/video"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -29,7 +30,7 @@ func getVideo(service video.UseCase, coupleService couple.UseCase) gin.HandlerFu
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "NotFound"))
 			return
 		}
-		couple, err := coupleService.GetCouple(coupleName)
+		couple, err := coupleService.GetCouple(coupleName, primitive.NewObjectID())
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return

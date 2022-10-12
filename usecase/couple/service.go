@@ -18,8 +18,8 @@ func NewService(r Repository) *Service {
 	}
 }
 
-func (s *Service) GetCouple(coupleName string) (entity.Couple, error) {
-	return s.repo.Get(coupleName)
+func (s *Service) GetCouple(coupleName string, userID entity.ID) (entity.Couple, error) {
+	return s.repo.Get(coupleName, userID)
 }
 
 func (s *Service) GetCouplePosts(coupleName string, skip int) (entity.Couple, error) {

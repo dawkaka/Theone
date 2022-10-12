@@ -134,7 +134,7 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		couple, err := coupleService.GetCouple(coupleName)
+		couple, err := coupleService.GetCouple(coupleName, user.ID)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "UserNotFound"))

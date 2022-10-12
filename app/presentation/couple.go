@@ -17,6 +17,7 @@ type CoupleProfile struct {
 	DateCommenced  time.Time `json:"date_commenced,omitempty" bson:"date_commenced,omitempty"`
 	Verified       bool      `json:"verified"`
 	IsThisCouple   bool      `json:"is_this_couple"`
+	IsFollowing    bool      `json:"is_following"`
 }
 
 type CouplePreview struct {

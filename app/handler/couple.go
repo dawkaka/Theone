@@ -73,7 +73,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		} else {
 
 			coupleName = fmt.Sprintf("%s.and.%s", strings.ToLower(partner.FirstName), strings.ToLower(user.FirstName))
-			_, err = service.GetCouple(coupleName)
+			_, err = service.GetCouple(coupleName, primitive.NewObjectID())
 			if err == nil {
 				coupleName += fmt.Sprint(time.Now().Unix())
 			} else {
@@ -126,7 +126,7 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
 			return
 		}
-		couple, err := service.GetCouple(coupleName)
+		couple, err := service.GetCouple(coupleName, user.ID)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
@@ -149,6 +149,7 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			Website:        couple.Website,
 			DateCommenced:  couple.DateCommenced,
 			IsThisCouple:   user.ID == couple.Initiated || user.ID == couple.Accepted,
+			IsFollowing:    couple.IsFollowing,
 		}
 		ctx.JSON(http.StatusOK, pCouple)
 	}
@@ -354,7 +355,7 @@ func changeCoupleName(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
 			return
 		}
-		_, err = service.GetCouple(newCoupleName)
+		_, err = service.GetCouple(newCoupleName, primitive.NewObjectID())
 		if err == nil {
 			ctx.JSON(http.StatusConflict, presentation.Error(lang, "CoupleAlreadyExists"))
 			return
