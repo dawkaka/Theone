@@ -37,3 +37,8 @@ type StartupInfo struct {
 	UserName           string `json:"user_name" bson:"user_name"`
 	NotificationsCount int    `json:"notifications_count" bson:"new_notifications_count"`
 }
+
+type Notification struct {
+	Notifications []entity.Notification `json:"notifications"`
+	NewCount      int                   `json:"new_count"`
+}

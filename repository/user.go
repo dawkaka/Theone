@@ -184,20 +184,26 @@ func (u *UserMongo) Following(userName string, skip int) ([]entity.ID, error) {
 	return result.Following, nil
 }
 
-func (u *UserMongo) Notifications(userName string, page int) ([]entity.Notification, error) {
+func (u *UserMongo) Notifications(userName string, page int) (presentation.Notification, error) {
 	opts := options.FindOne().SetProjection(bson.M{"notifications": bson.M{"$slice": []int{page, entity.Limit}}})
 
 	user := entity.User{}
+	notif := presentation.Notification{Notifications: []entity.Notification{}, NewCount: 0}
 
 	err := u.collection.FindOne(
 		context.TODO(),
 		bson.M{"user_name": userName},
 		opts,
 	).Decode(&user)
+
 	if err != nil {
-		return nil, err
+		return notif, err
 	}
-	return user.Notifications, nil
+
+	notif.Notifications = user.Notifications
+	notif.NewCount = user.NewNotificationsCount
+
+	return notif, nil
 }
 
 //Write Methods
@@ -507,4 +513,9 @@ func (u *UserMongo) Startup(userID entity.ID) (presentation.StartupInfo, error) 
 	opts := options.FindOne().SetProjection(bson.M{"has_partner": 1, "new_notifications_count": 1, "user_name": 1})
 	err := u.collection.FindOne(context.TODO(), bson.D{{Key: "_id", Value: userID}}, opts).Decode(&result)
 	return result, err
+}
+
+func (u *UserMongo) ClearNotifsCount(userID entity.ID) error {
+	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$set", Value: bson.M{"new_notifications_count": 0}}})
+	return err
 }
