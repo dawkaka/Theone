@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -517,5 +518,10 @@ func (u *UserMongo) Startup(userID entity.ID) (presentation.StartupInfo, error) 
 
 func (u *UserMongo) ClearNotifsCount(userID entity.ID) error {
 	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$set", Value: bson.M{"new_notifications_count": 0}}})
+	return err
+}
+
+func (u *UserMongo) UsageMonitoring(userID entity.ID) error {
+	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$set", Value: bson.M{"last_visited": time.Now()}}})
 	return err
 }

@@ -47,7 +47,7 @@ type User struct {
 	Notifications         []Notification `json:"notifications,omitempty"`
 	NewNotificationsCount int            `json:"new_notifications_count" bson:"new_notifications_count"`
 	Language              string         `json:"language,omitempty"`
-	LastVisited           time.Time      `json:"last_visited,omitempty"`
+	LastVisited           time.Time      `json:"last_visited,omitempty" bson:"last_visited"`
 	LoginIPs              []string       `json:"login_ips,omitempty" bson:"loging_ips"`
 	ContentPriorityQueue  []ID           `json:"content_priority_queue,omitempty" bson:"content_priority_queue"`
 }

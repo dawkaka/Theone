@@ -42,6 +42,7 @@ type Writer interface {
 	NullifyRequest([2]entity.ID) error
 	Notifications(userName string, page int) (presentation.Notification, error)
 	BreakedUp(couple [2]entity.ID) error
+	UsageMonitoring(userID entity.ID) error
 }
 
 //Repository interface
@@ -81,4 +82,5 @@ type UseCase interface {
 	BreakedUp(couple [2]entity.ID) error
 	StartupInfo(userID entity.ID) (presentation.StartupInfo, error)
 	ClearNotifsCount(userID entity.ID) error
+	UsageMonitoring(userID entity.ID) error
 }
