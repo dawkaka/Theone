@@ -884,6 +884,7 @@ func changeEmail(service user.UseCase) gin.HandlerFunc {
 
 func startup(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		fmt.Println(ctx.Get("user"))
 		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
 		startup, err := service.StartupInfo(userSession.ID)
 		if err != nil {
