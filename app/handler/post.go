@@ -469,9 +469,16 @@ func reportPost(service post.UseCase, reportRepo repository.Reports) gin.Handler
 	}
 }
 
+func explorePosts(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
+}
+
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase, reportsRepo repository.Reports) {
-	r.GET("/post/:coupleName/:postID", getPost(service, coupleService))              //tested
-	r.GET("/post/comments/:postID/:skip", postComments(service))                     //tested
+	r.GET("/post/:coupleName/:postID", getPost(service, coupleService)) //tested
+	r.GET("/post/comments/:postID/:skip", postComments(service))        //tested
+	r.GET("/post/explore", explorePosts(service, userService))
 	r.POST("/post", newPost(service, coupleService, userService))                    //tested
 	r.POST("/post/comment/:postID", newComment(service, userService, coupleService)) //tested
 	r.POST("/post/report/:postID", reportPost(service, reportsRepo))
