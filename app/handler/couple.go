@@ -570,6 +570,14 @@ func updateRelationshipStatus(service couple.UseCase, userService user.UseCase) 
 	}
 }
 
+//Todo get suggested accounts
+
+func getSuggestedAccounts(service couple.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
+}
+
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, postService post.UseCase,
 	coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage, reportRepo repository.Reports) {
 	r.GET("/:coupleName", getCouple(service)) //tested
