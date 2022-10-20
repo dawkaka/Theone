@@ -904,6 +904,20 @@ func clearNewNotifsCount(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func getPartner(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
+		partner, err := service.ListUsers([]primitive.ObjectID{userSession.PartnerID})
+		if err != nil || len(partner) == 0 {
+			ctx.JSON(http.StatusNotFound, presentation.Error(userSession.Lang, entity.ErrUserNotFound.Error()))
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"user_name": partner[0].UserName, "profile_picture": partner[0].ProfilePicture})
+
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
 	r.POST("/user/u/signup", signup(service))                                  //tested
 	r.POST("/user/u/login", login(service))                                    //tested
@@ -916,7 +930,8 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
 	r.GET("/user/u/startup", startup(service))
-	r.GET("/user/notifications/:skip", notifications(service))             //tested
+	r.GET("/user/notifications/:skip", notifications(service)) //tested
+	r.GET("/user/u/partner", getPartner(service))
 	r.POST("/user/logout", logout)                                         //tested
 	r.POST("/user/u/cancel-request", cancelRequest(service))               //tested
 	r.POST("/user/u/reject-request", rejectRequest(service))               //tested
