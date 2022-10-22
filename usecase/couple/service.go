@@ -50,6 +50,7 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID,
 		Accepted:       accepted,
 		AcceptedAt:     time.Now(),
 		CoupleName:     coupleName,
+		DateCommenced:  time.Now(),
 		Married:        false,
 		Verified:       false,
 		ProfilePicture: "defaultProfile.jpg",
@@ -58,6 +59,7 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID,
 		Followers:      []primitive.ObjectID{},
 		FollowersCount: 0,
 		PostCount:      0,
+		Posts:          []string{},
 	}
 	return s.repo.Create(couple)
 }

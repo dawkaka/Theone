@@ -113,6 +113,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				Name:    name,
 				User:    user.Name,
 			}
+			fmt.Println(mentions)
 			userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, partnerNotif)
 			if len(mentions) > 0 {
 				userService.NotifyMultipleUsers(mentions, notif)

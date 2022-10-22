@@ -24,7 +24,7 @@ func TestIsRealName(t *testing.T) {
 }
 
 func TestIsUserName(t *testing.T) {
-	validTest := []string{"Hamza_Jalil", "brown.5", "50serwaa", "smith25", "2222", "22.ussif"}
+	validTest := []string{"Hamza_Jalil", "brown.5", "50serwaa", "smith25", "2222", "22.ussif", "user_name"}
 	inValidTest := []string{"bl", "somereallylong_user_name_tofail", "yuusif mohammed", "_ruben", "Zamani__25", "jay._5", "fati_", "22.22.22.", "a____._____b"}
 	for _, value := range validTest {
 		if !IsUserName(value) {

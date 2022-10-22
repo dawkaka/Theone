@@ -743,10 +743,23 @@ func userMessages(service user.UseCase, userMessage repository.UserCoupleMessage
 	}
 }
 
-func userSession(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-	user := session.Get("user").(entity.UserSession)
-	ctx.JSON(http.StatusOK, gin.H{"session": user})
+func userSession(service user.UseCase) gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+		session := sessions.Default(ctx)
+		user := session.Get("user").(entity.UserSession)
+		u, _ := service.GetUser(user.Name)
+		var ss entity.UserSession = entity.UserSession{
+			CoupleID:   u.CoupleID,
+			Name:       u.UserName,
+			FirstName:  u.FirstName,
+			ID:         u.ID,
+			LastName:   u.LastName,
+			HasPartner: u.HasPartner,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"session": ss})
+	}
+
 }
 
 func logout(ctx *gin.Context) {
@@ -908,14 +921,13 @@ func clearNewNotifsCount(service user.UseCase) gin.HandlerFunc {
 func getPartner(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
-		partner, err := service.ListUsers([]primitive.ObjectID{userSession.PartnerID})
+		u, _ := service.GetUser(userSession.Name)
+		partner, err := service.ListUsers([]primitive.ObjectID{u.PartnerID})
 		if err != nil || len(partner) == 0 {
 			ctx.JSON(http.StatusNotFound, presentation.Error(userSession.Lang, entity.ErrUserNotFound.Error()))
 			return
 		}
-
 		ctx.JSON(http.StatusOK, gin.H{"user_name": partner[0].UserName, "profile_picture": partner[0].ProfilePicture})
-
 	}
 }
 
@@ -923,7 +935,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/u/signup", signup(service))                                  //tested
 	r.POST("/user/u/login", login(service))                                    //tested
 	r.Use(middlewares.Authenticate())                                          //tested
-	r.GET("/user/u/session", userSession)                                      //tested
+	r.GET("/user/u/session", userSession(service))                             //tested
 	r.GET("/user/:userName", getUser(service))                                 //tested
 	r.GET("/user/search/:query", searchUsers(service))                         //tested
 	r.GET("/user/following/:name/:skip", getFollowing(service, coupleService)) //tested

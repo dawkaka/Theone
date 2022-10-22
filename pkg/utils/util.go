@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -41,12 +42,15 @@ func GenerateID() string {
 
 //ExtractMentions extracts all users mention (@) so that they can be notified
 func ExtracMentions(caption string) []string {
+	fmt.Println(caption)
 	mentions := []string{}
 	if len(strings.TrimSpace(caption)) == 0 {
 		return mentions
 	}
 	captionWords := strings.Split(caption, " ")
 	for _, val := range captionWords {
+		val = strings.TrimSpace(val)
+		fmt.Println(val)
 		if val[0] == '@' {
 			userName := val[1:]
 			if validator.IsUserName(userName) {
