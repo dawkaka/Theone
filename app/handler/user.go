@@ -779,6 +779,7 @@ func changeSettings(service user.UseCase) gin.HandlerFunc {
 			user.Lang = lang
 			session.Set("user", user)
 			session.Save()
+			ctx.SetCookie("NEXT_LOCALE", lang, 1000*60*60*24*12*40, "/", "", false, false)
 		}
 		setting = strings.ToUpper(string(setting[0])) + setting[1:]
 		ctx.JSON(http.StatusOK, presentation.Success(lang, setting+"Updated"))
