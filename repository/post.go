@@ -202,11 +202,23 @@ func (p *PostMongo) DeleteComment(postID, commentID string, userID entity.ID) er
 		context.TODO(),
 		pID,
 		bson.A{
-			bson.D{{Key: "$set", Value: bson.M{"comments": bson.M{"$filter": bson.M{
-				"input": "$comments",
-				"as":    "comment",
-				"cond":  bson.M{"$ne": []interface{}{"$$comment._id", cID, "$$comment.user_id", userID}},
-			}}}}},
+			bson.D{
+				{
+					Key: "$set",
+					Value: bson.M{
+						"comments": bson.M{"$filter": bson.M{
+							"input": "$comments",
+							"as":    "comment",
+							"cond": bson.M{"$and": bson.A{
+								bson.D{{Key: "$ne", Value: []interface{}{"$$comment._id", cID}}},
+								bson.D{{Key: "$ne", Value: []interface{}{"$$comment.user_id", userID}}},
+							},
+							},
+						},
+						},
+					},
+				},
+			},
 			bson.D{{Key: "$set", Value: bson.M{"comments_count": bson.M{"$size": "$comments"}}}},
 		},
 	)
