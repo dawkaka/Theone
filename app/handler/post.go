@@ -76,16 +76,14 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			Likes:       []entity.ID{},
 			Comments:    []entity.Comment{},
 		}
-
 		_, err = service.CreatePost(&post)
-		fmt.Println(err)
+
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
 
 		err = coupleService.AddPost(u.CoupleID, postID)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -113,12 +111,29 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				Name:    name,
 				User:    user.Name,
 			}
-			fmt.Println(mentions)
 			userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, partnerNotif)
 			if len(mentions) > 0 {
 				userService.NotifyMultipleUsers(mentions, notif)
 			}
 
+		}()
+
+		go func() {
+			skip := 0
+			for {
+				followers, err := coupleService.FollowersToNotify(post.CoupleID, skip)
+				if err != nil {
+					break
+				}
+				err = userService.NewFeedPost(post.CoupleID, followers)
+				if err != nil {
+					break
+				}
+				if len(followers) < 1000 {
+					break
+				}
+				skip += 1000
+			}
 		}()
 
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "NewPostAdded"))

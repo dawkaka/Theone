@@ -120,3 +120,7 @@ func (s *Service) SearchCouples(query string) ([]presentation.CouplePreview, err
 func (s *Service) UpdateStatus(coupleID entity.ID, married bool) error {
 	return s.repo.UpdateStatus(coupleID, married)
 }
+
+func (s *Service) FollowersToNotify(coupleID entity.ID, skip int) ([]entity.ID, error) {
+	return s.repo.FollowersToNotify(coupleID, skip)
+}

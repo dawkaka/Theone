@@ -358,3 +358,17 @@ func (c *CoupleMongo) UpdateStatus(coupleID entity.ID, married bool) error {
 	_, err := c.collection.UpdateByID(context.TODO(), coupleID, bson.D{{Key: "$set", Value: bson.M{"married": married}}})
 	return err
 }
+
+func (c *CoupleMongo) FollowersToNotify(coupleID entity.ID, skip int) ([]entity.ID, error) {
+	couple := entity.Couple{}
+	opts := options.FindOne().SetProjection(bson.M{"followers": bson.M{"$slice": []int{skip, 1000}}})
+	err := c.collection.FindOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: coupleID}},
+		opts,
+	).Decode(&couple)
+	if err != nil {
+		return nil, err
+	}
+	return couple.Followers, nil
+}

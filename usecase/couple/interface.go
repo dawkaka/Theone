@@ -30,6 +30,7 @@ type Reader interface {
 	Search(query string) ([]presentation.CouplePreview, error)
 	Followers(coupleName string, skip int) ([]entity.ID, error)
 	List(coupleIDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error)
+	FollowersToNotify(copuleID entity.ID, skip int) ([]entity.ID, error)
 }
 
 //Repository all couple methods
@@ -59,4 +60,5 @@ type UseCase interface {
 	AddPost(coupleID entity.ID, postID string) error
 	RemovePost(coupleID entity.ID, postID string) error
 	UpdateStatus(coupleID entity.ID, married bool) error
+	FollowersToNotify(copuleID entity.ID, skip int) ([]entity.ID, error)
 }

@@ -511,7 +511,7 @@ func (u *UserMongo) BreakedUp(couple [2]entity.ID) error {
 
 func (u *UserMongo) Startup(userID entity.ID) (presentation.StartupInfo, error) {
 	result := presentation.StartupInfo{}
-	opts := options.FindOne().SetProjection(bson.M{"has_partner": 1, "new_notifications_count": 1, "user_name": 1})
+	opts := options.FindOne().SetProjection(bson.M{"has_partner": 1, "new_notifications_count": 1, "user_name": 1, "new_feed_post_count": 1})
 	err := u.collection.FindOne(context.TODO(), bson.D{{Key: "_id", Value: userID}}, opts).Decode(&result)
 	return result, err
 }
@@ -523,5 +523,36 @@ func (u *UserMongo) ClearNotifsCount(userID entity.ID) error {
 
 func (u *UserMongo) UsageMonitoring(userID entity.ID) error {
 	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$set", Value: bson.M{"last_visited": time.Now()}}})
+	return err
+}
+
+func (u *UserMongo) NewFeedPost(postID entity.ID, userIDs []entity.ID) error {
+	_, err := u.collection.UpdateMany(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: userIDs}}}},
+		bson.A{
+			bson.D{
+				{
+					Key: "$set", Value: bson.D{
+						{
+							Key: "feed_posts",
+							Value: bson.M{
+								"$concatArrays": bson.A{
+									bson.A{postID},
+									bson.M{
+										"$slice": bson.A{"$feed_posts", 0, 250},
+									},
+								},
+							},
+						},
+						{
+							Key:   "new_feed_post_count",
+							Value: bson.M{"$add": bson.A{"$new_feed_post_count", 1}},
+						},
+					},
+				},
+			},
+		},
+	)
 	return err
 }

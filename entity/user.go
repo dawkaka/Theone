@@ -46,10 +46,12 @@ type User struct {
 	FollowingCount        uint64         `json:"following_count,omitempty" bson:"following_count"`
 	Notifications         []Notification `json:"notifications,omitempty"`
 	NewNotificationsCount int            `json:"new_notifications_count" bson:"new_notifications_count"`
+	FeedPosts             []ID           `json:"feed_posts" bson:"feed_posts"`
 	Language              string         `json:"language,omitempty"`
 	LastVisited           time.Time      `json:"last_visited,omitempty" bson:"last_visited"`
 	LoginIPs              []string       `json:"login_ips,omitempty" bson:"loging_ips"`
-	ContentPriorityQueue  []ID           `json:"content_priority_queue,omitempty" bson:"content_priority_queue"`
+	Feed                  []ID           `json:"feed,omitempty" bson:"feed"`
+	NewFeedPostCount      int            `json:"new_feed_post_count" bson:"new_feed_post_count"`
 }
 
 type Follower struct {
@@ -188,30 +190,32 @@ func (u *UpdateUser) Sanitize() {
 
 func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) *User {
 	return &User{
-		ID:                   primitive.NewObjectID(),
-		Email:                email,
-		UserName:             userName,
-		FirstName:            firstName,
-		LastName:             lastName,
-		Password:             password,
-		DateOfBirth:          dateOfBirth,
-		Bio:                  "-",
-		OpenToRequests:       true,
-		HasPartner:           false,
-		PendingRequest:       NO_REQUEST,
-		CreatedAt:            time.Now(),
-		UpdatedAt:            time.Now(),
-		ProfilePicture:       "defaultProfile.jpg",
-		ShowPictures:         []string{"defaultshow1.jpg", "defaultshow2.jpg", "defaultshow3.jpg", "defaultshow4.jpg", "defaultshow5.jpg", "defaultshow6.jpg"},
-		Likes:                []primitive.ObjectID{},
-		LikesCount:           0,
-		EmailVerified:        false,
-		Following:            []primitive.ObjectID{},
-		FollowingCount:       0,
-		Notifications:        []Notification{},
-		LastVisited:          time.Now(),
-		LoginIPs:             []string{},
-		ContentPriorityQueue: []primitive.ObjectID{},
-		Language:             lang,
+		ID:                    primitive.NewObjectID(),
+		Email:                 email,
+		UserName:              userName,
+		FirstName:             firstName,
+		LastName:              lastName,
+		Password:              password,
+		DateOfBirth:           dateOfBirth,
+		Bio:                   "-",
+		OpenToRequests:        true,
+		HasPartner:            false,
+		PendingRequest:        NO_REQUEST,
+		CreatedAt:             time.Now(),
+		UpdatedAt:             time.Now(),
+		ProfilePicture:        "defaultProfile.jpg",
+		ShowPictures:          []string{"defaultshow1.jpg", "defaultshow2.jpg", "defaultshow3.jpg", "defaultshow4.jpg", "defaultshow5.jpg", "defaultshow6.jpg"},
+		Likes:                 []primitive.ObjectID{},
+		LikesCount:            0,
+		EmailVerified:         false,
+		Following:             []primitive.ObjectID{},
+		FollowingCount:        0,
+		Notifications:         []Notification{},
+		NewNotificationsCount: 0,
+		LastVisited:           time.Now(),
+		LoginIPs:              []string{},
+		Feed:                  []primitive.ObjectID{},
+		NewFeedPostCount:      0,
+		Language:              lang,
 	}
 }

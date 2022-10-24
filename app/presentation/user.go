@@ -36,6 +36,7 @@ type StartupInfo struct {
 	HasPartner         bool   `json:"has_partner" bson:"has_partner"`
 	UserName           string `json:"user_name" bson:"user_name"`
 	NotificationsCount int    `json:"notifications_count" bson:"new_notifications_count"`
+	FeedPostCount      int    `json:"new_posts_count" bson:"new_feed_post_count"`
 }
 
 type Notification struct {

@@ -157,3 +157,6 @@ func (s *Service) ClearNotifsCount(userID entity.ID) error {
 func (s *Service) UsageMonitoring(userID entity.ID) error {
 	return s.repo.UsageMonitoring(userID)
 }
+func (s *Service) NewFeedPost(postID entity.ID, userIDs []entity.ID) error {
+	return s.repo.NewFeedPost(postID, userIDs)
+}

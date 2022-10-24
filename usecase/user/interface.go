@@ -43,6 +43,7 @@ type Writer interface {
 	Notifications(userName string, page int) (presentation.Notification, error)
 	BreakedUp(couple [2]entity.ID) error
 	UsageMonitoring(userID entity.ID) error
+	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
 }
 
 //Repository interface
@@ -83,4 +84,5 @@ type UseCase interface {
 	StartupInfo(userID entity.ID) (presentation.StartupInfo, error)
 	ClearNotifsCount(userID entity.ID) error
 	UsageMonitoring(userID entity.ID) error
+	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
 }
