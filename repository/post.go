@@ -198,27 +198,39 @@ func (p *PostMongo) DeleteComment(postID, commentID string, userID entity.ID) er
 	if err1 != nil || err2 != nil {
 		return errors.New("invalid id")
 	}
-	_, err := p.collection.UpdateByID(
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: pID}}}}
+	projectStage := bson.D{{
+		Key: "$project",
+		Value: bson.M{
+			"comments": bson.M{"$filter": bson.M{
+				"input": "$comments",
+				"as":    "comment",
+				"cond":  bson.M{"$eq": []interface{}{"$$comment._id", cID}},
+			}},
+		},
+	}}
+	cursor, err := p.collection.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
+
+	if err != nil {
+		return entity.ErrNoMatch
+	}
+
+	post := []entity.Post{}
+	if err = cursor.All(context.TODO(), &post); err != nil {
+		return err
+	}
+	if len(post) == 0 || len(post[0].Comments) == 0 || post[0].Comments[0].UserID != userID {
+		return entity.ErrNoMatch
+	}
+	_, err = p.collection.UpdateByID(
 		context.TODO(),
 		pID,
 		bson.A{
-			bson.D{
-				{
-					Key: "$set",
-					Value: bson.M{
-						"comments": bson.M{"$filter": bson.M{
-							"input": "$comments",
-							"as":    "comment",
-							"cond": bson.M{"$and": bson.A{
-								bson.D{{Key: "$ne", Value: []interface{}{"$$comment._id", cID}}},
-								bson.D{{Key: "$ne", Value: []interface{}{"$$comment.user_id", userID}}},
-							},
-							},
-						},
-						},
-					},
-				},
-			},
+			bson.D{{Key: "$set", Value: bson.M{"comments": bson.M{"$filter": bson.M{
+				"input": "$comments",
+				"as":    "comment",
+				"cond":  bson.M{"$ne": []interface{}{"$$comment._id", cID}},
+			}}}}},
 			bson.D{{Key: "$set", Value: bson.M{"comments_count": bson.M{"$size": "$comments"}}}},
 		},
 	)
