@@ -314,7 +314,6 @@ func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif any) error {
 			},
 		},
 	)
-	fmt.Println(err)
 	return err
 }
 
@@ -522,7 +521,7 @@ func (u *UserMongo) ClearNotifsCount(userID entity.ID) error {
 }
 func (u *UserMongo) ClearFeedPostsCount(userID entity.ID) error {
 	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$set", Value: bson.M{"new_feed_post_count": 0}}})
-	fmt.Println(err)
+
 	return err
 }
 

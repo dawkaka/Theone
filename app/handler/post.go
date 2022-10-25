@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -55,7 +54,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 		}
 
 		if cErr != nil {
-			fmt.Println(cErr.Error())
+
 			ctx.JSON(cErr.Code, presentation.Error(lang, cErr.Error()))
 			return
 		}

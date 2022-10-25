@@ -35,7 +35,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		}
 		userId := userb.ID
 		users, err := userService.ListUsers([]primitive.ObjectID{userId, partnerID})
-		fmt.Println(err)
+
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
@@ -78,7 +78,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			if err == nil {
 				coupleName += fmt.Sprint(time.Now().Unix())
 			} else if err != entity.ErrCoupleNotFound {
-				fmt.Println(err)
+
 				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 				return
 			}
@@ -128,7 +128,7 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			return
 		}
 		couple, err := service.GetCouple(coupleName, user.ID)
-		fmt.Println(err)
+
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
