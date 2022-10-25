@@ -938,10 +938,22 @@ func getFeed(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		feed, err := service.GetFeedPosts(userSession.ID, skip)
+		u, err := service.GetUser(userSession.Name)
+
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrong"))
 			return
+		}
+
+		feed, err := service.GetFeedPosts(u.ID, skip)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrong"))
+			return
+		}
+		for i := 0; i < len(feed); i++ {
+			if feed[i].CoupleID == u.CoupleID {
+				feed[i].IsThisCouple = true
+			}
 		}
 
 		page := entity.Pagination{

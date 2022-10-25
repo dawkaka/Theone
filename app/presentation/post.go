@@ -8,10 +8,11 @@ import (
 
 type Post struct {
 	ID             entity.ID             `json:"id" bson:"_id"`
-	CoupleName     string                `json:"couple_name"`
+	CoupleName     string                `json:"couple_name" bson:"couple_name"`
+	CoupleID       entity.ID             `json:"couple_id" bson:"couple_id"`
 	Married        bool                  `json:"married"`
 	Verified       bool                  `json:"verified"`
-	ProfilePicture string                `json:"profile_picture"`
+	ProfilePicture string                `json:"profile_picture" bson:"profile_picture"`
 	CreatedAt      time.Time             `json:"created_at" bson:"created_at"`
 	Caption        string                `json:"caption"`
 	LikesCount     int64                 `json:"likes_count" bson:"likes_count"`

@@ -583,27 +583,43 @@ func (u *UserMongo) GetFeedPosts(userID entity.ID, skip int) ([]presentation.Pos
 		},
 	}
 	unwindStage2 := bson.D{{Key: "$unwind", Value: "$post"}}
+	joinStage2 := bson.D{
+		{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "couples"},
+				{Key: "localField", Value: "post.couple_id"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "couple"},
+			},
+		},
+	}
+	unwindStage3 := bson.D{{Key: "$unwind", Value: "$couple"}}
 	projectStage := bson.D{
 		{
 			Key: "$project",
 			Value: bson.M{
-				"_id":            "$post._id",
-				"post_id":        "$post.post_id",
-				"couple_id":      "$post.couple_id",
-				"files":          "$post.files",
-				"caption":        "$post.caption",
-				"location":       "$post.location",
-				"likes_count":    "$post.likes_count",
-				"comments_count": "$post.comments_count",
-				"created_at":     "$post.created_at",
-				"has_liked":      bson.M{"$in": bson.A{userID, "$post.likes"}},
+				"_id":             "$post._id",
+				"post_id":         "$post.post_id",
+				"couple_id":       "$post.couple_id",
+				"files":           "$post.files",
+				"caption":         "$post.caption",
+				"location":        "$post.location",
+				"likes_count":     "$post.likes_count",
+				"comments_count":  "$post.comments_count",
+				"created_at":      "$post.created_at",
+				"couple_name":     "$couple.couple_name",
+				"profile_picture": "$couple.profile_picture",
+				"verified":        "$couple.verified",
+				"married":         "$couple.married",
+				"has_liked":       bson.M{"$in": bson.A{userID, "$post.likes"}},
 			},
 		},
 	}
 
 	cursor, err := u.collection.Aggregate(
 		context.TODO(),
-		mongo.Pipeline{matchStage, pro, unwindStage, skipStage, limitStage, joinStage, unwindStage2, projectStage},
+		mongo.Pipeline{matchStage, pro, unwindStage, skipStage, limitStage, joinStage, unwindStage2, joinStage2, unwindStage3, projectStage},
 	)
 	if err != nil {
 		return nil, err
