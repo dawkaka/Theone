@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -898,14 +897,12 @@ func changeEmail(service user.UseCase) gin.HandlerFunc {
 
 func startup(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		fmt.Println(ctx.Get("user"))
 		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
 		startup, err := service.StartupInfo(userSession.ID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrong"))
 			return
 		}
-		fmt.Println(startup)
 		ctx.JSON(http.StatusOK, startup)
 	}
 }
@@ -931,6 +928,30 @@ func getPartner(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func getFeed(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(userSession.Lang, "BadRequest"))
+			return
+		}
+
+		feed, err := service.GetFeedPosts(userSession.ID, skip)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrong"))
+			return
+		}
+
+		page := entity.Pagination{
+			Next: skip + entity.Limit,
+			End:  len(feed) < entity.Limit,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"feed": feed, "pagination": page})
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
 	r.POST("/user/u/signup", signup(service))                                  //tested
 	r.POST("/user/u/login", login(service))                                    //tested
@@ -942,23 +963,24 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/u/pending-request", getPendingRequest(service))               //tested
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/u/startup", startup(service))
+	r.GET("/user/u/startup", startup(service))                 //tested
 	r.GET("/user/notifications/:skip", notifications(service)) //tested
-	r.GET("/user/u/partner", getPartner(service))
+	r.GET("/user/u/partner", getPartner(service))              //tested
+	r.GET("/user/feed/:skip", getFeed(service))
 	r.POST("/user/logout", logout)                                         //tested
 	r.POST("/user/u/cancel-request", cancelRequest(service))               //tested
 	r.POST("/user/u/reject-request", rejectRequest(service))               //tested
 	r.POST("/user/couple-request/:userName", initiateRequest(service))     //tested
 	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
 	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
-	r.PUT("/user/new-notifications", clearNewNotifsCount(service))
-	r.PUT("/user/name", changeUserName(service))                          //tested
-	r.PUT("/user/password", changePassword(service))                      //tested
-	r.PUT("/user/email", changeEmail(service))                            //tested
-	r.PUT("/user/request-status/:status", changeRequestStatus(service))   //tested
-	r.PUT("/user", updateUser(service))                                   //tested
-	r.POST("/user/show-pictures/:index", updateShowPicture(service))      //tested
-	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service)) //tested
-	r.POST("/user/profile-pic", updateUserProfilePic(service))            //tested
+	r.PUT("/user/new-notifications", clearNewNotifsCount(service))         //tested
+	r.PUT("/user/name", changeUserName(service))                           //tested
+	r.PUT("/user/password", changePassword(service))                       //tested
+	r.PUT("/user/email", changeEmail(service))                             //tested
+	r.PUT("/user/request-status/:status", changeRequestStatus(service))    //tested
+	r.PUT("/user", updateUser(service))                                    //tested
+	r.POST("/user/show-pictures/:index", updateShowPicture(service))       //tested
+	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))  //tested
+	r.POST("/user/profile-pic", updateUserProfilePic(service))             //tested
 	r.DELETE("/user", deleteUser(service))
 }

@@ -556,3 +556,58 @@ func (u *UserMongo) NewFeedPost(postID entity.ID, userIDs []entity.ID) error {
 	)
 	return err
 }
+
+func (u *UserMongo) GetFeedPosts(userID entity.ID, skip int) ([]presentation.Post, error) {
+	result := []presentation.Post{}
+	matchStage := bson.D{{Key: "$match", Value: bson.M{"_id": userID}}}
+	unwindStage := bson.D{{Key: "$unwind", Value: "$feed_posts"}}
+	pro := bson.D{
+		{
+			Key: "$project",
+			Value: bson.M{
+				"feed_posts": 1,
+			},
+		},
+	}
+	skipStage := bson.D{{Key: "$skip", Value: skip}}
+	limitStage := bson.D{{Key: "$limit", Value: entity.Limit}}
+	joinStage := bson.D{
+		{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "posts"},
+				{Key: "localField", Value: "feed_posts"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "post"},
+			},
+		},
+	}
+	unwindStage2 := bson.D{{Key: "$unwind", Value: "$post"}}
+	projectStage := bson.D{
+		{
+			Key: "$project",
+			Value: bson.M{
+				"_id":            "$post._id",
+				"post_id":        "$post.post_id",
+				"couple_id":      "$post.couple_id",
+				"files":          "$post.files",
+				"caption":        "$post.caption",
+				"location":       "$post.location",
+				"likes_count":    "$post.likes_count",
+				"comments_count": "$post.comments_count",
+				"created_at":     "$post.created_at",
+				"has_liked":      bson.M{"$in": bson.A{userID, "$post.likes"}},
+			},
+		},
+	}
+
+	cursor, err := u.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, pro, unwindStage, skipStage, limitStage, joinStage, unwindStage2, projectStage},
+	)
+	if err != nil {
+		return nil, err
+	}
+	err = cursor.All(context.TODO(), &result)
+	return result, err
+}

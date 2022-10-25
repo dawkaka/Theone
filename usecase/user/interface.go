@@ -18,7 +18,8 @@ type Reader interface {
 	Login(param string) (entity.User, error)
 	CheckSignup(userName, email string) (entity.User, error)
 	Startup(userID entity.ID) (presentation.StartupInfo, error)
-	ClearNotifsCount(userID entity.ID) error
+	Notifications(userName string, page int) (presentation.Notification, error)
+	GetFeedPosts(postID entity.ID, skip int) ([]presentation.Post, error)
 }
 
 //Writer user writer
@@ -40,7 +41,7 @@ type Writer interface {
 	ChangeName(userID entity.ID, userName string) error
 	ChangeSettings(userID entity.ID, setting, value string) error
 	NullifyRequest([2]entity.ID) error
-	Notifications(userName string, page int) (presentation.Notification, error)
+	ClearNotifsCount(userID entity.ID) error
 	BreakedUp(couple [2]entity.ID) error
 	UsageMonitoring(userID entity.ID) error
 	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
@@ -85,4 +86,5 @@ type UseCase interface {
 	ClearNotifsCount(userID entity.ID) error
 	UsageMonitoring(userID entity.ID) error
 	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
+	GetFeedPosts(userID entity.ID, skip int) ([]presentation.Post, error)
 }

@@ -76,7 +76,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			Likes:       []entity.ID{},
 			Comments:    []entity.Comment{},
 		}
-		_, err = service.CreatePost(&post)
+		pID, err := service.CreatePost(&post)
 
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
@@ -125,7 +125,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				if err != nil {
 					break
 				}
-				err = userService.NewFeedPost(post.CoupleID, followers)
+				err = userService.NewFeedPost(pID, followers)
 				if err != nil {
 					break
 				}

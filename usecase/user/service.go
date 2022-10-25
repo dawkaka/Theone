@@ -160,3 +160,6 @@ func (s *Service) UsageMonitoring(userID entity.ID) error {
 func (s *Service) NewFeedPost(postID entity.ID, userIDs []entity.ID) error {
 	return s.repo.NewFeedPost(postID, userIDs)
 }
+func (s *Service) GetFeedPosts(userID entity.ID, skip int) ([]presentation.Post, error) {
+	return s.repo.GetFeedPosts(userID, skip)
+}
