@@ -520,6 +520,11 @@ func (u *UserMongo) ClearNotifsCount(userID entity.ID) error {
 	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$set", Value: bson.M{"new_notifications_count": 0}}})
 	return err
 }
+func (u *UserMongo) ClearFeedPostsCount(userID entity.ID) error {
+	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$set", Value: bson.M{"new_feed_post_count": 0}}})
+	fmt.Println(err)
+	return err
+}
 
 func (u *UserMongo) UsageMonitoring(userID entity.ID) error {
 	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$set", Value: bson.M{"last_visited": time.Now()}}})

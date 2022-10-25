@@ -915,6 +915,14 @@ func clearNewNotifsCount(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func clearFeedPostsCount(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
+		_ = service.ClearFeedPostsCount(userSession.ID)
+		ctx.JSON(http.StatusNoContent, gin.H{})
+	}
+}
+
 func getPartner(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
@@ -986,6 +994,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
 	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
 	r.PUT("/user/new-notifications", clearNewNotifsCount(service))         //tested
+	r.PUT("/user/new-posts", clearFeedPostsCount(service))                 //tested
 	r.PUT("/user/name", changeUserName(service))                           //tested
 	r.PUT("/user/password", changePassword(service))                       //tested
 	r.PUT("/user/email", changeEmail(service))                             //tested

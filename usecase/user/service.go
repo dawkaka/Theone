@@ -153,7 +153,9 @@ func (s *Service) StartupInfo(userID entity.ID) (presentation.StartupInfo, error
 func (s *Service) ClearNotifsCount(userID entity.ID) error {
 	return s.repo.ClearNotifsCount(userID)
 }
-
+func (s *Service) ClearFeedPostsCount(userID entity.ID) error {
+	return s.repo.ClearFeedPostsCount(userID)
+}
 func (s *Service) UsageMonitoring(userID entity.ID) error {
 	return s.repo.UsageMonitoring(userID)
 }

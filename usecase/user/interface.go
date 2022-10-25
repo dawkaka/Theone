@@ -42,6 +42,7 @@ type Writer interface {
 	ChangeSettings(userID entity.ID, setting, value string) error
 	NullifyRequest([2]entity.ID) error
 	ClearNotifsCount(userID entity.ID) error
+	ClearFeedPostsCount(userID entity.ID) error
 	BreakedUp(couple [2]entity.ID) error
 	UsageMonitoring(userID entity.ID) error
 	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
@@ -84,6 +85,7 @@ type UseCase interface {
 	BreakedUp(couple [2]entity.ID) error
 	StartupInfo(userID entity.ID) (presentation.StartupInfo, error)
 	ClearNotifsCount(userID entity.ID) error
+	ClearFeedPostsCount(userID entity.ID) error
 	UsageMonitoring(userID entity.ID) error
 	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
 	GetFeedPosts(userID entity.ID, skip int) ([]presentation.Post, error)
