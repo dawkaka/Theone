@@ -81,7 +81,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			ID:             insertedID,
 			Name:           userName,
 			Email:          email,
-			ProfilePicture: "defaultProfile.jpg",
+			ProfilePicture: "defaultprofile.jpg",
 			HasPartner:     false,
 			PartnerID:      [12]byte{},
 			CoupleID:       [12]byte{},

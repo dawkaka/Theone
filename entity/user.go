@@ -203,7 +203,7 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		PendingRequest:        NO_REQUEST,
 		CreatedAt:             time.Now(),
 		UpdatedAt:             time.Now(),
-		ProfilePicture:        "defaultProfile.jpg",
+		ProfilePicture:        "defaultprofile.jpg",
 		ShowPictures:          []string{"defaultshow1.jpg", "defaultshow2.jpg", "defaultshow3.jpg", "defaultshow4.jpg", "defaultshow5.jpg", "defaultshow6.jpg"},
 		Likes:                 []primitive.ObjectID{},
 		LikesCount:            0,
