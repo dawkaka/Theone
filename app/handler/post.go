@@ -101,6 +101,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				PostID:  post.PostID,
 				Name:    name,
 				User:    name,
+				Date:    time.Now(),
 			}
 			partnerNotif := entity.Notification{
 				Type:    "Partner Posted",
@@ -109,6 +110,7 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 				PostID:  post.PostID,
 				Name:    name,
 				User:    user.Name,
+				Date:    time.Now(),
 			}
 			userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, partnerNotif)
 			if len(mentions) > 0 {
@@ -233,6 +235,7 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 				PostID:  post.PostID,
 				Name:    name,
 				User:    user.Name,
+				Date:    time.Now(),
 			}
 			_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
 
@@ -278,6 +281,7 @@ func like(service post.UseCase, userService user.UseCase, coupleService couple.U
 				PostID:  post.PostID,
 				User:    user.Name,
 				Name:    name,
+				Date:    time.Now(),
 			}
 			_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
 

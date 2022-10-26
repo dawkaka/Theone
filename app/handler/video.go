@@ -91,6 +91,7 @@ func videoComment(service video.UseCase, userService user.UseCase) gin.HandlerFu
 		notif := entity.Notification{
 			Type:    "comment",
 			Message: inter.LocalizeWithUserName(lang, user.Name, "VideoCommentNotif"),
+			Date:    time.Now(),
 		}
 		_ = userService.NotifyCouple([2]entity.ID{video.InitiatedID, video.AcceptedID}, notif)
 
@@ -125,6 +126,7 @@ func likeVideo(service video.UseCase, userService user.UseCase) gin.HandlerFunc 
 		notif := entity.Notification{
 			Type:    "like",
 			Message: inter.LocalizeWithUserName(lang, user.Name, "VideoLikeNotif"),
+			Date:    time.Now(),
 		}
 		_ = userService.NotifyCouple([2]entity.ID{video.InitiatedID, video.AcceptedID}, notif)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "VideoLiked"))

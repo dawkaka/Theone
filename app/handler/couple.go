@@ -95,6 +95,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			Profile: user.ProfilePicture,
 			User:    user.UserName,
 			Name:    coupleName,
+			Date:    time.Now(),
 		}
 
 		go func() {
@@ -403,6 +404,7 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 				Profile: user.ProfilePicture,
 				User:    user.Name,
 				Name:    user.FirstName + user.LastName,
+				Date:    time.Now(),
 			}
 			userService.BreakedUp([2]entity.ID{u.ID, u.PartnerID})
 			_ = userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, notif)

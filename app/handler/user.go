@@ -307,6 +307,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			User:    thisUser.Name,
 			Profile: thisUser.ProfilePicture,
 			Name:    thisUser.FirstName + thisUser.LastName,
+			Date:    time.Now(),
 		}
 
 		thisUser.PendingRequest = entity.SENT_REQUEST
@@ -412,6 +413,7 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 				User:    user.Name,
 				Profile: user.ProfilePicture,
 				Name:    user.FirstName + user.LastName,
+				Date:    time.Now(),
 			}
 			service.NotifyUser(initiator.UserName, notif)
 		}()
@@ -457,6 +459,7 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			Type:    "follow",
 			Profile: user.ProfilePicture,
 			User:    user.Name,
+			Date:    time.Now(),
 		}
 		_ = service.NotifyCouple([2]primitive.ObjectID{couple.Accepted, couple.Initiated}, notif)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "Followed"))
