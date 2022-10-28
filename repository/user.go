@@ -721,3 +721,13 @@ func (u *UserMongo) GetFeedPosts(userID entity.ID, skip int) ([]presentation.Pos
 	err = cursor.All(context.TODO(), &result)
 	return result, err
 }
+
+func (u *UserMongo) CheckNameAvailability(name string) bool {
+	opts := options.FindOne().SetProjection(bson.D{{Key: "user_name", Value: 1}})
+	err := u.collection.FindOne(
+		context.TODO(),
+		bson.D{{Key: "user_name", Value: bson.M{"$regex": primitive.Regex{Pattern: "^" + name + "$", Options: "i"}}}},
+		opts,
+	)
+	return err.Err() != nil
+}

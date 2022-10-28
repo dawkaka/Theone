@@ -20,6 +20,7 @@ type Reader interface {
 	Startup(userID entity.ID) (presentation.StartupInfo, error)
 	Notifications(userName string, page int) (presentation.Notification, error)
 	GetFeedPosts(postID entity.ID, skip int) ([]presentation.Post, error)
+	CheckNameAvailability(name string) bool
 }
 
 //Writer user writer
@@ -89,4 +90,5 @@ type UseCase interface {
 	UsageMonitoring(userID entity.ID) error
 	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
 	GetFeedPosts(userID entity.ID, skip int) ([]presentation.Post, error)
+	CheckNameAvailability(name string) bool
 }

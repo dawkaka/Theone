@@ -975,9 +975,18 @@ func getFeed(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func checkAvailability(service user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userName := ctx.Param("name")
+		res := service.CheckNameAvailability(userName)
+		ctx.JSON(http.StatusOK, gin.H{"available": res})
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
-	r.POST("/user/u/signup", signup(service))                                  //tested
-	r.POST("/user/u/login", login(service))                                    //tested
+	r.POST("/user/u/signup", signup(service)) //tested
+	r.POST("/user/u/login", login(service))   //tested
+	r.GET("/user/availability/:name", checkAvailability(service))
 	r.Use(middlewares.Authenticate())                                          //tested
 	r.GET("/user/u/session", userSession(service))                             //tested
 	r.GET("/user/:userName", getUser(service))                                 //tested
