@@ -61,7 +61,7 @@ type UseCase interface {
 	ListUsers([]entity.ID) ([]presentation.UserPreview, error)
 	ListFollowers(flws []entity.ID) ([]entity.Follower, error)
 	UserFollowing(userName string, skip int) ([]entity.ID, error)
-	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) (entity.ID, error)
+	CreateUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang, country, state string) (entity.ID, error)
 	SendRequest(from, to entity.ID) error
 	RecieveRequest(from, to entity.ID) error
 	UpdateUser(userID entity.ID, update entity.UpdateUser) error

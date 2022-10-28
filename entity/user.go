@@ -32,6 +32,8 @@ type User struct {
 	CoupleID              ID             `json:"couple_id,omitempty" bson:"couple_id,omitempty"`
 	Bio                   string         `json:"bio,omitempty" bson:"bio"`
 	Website               string         `json:"website,omitempty" bson:"website,omitempty"`
+	Country               string         `json:"country"`
+	State                 string         `json:"state"`
 	OpenToRequests        bool           `json:"open_to_requests,omitempty" bson:"open_to_request,omitempty"`
 	HasPartner            bool           `json:"has_partner,omitempty" bson:"has_partner"`
 	PendingRequest        int8           `json:"pending_request,omitempty" bson:"pending_request"`
@@ -93,6 +95,8 @@ type Signup struct {
 	Password       string    `json:"password"`
 	RepeatPassword string    `json:"repeat_password"`
 	DateOfBirth    time.Time `json:"date_of_birth" bson:"date_of_birth"`
+	Country        string    `json:"country"`
+	State          string    `json:"state"`
 }
 
 func (s Signup) Validate() []error {
@@ -189,7 +193,7 @@ func (u *UpdateUser) Sanitize() {
 	u.Website = strings.TrimSpace(u.Website)
 }
 
-func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang string) *User {
+func NewUser(email, password, firstName, lastName, userName string, dateOfBirth time.Time, lang, country, state string) *User {
 	return &User{
 		ID:                    primitive.NewObjectID(),
 		Email:                 email,
@@ -201,6 +205,8 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		Bio:                   "-",
 		OpenToRequests:        true,
 		HasPartner:            false,
+		Country:               country,
+		State:                 state,
 		PendingRequest:        NO_REQUEST,
 		CreatedAt:             time.Now(),
 		UpdatedAt:             time.Now(),

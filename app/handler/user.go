@@ -45,9 +45,9 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		firstName, lastName, userName, email, dateOfBirth, userPassword, lang :=
+		firstName, lastName, userName, email, dateOfBirth, userPassword, lang, country, state :=
 			newUser.FirstName, newUser.LastName, newUser.UserName,
-			newUser.Email, newUser.DateOfBirth, newUser.Password, utils.GetLang("", ctx.Request.Header)
+			newUser.Email, newUser.DateOfBirth, newUser.Password, utils.GetLang("", ctx.Request.Header), newUser.Country, newUser.State
 
 		user, err := service.CheckSignup(userName, email)
 		if err != nil {
@@ -71,7 +71,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
-		insertedID, err := service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBirth, lang)
+		insertedID, err := service.CreateUser(email, hashedPassword, firstName, lastName, userName, dateOfBirth, lang, country, state)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
