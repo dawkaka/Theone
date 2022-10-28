@@ -208,7 +208,51 @@ func (u *UserMongo) Notifications(userName string, page int) (presentation.Notif
 }
 
 //Write Methods
-func (u *UserMongo) Notify(userName string, notif any) error {
+func (u *UserMongo) Notify(userName string, notif entity.Notification) error {
+	// matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "user_name", Value: userName}}}}
+	// projectStage := bson.D{{
+	// 	Key: "$project",
+	// 	Value: bson.M{
+	// 		"notifications": bson.M{"$filter": bson.M{
+	// 			"input": "$notifications",
+	// 			"as":    "notif",
+	// 			"cond":  bson.M{"$eq": []interface{}{"$$notif.user", notif.User}},
+	// 		}},
+	// 	},
+	// }}
+	// cursor, err := u.collection.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
+
+	// if err != nil {
+	// 	return entity.ErrNoMatch
+	// }
+
+	// if err != nil {
+	// 	return entity.ErrNoMatch
+	// }
+
+	// notifs := []entity.User{}
+	// if err = cursor.All(context.TODO(), &notifs); err != nil {
+	// 	return err
+	// }
+	// if len(notifs) != 0 && len(notifs[0].Notifications) != 0 {
+	// 	for _, val := range notifs[0].Notifications {
+	// 		switch val.Type {
+	// 		case "Mentioned":
+	// 			fallthrough
+	// 		case "like":
+	// 			if val.PostID == notif.PostID {
+	// 				return nil
+	// 			}
+	// 		case "comment":
+	// 			if val.PostID == notif.PostID && val.Message == notif.Message {
+	// 				return nil
+	// 			}
+	// 		case "follow":
+	// 			return nil
+	// 		}
+	// 	}
+	// }
+
 	_, err := u.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "user_name", Value: userName}},
@@ -286,8 +330,54 @@ func (u *UserMongo) NullifyRequest(userIDs [2]entity.ID) error {
 	return err
 }
 
-func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif any) error {
-	_, err := u.collection.UpdateMany(
+func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) error {
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: bson.M{"$in": c}}}}}
+	projectStage := bson.D{{
+		Key: "$project",
+		Value: bson.M{
+			"notifications": bson.M{"$filter": bson.M{
+				"input": "$notifications",
+				"as":    "notif",
+				"cond":  bson.M{"$eq": []interface{}{"$$notif.user", notif.User}},
+			}},
+		},
+	}}
+	cursor, err := u.collection.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
+
+	if err != nil {
+		fmt.Println(err)
+		return entity.ErrNoMatch
+	}
+
+	notifs := []entity.User{}
+	if err = cursor.All(context.TODO(), &notifs); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	if len(notifs) != 0 && len(notifs[0].Notifications) != 0 {
+		for _, val := range notifs[0].Notifications {
+			switch val.Type {
+			case "Mentioned":
+				fallthrough
+			case "like":
+				if val.PostID == notif.PostID && notif.Type == "like" || notif.Type == "Mentioned" {
+					return nil
+				}
+			case "comment":
+				if val.PostID == notif.PostID && val.Message == notif.Message {
+					return nil
+				}
+			case "follow":
+				if notif.Type == "follow" {
+					return nil
+				}
+			default:
+				continue
+			}
+		}
+	}
+
+	_, err = u.collection.UpdateMany(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: c}}}},
 		bson.A{
@@ -317,7 +407,7 @@ func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif any) error {
 	return err
 }
 
-func (u *UserMongo) NotifyUsers(users []string, notif any) error {
+func (u *UserMongo) NotifyUsers(users []string, notif entity.Notification) error {
 	_, err := u.collection.UpdateMany(
 		context.TODO(),
 		bson.D{{Key: "user_name", Value: bson.D{{Key: "$in", Value: users}}}},

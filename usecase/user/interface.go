@@ -31,9 +31,9 @@ type Writer interface {
 	RecieveRequest(from, to entity.ID) error
 	Follow(coupleId, userID entity.ID) error
 	Unfollow(coupleId, userId entity.ID) error
-	Notify(userToNotify string, notification any) error
-	NotifyUsers(users []string, notif any) error
-	NotifyCouple(c [2]entity.ID, notif any) error
+	Notify(userToNotify string, notification entity.Notification) error
+	NotifyUsers(users []string, notif entity.Notification) error
+	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
 	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 	UpdateProfilePic(fileName string, userID entity.ID) error
 	UpdateShowPicture(userID entity.ID, index int, fileName string) error
@@ -69,9 +69,9 @@ type UseCase interface {
 	ConfirmCouple(userID, partnerID string) (bool, error)
 	Follow(coupleID, userID entity.ID) error
 	Unfollow(coupleID, userID entity.ID) error
-	NotifyUser(userToNotify string, notification any) error
-	NotifyCouple(c [2]entity.ID, notif any) error
-	NotifyMultipleUsers(users []string, notif any) error
+	NotifyUser(userToNotify string, notification entity.Notification) error
+	NotifyCouple(c [2]entity.ID, notif entity.Notification) error
+	NotifyMultipleUsers(users []string, notif entity.Notification) error
 	NewCouple(c [2]entity.ID, coupleID entity.ID) error
 	UpdateUserProfilePic(fileName string, userID entity.ID) error
 	UpdateShowPicture(userID entity.ID, index int, fileName string) error

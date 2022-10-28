@@ -90,15 +90,15 @@ func (s *Service) ConfirmCouple(userID, partnerID string) (bool, error) {
 	return s.repo.ConfirmCouple(user, parnter), nil
 }
 
-func (s *Service) NotifyUser(user string, notif any) error {
+func (s *Service) NotifyUser(user string, notif entity.Notification) error {
 	return s.repo.Notify(user, notif)
 }
 
-func (s *Service) NotifyCouple(couple [2]entity.ID, notif any) error {
+func (s *Service) NotifyCouple(couple [2]entity.ID, notif entity.Notification) error {
 	return s.repo.NotifyCouple(couple, notif)
 }
 
-func (s *Service) NotifyMultipleUsers(users []string, notif any) error {
+func (s *Service) NotifyMultipleUsers(users []string, notif entity.Notification) error {
 	return s.repo.NotifyUsers(users, notif)
 }
 
