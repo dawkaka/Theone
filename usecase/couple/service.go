@@ -34,7 +34,7 @@ func (s *Service) ListCouple(IDs []entity.ID, userID entity.ID) ([]presentation.
 	return s.repo.List(IDs, userID)
 }
 
-func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID, error) {
+func (s *Service) CreateCouple(userId, partnerId, coupleName, country, state string) (entity.ID, error) {
 	initiated, err := entity.StringToID(partnerId)
 	if err != nil {
 		return primitive.ObjectID{}, err
@@ -45,7 +45,6 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID,
 	}
 
 	couple := entity.Couple{
-		ID:             primitive.NewObjectID(),
 		Initiated:      initiated,
 		Accepted:       accepted,
 		AcceptedAt:     time.Now(),
@@ -55,6 +54,8 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName string) (entity.ID,
 		Verified:       false,
 		ProfilePicture: "defaultprofile.jpg",
 		CoverPicture:   "defaultcover.jpg",
+		Country:        country,
+		State:          state,
 		Bio:            "-",
 		Followers:      []primitive.ObjectID{},
 		FollowersCount: 0,

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -94,7 +95,8 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		}
 		session.Set("user", userSession)
 		_ = session.Save()
-		ctx.SetCookie("user_ID", user.ID.Hex(), 10*365*24*60*60*1000, "/", "", false, false)
+		fmt.Println(insertedID.Hex())
+		ctx.SetCookie("user_ID", insertedID.Hex(), 10*365*24*60*60*1000, "/", "", false, false)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "SignupSuccessfull"))
 	}
 }

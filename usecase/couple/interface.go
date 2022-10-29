@@ -41,7 +41,7 @@ type Repository interface {
 
 //Couple usecase
 type UseCase interface {
-	CreateCouple(userId, partnerrId, coupleName string) (entity.ID, error)
+	CreateCouple(userId, partnerrId, coupleName, country, state string) (entity.ID, error)
 	UpdateCouple(coupleID entity.ID, update entity.UpdateCouple) error
 	GetCouple(coupleName string, userID entity.ID) (entity.Couple, error)
 	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)

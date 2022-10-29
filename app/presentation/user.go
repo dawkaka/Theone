@@ -30,6 +30,8 @@ type UserPreview struct {
 	PendingRequest int8      `json:"pending_request" bson:"pending_request"`
 	PartnerID      entity.ID `json:"partner_id" bson:"partner_id"`
 	Lang           string    `json:"lang"`
+	Country        string
+	State          string
 }
 
 type StartupInfo struct {

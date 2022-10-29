@@ -11,7 +11,7 @@ import (
 //Couple data
 
 type Couple struct {
-	ID             ID        `json:"id" bson:"_id"`
+	ID             ID        `json:"id" bson:"_id,omitempty"`
 	Initiated      ID        `json:"iniated"`
 	Accepted       ID        `json:"accepted"`
 	AcceptedAt     time.Time `json:"accepted_at" bson:"accepted_at"`
@@ -25,6 +25,8 @@ type Couple struct {
 	Followers      []ID      `json:"followers" bson:"followers"`
 	Separated      bool      `json:"separated"`
 	Website        string    `json:"website"`
+	Country        string    `json:"country"`
+	State          string    `json:"state"`
 	FollowersCount uint64    `json:"followers_count" bson:"followers_count"`
 	PostCount      uint64    `json:"post_count" bson:"post_count"`
 	Posts          []string  `json:"posts" bson:"posts"`

@@ -72,7 +72,6 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			}
 
 		} else {
-
 			coupleName = fmt.Sprintf("%s.and.%s", strings.ToLower(partner.FirstName), strings.ToLower(user.FirstName))
 			_, err = service.GetCouple(coupleName, primitive.NewObjectID())
 			if err == nil {
@@ -82,12 +81,11 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 				return
 			}
-			coupleID, err = service.CreateCouple(userb.ID.Hex(), partnerID.Hex(), coupleName)
+			coupleID, err = service.CreateCouple(userb.ID.Hex(), partnerID.Hex(), coupleName, partner.Country, partner.State)
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 				return
 			}
-
 		}
 
 		notif := entity.Notification{
