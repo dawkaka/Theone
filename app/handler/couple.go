@@ -77,7 +77,6 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 			if err == nil {
 				coupleName += fmt.Sprint(time.Now().Unix())
 			} else if err != entity.ErrCoupleNotFound {
-
 				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 				return
 			}
