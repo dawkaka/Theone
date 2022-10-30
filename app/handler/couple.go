@@ -571,11 +571,15 @@ func updateRelationshipStatus(service couple.UseCase, userService user.UseCase) 
 	}
 }
 
-//Todo get suggested accounts
-
-func getSuggestedAccounts(service couple.UseCase) gin.HandlerFunc {
+func getSuggestedAccounts(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
+		res, err := userService.ExemptedFromSuggestedAccounts(userSession.ID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+		ctx.JSON(http.StatusOK, res)
 	}
 }
 
@@ -587,6 +591,7 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/couple/search/:query", searchCouples(service))
 	r.GET("/:coupleName/followers/:skip", getFollowers(service, userService)) //tested
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage, userService))
+	r.GET("/couple/u/suggested-accounts", getSuggestedAccounts(service, userService))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
 	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))  //tested
