@@ -91,6 +91,7 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			LastName:       lastName,
 			Lang:           lang,
 			DateOfBirth:    dateOfBirth,
+			Country:        country,
 			LastVisited:    time.Now(),
 		}
 		session.Set("user", userSession)
@@ -127,6 +128,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 		if user.Language != "" {
 			lang = user.Language
 		}
+		fmt.Println(user.Country)
 		session := sessions.Default(ctx)
 		userSession := entity.UserSession{
 			ID:             user.ID,
@@ -139,6 +141,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 			PendingRequest: user.PendingRequest,
 			FirstName:      user.FirstName,
 			LastName:       user.LastName,
+			Country:        user.Country,
 			Lang:           lang,
 			DateOfBirth:    user.DateOfBirth,
 			LastVisited:    user.LastVisited,

@@ -84,6 +84,7 @@ type UserSession struct {
 	FirstName      string    `json:"first_name" bson:"first_name"`
 	LastName       string    `json:"last_name" bson:"last_name"`
 	Lang           string    `json:"lang" bson:"lang"`
+	Country        string    `json:"country" bson:"country"`
 	DateOfBirth    time.Time `json:"date_of_birth" bson:"date_of_birth"`
 	LastVisited    time.Time `json:"last_visited" bson:"last_visited"`
 }

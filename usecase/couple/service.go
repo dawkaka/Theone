@@ -125,3 +125,7 @@ func (s *Service) UpdateStatus(coupleID entity.ID, married bool) error {
 func (s *Service) FollowersToNotify(coupleID entity.ID, skip int) ([]entity.ID, error) {
 	return s.repo.FollowersToNotify(coupleID, skip)
 }
+
+func (s *Service) GetSuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error) {
+	return s.repo.SuggestedAccounts(exempted, country)
+}

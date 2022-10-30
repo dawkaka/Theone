@@ -579,7 +579,12 @@ func getSuggestedAccounts(service couple.UseCase, userService user.UseCase) gin.
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrongInternal"))
 			return
 		}
-		ctx.JSON(http.StatusOK, res)
+		suggestions, err := service.GetSuggestedAccounts(res, userSession.Country)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+		ctx.JSON(http.StatusOK, suggestions)
 	}
 }
 

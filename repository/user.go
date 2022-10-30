@@ -134,7 +134,8 @@ func (u *UserMongo) ConfirmCouple(userID, partnerID entity.ID) bool {
 func (u *UserMongo) Login(param string) (entity.User, error) {
 	opts := options.FindOne().SetProjection(
 		bson.D{
-			{Key: "following", Value: 0}, {Key: "likes", Value: 0},
+			{Key: "following", Value: 0}, {Key: "likes", Value: 0}, {Key: "feed_posts", Value: 0},
+			{Key: "previous_relationships", Value: 0}, {Key: "exempted", Value: 0},
 		})
 
 	user := entity.User{}

@@ -372,3 +372,32 @@ func (c *CoupleMongo) FollowersToNotify(coupleID entity.ID, skip int) ([]entity.
 	}
 	return couple.Followers, nil
 }
+
+func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error) {
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: bson.D{{Key: "$nin", Value: exempted}}}, {Key: "separated", Value: false}, {Key: "country", Value: country}}}}
+	sortStage := bson.D{{Key: "$sort", Value: bson.M{"followers_count": -1}}}
+	limitStage := bson.D{{Key: "$limit", Value: 5}}
+
+	projectStage := bson.D{{
+		Key: "$project",
+		Value: bson.M{
+			"couple_name":     1,
+			"profile_picture": 1,
+			"married":         1,
+			"verified":        1,
+		},
+	}}
+
+	cursor, err := c.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, sortStage, limitStage, projectStage},
+	)
+	if err != nil {
+		return nil, err
+	}
+	results := []presentation.CouplePreview{}
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+	return results, nil
+}
