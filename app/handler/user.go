@@ -997,10 +997,10 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/u/pending-request", getPendingRequest(service))               //tested
 	r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/u/startup", startup(service))                 //tested
-	r.GET("/user/notifications/:skip", notifications(service)) //tested
-	r.GET("/user/u/partner", getPartner(service))              //tested
-	r.GET("/user/feed/:skip", getFeed(service))
+	r.GET("/user/u/startup", startup(service))                             //tested
+	r.GET("/user/notifications/:skip", notifications(service))             //tested
+	r.GET("/user/u/partner", getPartner(service))                          //tested
+	r.GET("/user/feed/:skip", getFeed(service))                            //tested
 	r.POST("/user/logout", logout)                                         //tested
 	r.POST("/user/u/cancel-request", cancelRequest(service))               //tested
 	r.POST("/user/u/reject-request", rejectRequest(service))               //tested

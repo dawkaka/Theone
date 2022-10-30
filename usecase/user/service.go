@@ -169,3 +169,7 @@ func (s *Service) GetFeedPosts(userID entity.ID, skip int) ([]presentation.Post,
 func (s *Service) CheckNameAvailability(name string) bool {
 	return s.repo.CheckNameAvailability(name)
 }
+
+func (s *Service) ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID, error) {
+	return s.repo.ExemptedFromSuggestedAccounts(userID)
+}

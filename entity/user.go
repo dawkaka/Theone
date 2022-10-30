@@ -46,6 +46,7 @@ type User struct {
 	EmailVerified         bool           `json:"email_verified,omitempty" bson:"email_verified"`
 	PartnerID             ID             `json:"partner_id,omitempty" bson:"partner_id,omitempty"`
 	Following             []ID           `json:"following,omitempty"`
+	Exempted              []ID           `json:"exempted"`
 	PreviousRelationships []ID           `json:"previous_relationships" bson:"previous_relationships"`
 	FollowingCount        uint64         `json:"following_count,omitempty" bson:"following_count"`
 	Notifications         []Notification `json:"notifications,omitempty"`
@@ -223,6 +224,7 @@ func NewUser(email, password, firstName, lastName, userName string, dateOfBirth 
 		FeedPosts:             []primitive.ObjectID{},
 		NewFeedPostCount:      0,
 		PreviousRelationships: []primitive.ObjectID{},
+		Exempted:              []ID{},
 		Language:              lang,
 	}
 }
