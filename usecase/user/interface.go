@@ -48,6 +48,7 @@ type Writer interface {
 	BreakedUp(couple [2]entity.ID) error
 	UsageMonitoring(userID entity.ID) error
 	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
+	Exempt(userID, couleID entity.ID) error
 }
 
 //Repository interface
@@ -93,4 +94,5 @@ type UseCase interface {
 	GetFeedPosts(userID entity.ID, skip int) ([]presentation.Post, error)
 	CheckNameAvailability(name string) bool
 	ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID, error)
+	Exempt(userID, coupleID entity.ID) error
 }

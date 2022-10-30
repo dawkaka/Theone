@@ -744,3 +744,8 @@ func (u *UserMongo) ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID
 	coupleIDs = append(coupleIDs, user.Exempted...)
 	return coupleIDs, nil
 }
+
+func (u *UserMongo) Exempt(userID, coupleID entity.ID) error {
+	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$push", Value: bson.M{"exempted": coupleID}}})
+	return err
+}

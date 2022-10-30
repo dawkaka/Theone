@@ -173,3 +173,7 @@ func (s *Service) CheckNameAvailability(name string) bool {
 func (s *Service) ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID, error) {
 	return s.repo.ExemptedFromSuggestedAccounts(userID)
 }
+
+func (s *Service) Exempt(userID, coupleID entity.ID) error {
+	return s.repo.Exempt(userID, coupleID)
+}

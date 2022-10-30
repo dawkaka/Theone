@@ -128,7 +128,6 @@ func login(service user.UseCase) gin.HandlerFunc {
 		if user.Language != "" {
 			lang = user.Language
 		}
-		fmt.Println(user.Country)
 		session := sessions.Default(ctx)
 		userSession := entity.UserSession{
 			ID:             user.ID,
@@ -988,6 +987,28 @@ func checkAvailability(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
+func exempt(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
+		coupleName := ctx.Param("coupleName")
+		if !validator.IsCoupleName(coupleName) {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(userSession.Lang, "BadRequest"))
+			return
+		}
+		couple, err := coupleService.GetCouple(coupleName, primitive.ObjectID{})
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, presentation.Error(userSession.Lang, "CoupleNotFound"))
+			return
+		}
+		err = service.Exempt(userSession.ID, couple.ID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+		ctx.JSON(http.StatusNoContent, gin.H{})
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, userMessage repository.UserCoupleMessage) {
 	r.POST("/user/u/signup", signup(service)) //tested
 	r.POST("/user/u/login", login(service))   //tested
@@ -1010,15 +1031,16 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/couple-request/:userName", initiateRequest(service))     //tested
 	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
 	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
-	r.PUT("/user/new-notifications", clearNewNotifsCount(service))         //tested
-	r.PUT("/user/new-posts", clearFeedPostsCount(service))                 //tested
-	r.PUT("/user/name", changeUserName(service))                           //tested
-	r.PUT("/user/password", changePassword(service))                       //tested
-	r.PUT("/user/email", changeEmail(service))                             //tested
-	r.PUT("/user/request-status/:status", changeRequestStatus(service))    //tested
-	r.PUT("/user", updateUser(service))                                    //tested
-	r.POST("/user/show-pictures/:index", updateShowPicture(service))       //tested
-	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service))  //tested
-	r.POST("/user/profile-pic", updateUserProfilePic(service))             //tested
+	r.POST("/user/exempt/:coupleName", exempt(service, coupleService))
+	r.PUT("/user/new-notifications", clearNewNotifsCount(service))        //tested
+	r.PUT("/user/new-posts", clearFeedPostsCount(service))                //tested
+	r.PUT("/user/name", changeUserName(service))                          //tested
+	r.PUT("/user/password", changePassword(service))                      //tested
+	r.PUT("/user/email", changeEmail(service))                            //tested
+	r.PUT("/user/request-status/:status", changeRequestStatus(service))   //tested
+	r.PUT("/user", updateUser(service))                                   //tested
+	r.POST("/user/show-pictures/:index", updateShowPicture(service))      //tested
+	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service)) //tested
+	r.POST("/user/profile-pic", updateUserProfilePic(service))            //tested
 	r.DELETE("/user", deleteUser(service))
 }
