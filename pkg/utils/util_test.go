@@ -41,3 +41,24 @@ func TestExtractMentions(t *testing.T) {
 		}
 	}
 }
+
+func TestGetCategory(t *testing.T) {
+	impts := [][]interface{}{{1, "Ghana"}, {2, "Nigeria"}, {2, "Egypt"}, {2, "Germany"}, {1, "Qatar"}, {2, "Nicaragua"}}
+	expts := []int{
+		len(one["AfBEn"]),
+		len(one["AfBEn"]) + len(one["AfBFr"]),
+		len(one["AfAr"]) + len(one["MeAr"]),
+		len(one["Eu_fr"]) + len(one["Ge"]),
+		len(one["MeAr"]),
+		len(one["SAm_es"]) + len(one["NAm_es"]) + len(one["Eu_es"]),
+	}
+
+	for key, val := range impts {
+		level := val[0].(int)
+		ct := val[1].(string)
+		actualLength := len(GetCategory(level, ct))
+		if actualLength != expts[key] {
+			t.Fatalf("Testing: %d-%s; want %d got %d", level, ct, expts[key], actualLength)
+		}
+	}
+}

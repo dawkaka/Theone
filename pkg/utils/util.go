@@ -57,3 +57,70 @@ func ExtracMentions(caption string) []string {
 	}
 	return mentions
 }
+
+func GetCategory(level int, country string) []string {
+
+	var target string
+	for key, val := range one {
+		for _, v := range val {
+			if v == country {
+				target = key
+			}
+		}
+	}
+	if level == 1 {
+		return one[target]
+	}
+
+	for key, val := range two {
+		for _, v := range val {
+			if v == target {
+				target = key
+			}
+		}
+	}
+	res := []string{}
+	for _, v := range two[target] {
+		res = append(res, one[v]...)
+	}
+	return res
+}
+
+var one = map[string][]string{
+	"AfBEn": {"Ghana", "Nigeria", "The Gambia", "Sierra Leone", "Liberia", "Kenya", "Uganda", "Tanzania", "South Africa"},
+	"AfBFr": {"Senegal", "Guinea-Bissau", "Guinea", "Ivory Coast", "Mali", "Togo", "Benin", "Burkina Faso", "Niger"},
+	"AfAr":  {"Egypt", "Algeria", "Morrocco", "Libya", "Sudan", "Tunisia", "Chad", "Djibouti", "Comoros"},
+	"AfPt":  {"Angola", "Cape Verde", "Guinea-Bissau", "Mozambique", "São Tomé", "Príncipe"},
+	"MeAr": {
+		"Bahrain", "United Arab Emirates", "Jordan", "Iraq", "Qatar",
+		"Saudi Arabia", "Oman", "Syria", "Kuwait", "Qatar", "Israel", "Lebanon",
+	},
+	"SAm_es": {
+		"Argentina", "Dominica",
+		"Columbia", "Ecuador", "Paraguay", "Peru", "Uruguay",
+		"Bolivia", "Chile", "Colombia", "Venezuela", "Cuba",
+	},
+	"Es_Pt": {"Portugal", "Brazil"},
+	"NAm_es": {
+		"Mexico", "Guatemala", "Honduras", "El Salvador", "Nicaragua", "Panama",
+		"Guatemela", "Dominican Republic", "Costa Rica",
+	},
+	"Eu_es": {
+		"Spain", "Puerto Rico",
+	},
+	"Eu_fr": {
+		"France", "Belgium",
+	},
+	"AmWEn":  {"United States of America", "United Kingdom", "Australia", "Canada", "New Zealand", "Ireland"},
+	"AmWBEn": {"The Bahamas", "Barbados", "Belize", "Jamaica", "Dominica", "Grenada", "Guyana", "Antigua and Barbuda"},
+	"Ge":     {"Germany", "Austria", "Switzerland", "Luxembourg"},
+}
+
+var two = map[string][]string{
+	"AfBl":       {"AfBEn", "AfBFr"},
+	"Eu_mix":     {"Eu_fr", "Ge"},
+	"America_en": {"AmWEn", "AmWBen"},
+	"Ar":         {"AfAr", "MeAr"},
+	"Es":         {"SAm_es", "NAm_es", "Eu_es"},
+	"Pt":         {"Es_Pt", "AfPt"},
+}
