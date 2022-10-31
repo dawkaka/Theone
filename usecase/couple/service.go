@@ -115,8 +115,8 @@ func (s *Service) RemovePost(coupleID entity.ID, postID string) error {
 	return s.repo.RemovePost(coupleID, postID)
 }
 
-func (s *Service) SearchCouples(query string) ([]presentation.CouplePreview, error) {
-	return s.repo.Search(query)
+func (s *Service) SearchCouples(query string, userID entity.ID) ([]presentation.CouplePreview, error) {
+	return s.repo.Search(query, userID)
 }
 
 func (s *Service) UpdateStatus(coupleID entity.ID, married bool) error {
@@ -135,6 +135,6 @@ func (s *Service) BlockUser(coupleID, userID entity.ID) error {
 	return s.repo.Block(coupleID, userID)
 }
 
-func (s *Service) IsBlocked(couleID, userID entity.ID) (bool, error) {
-	return s.repo.IsBlocked(couleID, userID)
+func (s *Service) IsBlocked(coupleName string, userID entity.ID) (bool, error) {
+	return s.repo.IsBlocked(coupleName, userID)
 }
