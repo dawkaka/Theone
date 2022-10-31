@@ -6,6 +6,7 @@ import (
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
+	"github.com/dawkaka/theone/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -376,7 +377,7 @@ func (c *CoupleMongo) FollowersToNotify(coupleID entity.ID, skip int) ([]entity.
 func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error) {
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: bson.D{{Key: "$nin", Value: exempted}}}, {Key: "separated", Value: false}, {Key: "country", Value: country}}}}
 	sortStage := bson.D{{Key: "$sort", Value: bson.M{"followers_count": -1}}}
-	limitStage := bson.D{{Key: "$limit", Value: 5}}
+	limitStage := bson.D{{Key: "$limit", Value: 20}}
 
 	projectStage := bson.D{{
 		Key: "$project",
@@ -399,5 +400,41 @@ func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		return nil, err
 	}
-	return results, nil
+	res2 := []presentation.CouplePreview{}
+	if len(results) < 20 {
+		category := utils.GetCategory(1, country)
+		fechted := []string{}
+		for _, val := range results {
+			fechted = append(fechted, val.CoupleName)
+		}
+		matchStage := bson.D{{Key: "$match", Value: bson.D{
+			{Key: "_id", Value: bson.D{{Key: "$nin", Value: exempted}}},
+			{Key: "separated", Value: false},
+			{Key: "country", Value: bson.M{"$in": category}},
+			{Key: "couple_name", Value: bson.M{"$nin": fechted}},
+		},
+		}}
+		sortStage := bson.D{{Key: "$sort", Value: bson.M{"followers_count": -1}}}
+		limitStage := bson.D{{Key: "$limit", Value: 20}}
+
+		projectStage := bson.D{{
+			Key: "$project",
+			Value: bson.M{
+				"couple_name":     1,
+				"profile_picture": 1,
+				"married":         1,
+				"verified":        1,
+			},
+		}}
+
+		cursor, err := c.collection.Aggregate(
+			context.TODO(),
+			mongo.Pipeline{matchStage, sortStage, limitStage, projectStage},
+		)
+		if err != nil {
+			return nil, err
+		}
+		cursor.All(context.TODO(), &res2)
+	}
+	return append(results, res2...), nil
 }
