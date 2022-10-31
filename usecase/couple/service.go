@@ -61,6 +61,7 @@ func (s *Service) CreateCouple(userId, partnerId, coupleName, country, state str
 		FollowersCount: 0,
 		PostCount:      0,
 		Posts:          []string{},
+		Blocked:        []entity.ID{},
 	}
 	return s.repo.Create(couple)
 }
@@ -128,4 +129,12 @@ func (s *Service) FollowersToNotify(coupleID entity.ID, skip int) ([]entity.ID, 
 
 func (s *Service) GetSuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error) {
 	return s.repo.SuggestedAccounts(exempted, country)
+}
+
+func (s *Service) BlockUser(coupleID, userID entity.ID) error {
+	return s.repo.Block(coupleID, userID)
+}
+
+func (s *Service) IsBlocked(couleID, userID entity.ID) (bool, error) {
+	return s.repo.IsBlocked(couleID, userID)
 }

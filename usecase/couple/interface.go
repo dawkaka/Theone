@@ -20,6 +20,7 @@ type Writer interface {
 	AddPost(coupleID entity.ID, postID string) error
 	RemovePost(coupleID entity.ID, postID string) error
 	UpdateStatus(coupleID entity.ID, married bool) error
+	Block(coupleID, userID entity.ID) error
 }
 
 //Reader couple reader methods
@@ -32,6 +33,7 @@ type Reader interface {
 	List(coupleIDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error)
 	FollowersToNotify(copuleID entity.ID, skip int) ([]entity.ID, error)
 	SuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error)
+	IsBlocked(coupleID, userID entity.ID) (bool, error)
 }
 
 //Repository all couple methods
@@ -63,4 +65,6 @@ type UseCase interface {
 	UpdateStatus(coupleID entity.ID, married bool) error
 	FollowersToNotify(copuleID entity.ID, skip int) ([]entity.ID, error)
 	GetSuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error)
+	BlockUser(coupleID, userID entity.ID) error
+	IsBlocked(couleID, userID entity.ID) (bool, error)
 }

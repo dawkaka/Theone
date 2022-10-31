@@ -348,5 +348,9 @@
   "StatusUpdated": {
     "description": "change relationship status",
     "other": "Relationship status updated"
+  },
+  "UserBlocked": {
+    "description": "change relationship status",
+    "other": "User blocked successfully"
   }
 }

@@ -26,6 +26,7 @@ type Couple struct {
 	Separated      bool      `json:"separated"`
 	Website        string    `json:"website"`
 	Country        string    `json:"country"`
+	Blocked        []ID      `json:"blocked"`
 	State          string    `json:"state"`
 	FollowersCount uint64    `json:"followers_count" bson:"followers_count"`
 	PostCount      uint64    `json:"post_count" bson:"post_count"`

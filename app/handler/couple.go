@@ -588,6 +588,35 @@ func getSuggestedAccounts(service couple.UseCase, userService user.UseCase) gin.
 	}
 }
 
+func blockUser(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
+		u := ctx.Param("userName")
+		if !validator.IsUserName(u) {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(userSession.Lang, "BadRequest"))
+			return
+		}
+
+		user, err1 := userService.GetUser(userSession.Name)
+		userToBlock, err := userService.GetUser(u)
+		if err != nil || err1 != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Language, "SomethingWentWrongInternal"))
+			return
+		}
+		if !user.HasPartner {
+			ctx.JSON(http.StatusForbidden, presentation.Error(user.Language, "Forbidden"))
+			return
+		}
+
+		err = service.BlockUser(user.CoupleID, userToBlock.ID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, "SomethingWentWrong")
+			return
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(user.Language, "UserBlocked"))
+	}
+}
+
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, postService post.UseCase,
 	coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage, reportRepo repository.Reports) {
 	r.GET("/:coupleName", getCouple(service)) //tested
@@ -601,6 +630,7 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
 	r.POST("/couple/new/:partnerID", newCouple(service, userService))  //tested
 	r.POST("/couple/break-up", lastLastEdonCast(service, userService)) //tested
+	r.POST("/couple/block/:userName", blockUser(service, userService))
 	r.POST("/couple/report", reportCouple(reportRepo))
 	r.POST("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
 	r.POST("/couple/cover-picture", updateCoupleCoverPic(service))     //tested

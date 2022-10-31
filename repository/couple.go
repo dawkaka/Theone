@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -437,4 +438,30 @@ func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([
 		cursor.All(context.TODO(), &res2)
 	}
 	return append(results, res2...), nil
+}
+
+func (c *CoupleMongo) Block(coupleID, userID entity.ID) error {
+	_, err := c.collection.UpdateByID(context.TODO(), coupleID, bson.D{{Key: "$addToSet", Value: bson.M{"blocked": userID}}})
+	return err
+}
+
+func (c *CoupleMongo) IsBlocked(coupleID, userID entity.ID) (bool, error) {
+	matchStage := bson.D{{Key: "_id", Value: coupleID}}
+
+	projectStage := bson.D{{
+		Key: "$project",
+		Value: bson.M{
+			"isBlcoked": bson.M{"$in": bson.A{userID, "$blocked"}},
+		},
+	}}
+	cursor, err := c.collection.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
+	if err != nil {
+		return false, err
+	}
+	res := []bool{}
+	if err = cursor.All(context.TODO(), &res); err != nil {
+		return false, err
+	}
+	fmt.Println(res)
+	return res[0], nil
 }
