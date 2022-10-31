@@ -109,7 +109,7 @@ func (c *CoupleMongo) Search(query string, userID entity.ID) ([]presentation.Cou
 		context.TODO(),
 		bson.M{"couple_name": bson.M{"$regex": primitive.Regex{Pattern: "^" + query, Options: "i"}},
 			"$expr": bson.M{"$eq": bson.A{bson.M{"$size": bson.M{
-				"$filter": bson.M{"input": "$blocked", "as": "cbl", "cond": bson.M{"$eq": bson.A{"$cbl", userID}}},
+				"$setIntersection": []interface{}{"$blocked", []entity.ID{userID}},
 			}}, 0}},
 		},
 		opts,
