@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/myaws"
@@ -531,7 +532,7 @@ func searchCouples(service couple.UseCase) gin.HandlerFunc {
 		// 	ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "WrongUserNameFormat"))
 		// 	return
 		// }
-		couples, err := service.SearchCouples(query)
+		couples, err := service.SearchCouples(query, user.ID)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
 			return
@@ -619,11 +620,11 @@ func blockUser(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, postService post.UseCase,
 	coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage, reportRepo repository.Reports) {
-	r.GET("/:coupleName", getCouple(service)) //tested
-	r.GET("/:coupleName/posts/:skip", getCouplePosts(service, postService))
+	r.GET("/:coupleName", middlewares.CheckBlocked(service), getCouple(service)) //tested
+	r.GET("/:coupleName/posts/:skip", middlewares.CheckBlocked(service), getCouplePosts(service, postService))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/couple/search/:query", searchCouples(service))
-	r.GET("/:coupleName/followers/:skip", getFollowers(service, userService)) //tested
+	r.GET("/:coupleName/followers/:skip", middlewares.CheckBlocked(service), getFollowers(service, userService)) //tested
 	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage, userService))
 	r.GET("/couple/u/suggested-accounts", getSuggestedAccounts(service, userService))
 	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))

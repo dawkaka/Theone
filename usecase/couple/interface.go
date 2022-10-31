@@ -28,12 +28,12 @@ type Reader interface {
 	Get(coupleName string, userID entity.ID) (entity.Couple, error)
 	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
-	Search(query string) ([]presentation.CouplePreview, error)
+	Search(query string, userID entity.ID) ([]presentation.CouplePreview, error)
 	Followers(coupleName string, skip int) ([]entity.ID, error)
 	List(coupleIDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error)
 	FollowersToNotify(copuleID entity.ID, skip int) ([]entity.ID, error)
 	SuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error)
-	IsBlocked(coupleID, userID entity.ID) (bool, error)
+	IsBlocked(coupleName string, userID entity.ID) (bool, error)
 }
 
 //Repository all couple methods
@@ -50,7 +50,7 @@ type UseCase interface {
 	GetCouplePosts(coupleName string, skip int) (entity.Couple, error)
 	GetCoupleVideos(coupleName string, skip int) ([]entity.Video, error)
 	GetFollowers(coupleName string, skip int) ([]entity.ID, error)
-	SearchCouples(query string) ([]presentation.CouplePreview, error)
+	SearchCouples(query string, userID entity.ID) ([]presentation.CouplePreview, error)
 	NewFollower(userID, coupleID entity.ID) error
 	RemoveFollower(coupleID, userID entity.ID) error
 	UpdateCoupleProfilePic(fileName string, coupleID entity.ID) error
@@ -66,5 +66,5 @@ type UseCase interface {
 	FollowersToNotify(copuleID entity.ID, skip int) ([]entity.ID, error)
 	GetSuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error)
 	BlockUser(coupleID, userID entity.ID) error
-	IsBlocked(couleID, userID entity.ID) (bool, error)
+	IsBlocked(couleName string, userID entity.ID) (bool, error)
 }

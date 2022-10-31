@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/myaws"
@@ -495,8 +496,8 @@ func explorePosts(service post.UseCase, userService user.UseCase) gin.HandlerFun
 }
 
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase, reportsRepo repository.Reports) {
-	r.GET("/post/:coupleName/:postID", getPost(service, coupleService)) //tested
-	r.GET("/post/comments/:postID/:skip", postComments(service))        //tested
+	r.GET("/post/:coupleName/:postID", middlewares.CheckBlocked(coupleService), getPost(service, coupleService)) //tested
+	r.GET("/post/comments/:postID/:skip", postComments(service))                                                 //tested
 	r.GET("/post/explore", explorePosts(service, userService))
 	r.POST("/post", newPost(service, coupleService, userService))                    //tested
 	r.POST("/post/comment/:postID", newComment(service, userService, coupleService)) //tested

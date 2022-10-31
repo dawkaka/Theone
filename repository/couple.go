@@ -66,7 +66,17 @@ func (c *CoupleMongo) Get(coupleName string, userID entity.ID) (entity.Couple, e
 }
 
 func (c *CoupleMongo) List(IDs []entity.ID, userID entity.ID) ([]presentation.CouplePreview, error) {
-	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: IDs}}}, {Key: "separated", Value: false}}}}
+	matchStage := bson.D{
+		{
+			Key: "$match", Value: bson.D{
+				{Key: "_id", Value: bson.D{{Key: "$in", Value: IDs}}},
+				{Key: "separated", Value: false},
+				{Key: "$expr", Value: bson.M{"$eq": bson.A{bson.M{"$size": bson.M{
+					"$filter": bson.M{"input": "$blocked", "as": "cbl", "cond": bson.M{"$eq": bson.A{"$cbl", userID}}},
+				}}, 0}}},
+			},
+		},
+	}
 	projectStage := bson.D{{
 		Key: "$project",
 		Value: bson.M{
@@ -92,18 +102,24 @@ func (c *CoupleMongo) List(IDs []entity.ID, userID entity.ID) ([]presentation.Co
 	return results, nil
 }
 
-func (c *CoupleMongo) Search(query string) ([]presentation.CouplePreview, error) {
+func (c *CoupleMongo) Search(query string, userID entity.ID) ([]presentation.CouplePreview, error) {
 	opts := options.Find().SetSort(bson.D{{Key: "followers_count", Value: -1}}).SetProjection(bson.M{"couple_name": 1, "profile_picture": 1, "verified": 1, "married": 1})
 	results := []presentation.CouplePreview{}
 	cursor, err := c.collection.Find(
 		context.TODO(),
-		bson.M{"couple_name": bson.M{"$regex": primitive.Regex{Pattern: "^" + query, Options: "i"}}},
+		bson.M{"couple_name": bson.M{"$regex": primitive.Regex{Pattern: "^" + query, Options: "i"}},
+			"$expr": bson.M{"$eq": bson.A{bson.M{"$size": bson.M{
+				"$filter": bson.M{"input": "$blocked", "as": "cbl", "cond": bson.M{"$eq": bson.A{"$cbl", userID}}},
+			}}, 0}},
+		},
 		opts,
 	)
+	fmt.Println(err)
 	if err != nil {
 		return nil, err
 	}
 	if err = cursor.All(context.TODO(), &results); err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	return results, err
@@ -445,23 +461,14 @@ func (c *CoupleMongo) Block(coupleID, userID entity.ID) error {
 	return err
 }
 
-func (c *CoupleMongo) IsBlocked(coupleID, userID entity.ID) (bool, error) {
-	matchStage := bson.D{{Key: "_id", Value: coupleID}}
-
-	projectStage := bson.D{{
-		Key: "$project",
-		Value: bson.M{
-			"isBlcoked": bson.M{"$in": bson.A{userID, "$blocked"}},
-		},
-	}}
-	cursor, err := c.collection.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
-	if err != nil {
-		return false, err
+func (c *CoupleMongo) IsBlocked(coupleName string, userID entity.ID) (bool, error) {
+	opts := options.FindOne().SetProjection(bson.D{{Key: "couple_name", Value: 1}})
+	err := c.collection.FindOne(context.TODO(), bson.D{{Key: "couple_name", Value: coupleName}, {Key: "blocked", Value: userID}}, opts)
+	if err.Err() != nil {
+		if err.Err() == mongo.ErrNoDocuments {
+			return false, nil
+		}
+		return false, err.Err()
 	}
-	res := []bool{}
-	if err = cursor.All(context.TODO(), &res); err != nil {
-		return false, err
-	}
-	fmt.Println(res)
-	return res[0], nil
+	return true, nil
 }
