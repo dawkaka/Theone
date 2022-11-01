@@ -62,7 +62,7 @@ func main() {
 	r.Use(sessions.Sessions("session", store))
 	r.Use(middlewares.CORSMiddleware())
 	r.Use(middlewares.UsageMonitoring(userService))
-	handler.MakeUserHandlers(r, userService, coupleService, userMessageRepo)
+	handler.MakeUserHandlers(r, userService, coupleService, coupleMessageRepo)
 	handler.MakeCoupleHandlers(r, coupleService, userService, postService, coupleMessageRepo, userMessageRepo, reportsRepo)
 	handler.MakePostHandlers(r, postService, coupleService, userService, reportsRepo)
 	handler.MakeVideoHandlers(r, videoService, coupleService, userService)

@@ -72,6 +72,10 @@ func (m *CoupleMessage) Get(coupleID entity.ID, skip int) ([]entity.CoupleMessag
 	return res, nil
 }
 
+func (m *CoupleMessage) NewMessages(userID, coupleID entity.ID) (int64, error) {
+	return m.col.CountDocuments(context.TODO(), bson.D{{Key: "couple_id", Value: coupleID.Hex()}, {Key: "from", Value: bson.M{"$ne": userID.Hex()}}, {Key: "recieved", Value: false}})
+}
+
 func NewUserCoupleMessageRepo(col *mongo.Collection) UserCoupleMessage {
 	return UserCoupleMessage{
 		col: col,
