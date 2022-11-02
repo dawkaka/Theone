@@ -9,6 +9,7 @@ import (
 	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/config"
 	"github.com/dawkaka/theone/entity"
+	"github.com/dawkaka/theone/pkg/myaws"
 	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/dawkaka/theone/usecase/post"
@@ -45,7 +46,7 @@ func main() {
 	}()
 
 	db := client.Database(config.DB_DATABASE)
-
+	myaws.SendEmail("yousiph77@gmail.com", "ZPOHBGQYQIUEHOAKDFNGHQIELIQTEJ")
 	usersRepo := repository.NewUserMongo(db.Collection("users"))
 	couplesRepo := repository.NewCoupleMongo(db.Collection("couples"))
 	postsRepo := repository.NewPostMongo(db.Collection("posts"))

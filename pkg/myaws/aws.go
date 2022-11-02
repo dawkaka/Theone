@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"math"
 	"mime/multipart"
@@ -14,10 +15,12 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/dawkaka/theone/config"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/validator"
@@ -219,26 +222,82 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 	}
 }
 
-// func getPrefDimention(curr int, d string) int {
-// 	var dimen int
-// 	if d == "h" {
-// 		if curr < 566 {
-// 			dimen = 566
-// 		} else if curr > 1350 {
-// 			dimen = 1350
-// 		} else {
-// 			dimen = curr
-// 		}
-// 	}
-// 	if d == "w" {
-// 		if curr < 320 {
-// 			dimen = 320
-// 		} else if curr > 1080 {
-// 			dimen = 1080
-// 		} else {
-// 			dimen = curr
-// 		}
-// 	}
+const (
+	Sender = "mail@toonji.com"
 
-// 	return dimen
-// }
+	Subject = "Email Verification"
+
+	TextBody = "This email was sent with Amazon SES using the AWS SDK for Go."
+
+	CharSet = "UTF-8"
+)
+
+func SendEmail(Recipient, linkID string) error {
+	// Create a new session in the us-west-2 region.
+	// Replace us-west-2 with the AWS Region you're using for Amazon SES.
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("eu-central-1"), Credentials: credentials.NewStaticCredentials(
+			config.AWS_SES_ACCESS_KEY,
+			config.AWS_SES_SECRET_KEY,
+			""),
+	})
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	tmpl := template.Must(template.ParseFiles("../templates/verify_email.html"))
+	body := bytes.Buffer{}
+	tmpl.Execute(&body, struct{ LinkID string }{LinkID: linkID})
+	svc := ses.New(sess)
+	fmt.Println(body.String())
+	// Assemble the email.
+	input := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			CcAddresses: []*string{},
+			ToAddresses: []*string{
+				aws.String(Recipient),
+			},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Html: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(body.String()),
+				},
+				Text: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(TextBody),
+				},
+			},
+			Subject: &ses.Content{
+				Charset: aws.String(CharSet),
+				Data:    aws.String(Subject),
+			},
+		},
+		Source: aws.String(Sender),
+		// Uncomment to use a configuration set
+		//ConfigurationSetName: aws.String(ConfigurationSet),
+	}
+
+	_, err = svc.SendEmail(input)
+
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case ses.ErrCodeMessageRejected:
+				fmt.Println(ses.ErrCodeMessageRejected, aerr.Error())
+			case ses.ErrCodeMailFromDomainNotVerifiedException:
+				fmt.Println(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
+			case ses.ErrCodeConfigurationSetDoesNotExistException:
+				fmt.Println(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			fmt.Println(err.Error())
+		}
+	}
+	return err
+}
