@@ -166,10 +166,10 @@ func (u *UserMongo) CheckSignup(userName, email string) (entity.User, error) {
 		opts,
 	).Decode(&user)
 
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		return user, entity.ErrSomethingWentWrong
 	}
-	return user, nil
+	return user, err
 }
 
 func (u *UserMongo) Following(userName string, skip int) ([]entity.ID, error) {
@@ -747,5 +747,14 @@ func (u *UserMongo) ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID
 
 func (u *UserMongo) Exempt(userID, coupleID entity.ID) error {
 	_, err := u.collection.UpdateByID(context.TODO(), userID, bson.D{{Key: "$push", Value: bson.M{"exempted": coupleID}}})
+	return err
+}
+
+func (u *UserMongo) ResetPassword(email, password string) error {
+	_, err := u.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "email", Value: email}},
+		bson.D{{Key: "$set", Value: bson.M{"password": password}}},
+	)
 	return err
 }

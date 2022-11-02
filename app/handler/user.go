@@ -92,16 +92,13 @@ func signup(service user.UseCase, verifyRepo repository.VerifyMongo) gin.Handler
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "InvalidOrExpiredLink"))
 			return
 		}
-		go func() {
-			verifyRepo.Verified(linkID)
-		}()
 
 		firstName, lastName, userName, email, dateOfBirth, userPassword, lang, country, state :=
 			newUser.FirstName, newUser.LastName, newUser.UserName,
 			newUser.Email, newUser.DateOfBirth, newUser.Password, lang, newUser.Country, newUser.State
 
 		user, err := service.CheckSignup(userName, email)
-		if err != nil {
+		if err != nil && err != mongo.ErrNoDocuments {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
@@ -127,6 +124,7 @@ func signup(service user.UseCase, verifyRepo repository.VerifyMongo) gin.Handler
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+		verifyRepo.Verified(linkID)
 		session := sessions.Default(ctx)
 		userSession := entity.UserSession{
 			ID:             insertedID,
@@ -221,7 +219,7 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
 			return
 		}
-
+		fmt.Println(thisUser.ID, user.ID)
 		pUser := presentation.UserProfile{
 			FirstName:      user.FirstName,
 			LastName:       user.LastName,
@@ -1068,10 +1066,85 @@ func exempt(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 	}
 }
 
+func passwordResetRequest(service user.UseCase, verifRepo repository.VerifyMongo) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		email := ctx.Param("email")
+		lang := utils.GetLang("", ctx.Request.Header)
+		if !validator.IsEmail(email) {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		linkID := primitive.NewObjectID().Hex()
+		_, err := service.CheckSignup("", email)
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				ctx.JSON(http.StatusOK, gin.H{})
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+
+		err = verifRepo.RequestPasswordReset(email, linkID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+
+		go func() {
+			err = myaws.SendEmail(email, linkID)
+			count := 0
+			for err != nil && count < 2 {
+				err = myaws.SendEmail(email, linkID)
+				count++
+			}
+		}()
+		ctx.JSON(http.StatusAccepted, gin.H{})
+	}
+}
+
+func resetPassword(service user.UseCase, verifyRepo repository.VerifyMongo) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		p := struct {
+			Password string `json:"password"`
+		}{}
+		lang := utils.GetLang("", ctx.Request.Header)
+		linkID := ctx.Param("linkID")
+		err := ctx.ShouldBindJSON(&p)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
+			return
+		}
+		fmt.Println(p.Password)
+		if !validator.IsPassword(p.Password) {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "WrongPasswordFormat"))
+			return
+		}
+		email, err := verifyRepo.GetResetPasswordEmail(linkID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+		hash, err := password.Generate(p.Password)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		err = service.ResetPassword(email, hash)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{})
+	}
+}
+
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, coupleMessage repository.CoupleMessage, verifyRepo repository.VerifyMongo) {
 	r.POST("/user/u/signup", unverifiedSignup(service, verifyRepo)) //tested
 	r.POST("/user/verify-signup/:id", signup(service, verifyRepo))
 	r.POST("/user/u/login", login(service)) //tested
+	r.POST("/user/request-password-reset/:email", passwordResetRequest(service, verifyRepo))
+	r.POST("/user/reset-password/:linkID", resetPassword(service, verifyRepo))
 	r.GET("/user/availability/:name", checkAvailability(service))
 	r.Use(middlewares.Authenticate())                                          //tested
 	r.GET("/user/u/session", userSession(service))                             //tested

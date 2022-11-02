@@ -18,11 +18,22 @@ func (v *VerifyMongo) NewUser(u entity.VerifySignup) error {
 	return err
 }
 
+func (v *VerifyMongo) RequestPasswordReset(email, linkID string) error {
+	_, err := v.col.InsertOne(context.TODO(), bson.D{{Key: "id", Value: linkID}, {Key: "email", Value: email}, {Key: "type", Value: "password-reset"}})
+	return err
+}
+
 func (v *VerifyMongo) GetNewUser(id string) (entity.Signup, error) {
 	signup := entity.Signup{}
 	sixHoursAgo := time.Now().UnixMilli() - (1000 * 60 * 60 * 6)
-	err := v.col.FindOne(context.TODO(), bson.D{{Key: "id", Value: id}, {Key: "date", Value: bson.M{"$gt": sixHoursAgo}}}).Decode(&signup)
+	err := v.col.FindOne(context.TODO(), bson.D{{Key: "type", Value: bson.M{"$ne": "password-reset"}}, {Key: "id", Value: id}, {Key: "date", Value: bson.M{"$gt": sixHoursAgo}}}).Decode(&signup)
 	return signup, err
+}
+
+func (v *VerifyMongo) GetResetPasswordEmail(linkID string) (string, error) {
+	res := struct{ Email string }{}
+	err := v.col.FindOne(context.TODO(), bson.D{{Key: "id", Value: linkID}, {Key: "type", Value: "password-reset"}}).Decode(&res)
+	return res.Email, err
 }
 
 func (v *VerifyMongo) Verified(id string) {

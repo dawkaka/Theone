@@ -177,3 +177,7 @@ func (s *Service) ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID, 
 func (s *Service) Exempt(userID, coupleID entity.ID) error {
 	return s.repo.Exempt(userID, coupleID)
 }
+
+func (s *Service) ResetPassword(email, password string) error {
+	return s.repo.ResetPassword(email, password)
+}

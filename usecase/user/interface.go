@@ -49,6 +49,7 @@ type Writer interface {
 	UsageMonitoring(userID entity.ID) error
 	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
 	Exempt(userID, couleID entity.ID) error
+	ResetPassword(email, password string) error
 }
 
 //Repository interface
@@ -95,4 +96,5 @@ type UseCase interface {
 	CheckNameAvailability(name string) bool
 	ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID, error)
 	Exempt(userID, coupleID entity.ID) error
+	ResetPassword(email, password string) error
 }
