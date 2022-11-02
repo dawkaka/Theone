@@ -1115,7 +1115,6 @@ func resetPassword(service user.UseCase, verifyRepo repository.VerifyMongo) gin.
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		fmt.Println(p.Password)
 		if !validator.IsPassword(p.Password) {
 			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "WrongPasswordFormat"))
 			return
@@ -1135,6 +1134,7 @@ func resetPassword(service user.UseCase, verifyRepo repository.VerifyMongo) gin.
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+		verifyRepo.Verified(linkID)
 		ctx.JSON(http.StatusOK, gin.H{})
 	}
 }
