@@ -69,6 +69,15 @@ func unverifiedSignup(service user.UseCase, verifyRepo repository.VerifyMongo) g
 			return
 		}
 		fmt.Println(newUser.Email, linkID)
+		go func() {
+			err = myaws.SendEmail(newUser.Email, linkID)
+			fmt.Println(err)
+			count := 0
+			for err != nil && count < 2 {
+				err = myaws.SendEmail(newUser.Email, linkID)
+				count++
+			}
+		}()
 		ctx.JSON(http.StatusAccepted, presentation.Success(lang, "PendingVerificationSingup"))
 	}
 }

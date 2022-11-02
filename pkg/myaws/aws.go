@@ -243,7 +243,6 @@ func SendEmail(Recipient, linkID string) error {
 	})
 
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
@@ -251,7 +250,6 @@ func SendEmail(Recipient, linkID string) error {
 	body := bytes.Buffer{}
 	tmpl.Execute(&body, struct{ LinkID string }{LinkID: linkID})
 	svc := ses.New(sess)
-	fmt.Println(body.String())
 	// Assemble the email.
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{
