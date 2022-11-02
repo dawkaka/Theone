@@ -101,6 +101,12 @@ type Signup struct {
 	State          string    `json:"state"`
 }
 
+type VerifySignup struct {
+	ID     string
+	Date   int64
+	Signup `bson:"inline"`
+}
+
 func (s Signup) Validate() []error {
 	errs := []error{}
 	if !validator.IsEmail(s.Email) {

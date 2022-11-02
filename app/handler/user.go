@@ -26,12 +26,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func signup(service user.UseCase) gin.HandlerFunc {
-
+func unverifiedSignup(service user.UseCase, verifyRepo repository.VerifyMongo) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var newUser entity.Signup
-		err := ctx.ShouldBindJSON(&newUser)
+		var newUser entity.VerifySignup
 		lang := utils.GetLang("", ctx.Request.Header)
+		err := ctx.ShouldBindJSON(&newUser)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -46,9 +45,51 @@ func signup(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
+		linkID := primitive.NewObjectID().Hex()
+		newUser.ID = linkID
+		newUser.Date = time.Now().UnixMilli()
+		userName, email := newUser.UserName, newUser.Email
+		user, err := service.CheckSignup(userName, email)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
+		if user.UserName == userName {
+			ctx.JSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
+			return
+		}
+		if user.Email == email {
+			ctx.JSON(http.StatusConflict, presentation.Error(lang, "EmailAlreadyExists"))
+			return
+		}
+
+		err = verifyRepo.NewUser(newUser)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+			return
+		}
+		fmt.Println(newUser.Email, linkID)
+		ctx.JSON(http.StatusAccepted, presentation.Success(lang, "PendingVerificationSingup"))
+	}
+}
+
+func signup(service user.UseCase, verifyRepo repository.VerifyMongo) gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+		linkID := ctx.Param("id")
+		lang := utils.GetLang("", ctx.Request.Header)
+		newUser, err := verifyRepo.GetNewUser(linkID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "InvalidOrExpiredLink"))
+			return
+		}
+		go func() {
+			verifyRepo.Verified(linkID)
+		}()
+
 		firstName, lastName, userName, email, dateOfBirth, userPassword, lang, country, state :=
 			newUser.FirstName, newUser.LastName, newUser.UserName,
-			newUser.Email, newUser.DateOfBirth, newUser.Password, utils.GetLang("", ctx.Request.Header), newUser.Country, newUser.State
+			newUser.Email, newUser.DateOfBirth, newUser.Password, lang, newUser.Country, newUser.State
 
 		user, err := service.CheckSignup(userName, email)
 		if err != nil {
@@ -96,7 +137,6 @@ func signup(service user.UseCase) gin.HandlerFunc {
 		}
 		session.Set("user", userSession)
 		_ = session.Save()
-		fmt.Println(insertedID.Hex())
 		ctx.SetCookie("user_ID", insertedID.Hex(), 10*365*24*60*60*1000, "/", "", false, false)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "SignupSuccessfull"))
 	}
@@ -1019,9 +1059,10 @@ func exempt(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 	}
 }
 
-func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, coupleMessage repository.CoupleMessage) {
-	r.POST("/user/u/signup", signup(service)) //tested
-	r.POST("/user/u/login", login(service))   //tested
+func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, coupleMessage repository.CoupleMessage, verifyRepo repository.VerifyMongo) {
+	r.POST("/user/u/signup", unverifiedSignup(service, verifyRepo)) //tested
+	r.POST("/user/verify-signup/:id", signup(service, verifyRepo))
+	r.POST("/user/u/login", login(service)) //tested
 	r.GET("/user/availability/:name", checkAvailability(service))
 	r.Use(middlewares.Authenticate())                                          //tested
 	r.GET("/user/u/session", userSession(service))                             //tested

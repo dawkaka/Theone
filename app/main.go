@@ -53,16 +53,18 @@ func main() {
 	userMessageRepo := repository.NewUserCoupleMessageRepo(db.Collection(("group-messages")))
 	coupleMessageRepo := repository.NewCoupleMessageRepo(db.Collection("couple-messages"))
 	reportsRepo := repository.NewReportRepo(db.Collection("reports"))
+	verifyRepo := repository.NewVerifyMongo(db.Collection("verify")) //verifications with links sent via emails
 
 	videoService := video.NewService(videosRepo)
 	userService := user.NewService(usersRepo)
 	postService := post.NewService(postsRepo)
 	coupleService := couple.NewService(couplesRepo)
+
 	gob.Register(entity.UserSession{})
 	r.Use(sessions.Sessions("session", store))
 	r.Use(middlewares.CORSMiddleware())
 	r.Use(middlewares.UsageMonitoring(userService))
-	handler.MakeUserHandlers(r, userService, coupleService, coupleMessageRepo)
+	handler.MakeUserHandlers(r, userService, coupleService, coupleMessageRepo, verifyRepo)
 	handler.MakeCoupleHandlers(r, coupleService, userService, postService, coupleMessageRepo, userMessageRepo, reportsRepo)
 	handler.MakePostHandlers(r, postService, coupleService, userService, reportsRepo)
 	handler.MakeVideoHandlers(r, videoService, coupleService, userService)

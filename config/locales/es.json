@@ -352,5 +352,11 @@
   "UserBlocked": {
     "description": "change relationship status",
     "other": "User blocked successfully"
+  },
+  "PendingVerificationSingup": {
+    "other": "Details stored pending email verification"
+  },
+  "InvalidOrExpiredLink": {
+    "other": "Link is either invalid or it has expired"
   }
 }
