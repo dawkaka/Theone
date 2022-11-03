@@ -70,11 +70,11 @@ func unverifiedSignup(service user.UseCase, verifyRepo repository.VerifyMongo) g
 		}
 		fmt.Println(newUser.Email, linkID)
 		go func() {
-			err = myaws.SendEmail(newUser.Email, linkID)
+			err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
 			fmt.Println(err)
 			count := 0
 			for err != nil && count < 2 {
-				err = myaws.SendEmail(newUser.Email, linkID)
+				err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
 				count++
 			}
 		}()
@@ -1091,14 +1091,15 @@ func passwordResetRequest(service user.UseCase, verifRepo repository.VerifyMongo
 			return
 		}
 
-		go func() {
-			err = myaws.SendEmail(email, linkID)
-			count := 0
-			for err != nil && count < 2 {
-				err = myaws.SendEmail(email, linkID)
-				count++
-			}
-		}()
+		err = myaws.SendEmail(email, linkID, "password", lang)
+		count := 0
+		for err != nil && count < 2 {
+			err = myaws.SendEmail(email, linkID, "password", lang)
+			count++
+		}
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
+		}
 		ctx.JSON(http.StatusAccepted, gin.H{})
 	}
 }

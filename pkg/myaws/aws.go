@@ -232,7 +232,7 @@ const (
 	CharSet = "UTF-8"
 )
 
-func SendEmail(Recipient, linkID string) error {
+func SendEmail(Recipient, linkID, eType, lang string) error {
 	// Create a new session in the us-west-2 region.
 	// Replace us-west-2 with the AWS Region you're using for Amazon SES.
 	sess, err := session.NewSession(&aws.Config{
@@ -245,8 +245,12 @@ func SendEmail(Recipient, linkID string) error {
 	if err != nil {
 		return err
 	}
-
-	tmpl := template.Must(template.ParseFiles("../templates/verify_email.html"))
+	var tmpl *template.Template
+	if eType == "verify-email" {
+		tmpl = template.Must(template.ParseFiles("../templates/verify_email_" + lang + ".html"))
+	} else {
+		tmpl = template.Must(template.ParseFiles("../templates/reset_password_" + lang + ".html"))
+	}
 	body := bytes.Buffer{}
 	tmpl.Execute(&body, struct{ LinkID string }{LinkID: linkID})
 	svc := ses.New(sess)
