@@ -22,6 +22,7 @@ type Post struct {
 	Location       string                `json:"location"`
 	PostID         string                `json:"postId" bson:"post_id"`
 	HasLiked       bool                  `json:"has_liked" bson:"has_liked"`
+	CommentsClosed bool                  `json:"comments_closed" bson:"comments_closed"`
 }
 
 type Comment struct {

@@ -9,22 +9,23 @@ import (
 
 //Post data
 type Post struct {
-	ID            ID             `json:"id" bson:"_id,omitempty"`
-	PostID        string         `json:"post_id" bson:"post_id"`
-	CoupleID      ID             `json:"couple_id" bson:"couple_id"`
-	InitiatedID   ID             `json:"initiated_id" bson:"initiated_id"`
-	AcceptedID    ID             `json:"accepted_id" bson:"accepted_id"`
-	PostedBy      ID             `json:"posted_by" bson:"posted_by"`
-	Files         []PostMetadata `json:"files"`
-	Caption       string         `json:"caption"`
-	Location      string         `json:"location" bson:"location"`
-	Mentioned     []string       `json:"mentioned"`
-	Likes         []ID           `json:"likes"`
-	LikesCount    int64          `json:"likes_count" bson:"likes_count"`
-	Comments      []Comment      `json:"comment"`
-	CommentsCount int64          `json:"comments_count" bson:"comments_count"`
-	CreatedAt     time.Time      `json:"created_at" bson:"created_at"`
-	HasLiked      bool           `json:"has_liked" bson:"has_liked,omitempty"`
+	ID             ID             `json:"id" bson:"_id,omitempty"`
+	PostID         string         `json:"post_id" bson:"post_id"`
+	CoupleID       ID             `json:"couple_id" bson:"couple_id"`
+	InitiatedID    ID             `json:"initiated_id" bson:"initiated_id"`
+	AcceptedID     ID             `json:"accepted_id" bson:"accepted_id"`
+	PostedBy       ID             `json:"posted_by" bson:"posted_by"`
+	Files          []PostMetadata `json:"files"`
+	Caption        string         `json:"caption"`
+	Location       string         `json:"location" bson:"location"`
+	Mentioned      []string       `json:"mentioned"`
+	Likes          []ID           `json:"likes"`
+	CommentsClosed bool           `json:"comments_closed" bson:"comments_closed"`
+	LikesCount     int64          `json:"likes_count" bson:"likes_count"`
+	Comments       []Comment      `json:"comment"`
+	CommentsCount  int64          `json:"comments_count" bson:"comments_count"`
+	CreatedAt      time.Time      `json:"created_at" bson:"created_at"`
+	HasLiked       bool           `json:"has_liked" bson:"has_liked,omitempty"`
 }
 
 func (p *Post) Sanitize() {

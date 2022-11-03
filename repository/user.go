@@ -705,6 +705,7 @@ func (u *UserMongo) GetFeedPosts(userID entity.ID, skip int) ([]presentation.Pos
 				"created_at":      "$post.created_at",
 				"couple_name":     "$couple.couple_name",
 				"profile_picture": "$couple.profile_picture",
+				"comments_closed": "$post.comments_closed",
 				"verified":        "$couple.verified",
 				"married":         "$couple.married",
 				"has_liked":       bson.M{"$in": bson.A{userID, "$post.likes"}},

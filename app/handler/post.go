@@ -179,6 +179,7 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 			Files:          post.Files,
 			IsThisCouple:   user.ID == couple.Initiated || user.ID == couple.Accepted,
 			Location:       post.Location,
+			CommentsClosed: post.CommentsClosed,
 		}
 		ctx.JSON(http.StatusOK, p)
 	}
@@ -219,7 +220,7 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 		comment.Likes = []entity.ID{}
 		err = service.NewComment(postID, comment)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 

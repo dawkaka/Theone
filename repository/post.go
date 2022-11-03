@@ -37,16 +37,17 @@ func (p *PostMongo) Get(coupleID, userID, postID string) (entity.Post, error) {
 		{
 			Key: "$project",
 			Value: bson.M{
-				"_id":            1,
-				"post_id":        1,
-				"couple_id":      1,
-				"files":          1,
-				"caption":        1,
-				"location":       1,
-				"likes_count":    1,
-				"comments_count": 1,
-				"created_at":     1,
-				"has_liked":      bson.M{"$in": bson.A{u, "$likes"}},
+				"_id":             1,
+				"post_id":         1,
+				"couple_id":       1,
+				"files":           1,
+				"caption":         1,
+				"location":        1,
+				"likes_count":     1,
+				"comments_count":  1,
+				"comments_closed": 1,
+				"created_at":      1,
+				"has_liked":       bson.M{"$in": bson.A{u, "$likes"}},
 			},
 		},
 	}
@@ -183,7 +184,7 @@ func (p *PostMongo) Update(post *entity.Post) error {
 func (p *PostMongo) AddComment(postID entity.ID, comment entity.Comment) error {
 	_, err := p.collection.UpdateOne(
 		context.TODO(),
-		bson.D{{Key: "_id", Value: postID}},
+		bson.D{{Key: "_id", Value: postID}, {Key: "comments_closed", Value: false}},
 		bson.D{
 			{Key: "$push", Value: bson.D{{Key: "comments", Value: comment}}},
 			{Key: "$inc", Value: bson.D{{Key: "comments_count", Value: 1}}},
@@ -323,15 +324,16 @@ func (p *PostMongo) GetPosts(coupleID entity.ID, userID entity.ID, postIDs []str
 		{
 			Key: "$project",
 			Value: bson.M{
-				"_id":            1,
-				"created_at":     1,
-				"likes_count":    1,
-				"comments_count": 1,
-				"caption":        1,
-				"files":          1,
-				"location":       1,
-				"post_id":        1,
-				"has_liked":      bson.M{"$in": bson.A{userID, "$likes"}},
+				"_id":             1,
+				"created_at":      1,
+				"likes_count":     1,
+				"comments_count":  1,
+				"caption":         1,
+				"files":           1,
+				"location":        1,
+				"comments_closed": 1,
+				"post_id":         1,
+				"has_liked":       bson.M{"$in": bson.A{userID, "$likes"}},
 			},
 		},
 	}
