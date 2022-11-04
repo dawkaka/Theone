@@ -182,7 +182,7 @@ func (p *PostMongo) Update(post *entity.Post) error {
 }
 
 func (p *PostMongo) AddComment(postID entity.ID, comment entity.Comment) error {
-	_, err := p.collection.UpdateOne(
+	res, err := p.collection.UpdateOne(
 		context.TODO(),
 		bson.D{{Key: "_id", Value: postID}, {Key: "comments_closed", Value: false}},
 		bson.D{
@@ -190,6 +190,9 @@ func (p *PostMongo) AddComment(postID entity.ID, comment entity.Comment) error {
 			{Key: "$inc", Value: bson.D{{Key: "comments_count", Value: 1}}},
 		},
 	)
+	if res.ModifiedCount == 0 {
+		return entity.ErrNoMatch
+	}
 	return err
 }
 
@@ -349,4 +352,13 @@ func (p *PostMongo) GetPosts(coupleID entity.ID, userID entity.ID, postIDs []str
 	err = cursor.All(context.TODO(), &result)
 
 	return result, err
+}
+
+func (p *PostMongo) SetClosedComments(postID, coupleID entity.ID, state bool) error {
+	_, err := p.collection.UpdateOne(
+		context.TODO(),
+		bson.D{{Key: "_id", Value: postID}, {Key: "couple_id", Value: coupleID}},
+		bson.M{"$set": bson.M{"comments_closed": state}},
+	)
+	return err
 }

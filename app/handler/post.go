@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -496,11 +497,44 @@ func explorePosts(service post.UseCase, userService user.UseCase) gin.HandlerFun
 	}
 }
 
+func setCloseComments(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		postID := ctx.Param("postID")
+		switched := ctx.Param("switched")
+		pID, err := entity.StringToID(postID)
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		if err != nil || (switched != "ON" && switched != "OFF") {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(user.Lang, "BadRequest"))
+			return
+		}
+		var state bool
+		if switched == "ON" {
+			state = false
+		} else {
+			state = true
+		}
+		u, err := userService.GetUser(user.Name)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+		err = service.SetClosedComments(pID, u.CoupleID, state)
+		fmt.Println(err)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "SomethingWentWrong"))
+			return
+		}
+		ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "Comments"+switched))
+	}
+}
+
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase, reportsRepo repository.Reports) {
 	r.GET("/post/:coupleName/:postID", middlewares.CheckBlocked(coupleService), getPost(service, coupleService)) //tested
 	r.GET("/post/comments/:postID/:skip", postComments(service))                                                 //tested
 	r.GET("/post/explore", explorePosts(service, userService))
-	r.POST("/post", newPost(service, coupleService, userService))                    //tested
+	r.POST("/post", newPost(service, coupleService, userService)) //tested
+	r.POST("/post/:postID/:switched", setCloseComments(service, userService))
 	r.POST("/post/comment/:postID", newComment(service, userService, coupleService)) //tested
 	r.POST("/post/report/:postID", reportPost(service, reportsRepo))
 	r.PATCH("/post/like/:postID", like(service, userService, coupleService)) //tested

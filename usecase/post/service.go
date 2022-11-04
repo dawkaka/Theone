@@ -109,3 +109,7 @@ func (s *Service) DeletePost(coupleID entity.ID, postID string) error {
 func (s *Service) GetPosts(coupleID, userID entity.ID, postIDs []string) ([]presentation.Post, error) {
 	return s.repo.GetPosts(coupleID, userID, postIDs)
 }
+
+func (s *Service) SetClosedComments(postID, coupleID entity.ID, state bool) error {
+	return s.repo.SetClosedComments(postID, coupleID, state)
+}

@@ -358,5 +358,11 @@
   },
   "InvalidOrExpiredLink": {
     "other": "Link is either invalid or it has expired"
+  },
+  "CommentsON": {
+    "other": "Comments turned on"
+  },
+  "CommentsOFF": {
+    "other": "Comments turned off"
   }
 }

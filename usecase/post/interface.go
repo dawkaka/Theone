@@ -26,6 +26,7 @@ type Writer interface {
 	LikeComment(postID, commentID, userID entity.ID) error
 	UnLikeComment(postID, commentID, userID entity.ID) error
 	Edit(postID, coupleID entity.ID, edit entity.EditPost) error
+	SetClosedComments(postID, coupleID entity.ID, state bool) error
 }
 
 //Repository interface
@@ -51,4 +52,5 @@ type UseCase interface {
 	LikePost(postID, userID string) error
 	UnLikePost(postID string, userID entity.ID) error
 	EditPost(videoID string, coupleID entity.ID, edit entity.EditPost) error
+	SetClosedComments(postID, coupleID entity.ID, state bool) error
 }
