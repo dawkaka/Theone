@@ -113,3 +113,7 @@ func (s *Service) GetPosts(coupleID, userID entity.ID, postIDs []string) ([]pres
 func (s *Service) SetClosedComments(postID, coupleID entity.ID, state bool) error {
 	return s.repo.SetClosedComments(postID, coupleID, state)
 }
+
+func (s *Service) GetExplorePosts(coupleIDs []entity.ID, userID entity.ID, country string, skip int) ([]presentation.Post, error) {
+	return s.repo.Explore(coupleIDs, userID, country, skip)
+}

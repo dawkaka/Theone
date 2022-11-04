@@ -734,7 +734,7 @@ func (u *UserMongo) CheckNameAvailability(name string) bool {
 	return err.Err() != nil
 }
 
-func (u *UserMongo) ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID, error) {
+func (u *UserMongo) ExemptedFromSuggestedAccounts(userID entity.ID, addExempt bool) ([]entity.ID, error) {
 	opts := options.FindOne().SetProjection(bson.D{{Key: "following", Value: 1}, {Key: "exempted", Value: 1}})
 	user := entity.User{}
 	err := u.collection.FindOne(context.TODO(), bson.D{{Key: "_id", Value: userID}}, opts).Decode(&user)
@@ -742,7 +742,9 @@ func (u *UserMongo) ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID
 		return nil, err
 	}
 	coupleIDs := user.Following
-	coupleIDs = append(coupleIDs, user.Exempted...)
+	if addExempt {
+		coupleIDs = append(coupleIDs, user.Exempted...)
+	}
 	return coupleIDs, nil
 }
 

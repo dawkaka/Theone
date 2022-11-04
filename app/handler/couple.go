@@ -575,7 +575,7 @@ func updateRelationshipStatus(service couple.UseCase, userService user.UseCase) 
 func getSuggestedAccounts(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userSession := sessions.Default(ctx).Get("user").(entity.UserSession)
-		res, err := userService.ExemptedFromSuggestedAccounts(userSession.ID)
+		res, err := userService.ExemptedFromSuggestedAccounts(userSession.ID, true)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrongInternal"))
 			return

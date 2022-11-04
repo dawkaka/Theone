@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -361,4 +362,74 @@ func (p *PostMongo) SetClosedComments(postID, coupleID entity.ID, state bool) er
 		bson.M{"$set": bson.M{"comments_closed": state}},
 	)
 	return err
+}
+
+func (p *PostMongo) Explore(coupleIDs []entity.ID, userID entity.ID, country string, skip int) ([]presentation.Post, error) {
+	fmt.Println(coupleIDs, userID, skip)
+	result := []presentation.Post{}
+	//t := time.Now().AddDate(0, 0, -3)
+	matchStage := bson.D{{Key: "$match",
+		Value: bson.M{
+			"couple_id": bson.M{"$nin": coupleIDs},
+			"$expr": bson.M{
+				"$eq": bson.A{
+					bson.M{
+						"$or": bson.A{
+							bson.M{"$in": bson.A{userID, "$likes"}},
+							bson.M{"$in": bson.A{userID, "$comments.user_id"}},
+						}},
+					false,
+				},
+			},
+		},
+	}}
+	sortStage := bson.D{{Key: "$sort", Value: bson.M{"comments_count": -1, "likes_count": -1}}}
+	skipStage := bson.D{{Key: "$skip", Value: skip}}
+	limStage := bson.D{{Key: "$limit", Value: entity.LimitP}}
+
+	joinStage := bson.D{
+		{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "couples"},
+				{Key: "localField", Value: "couple_id"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "couple"},
+			},
+		},
+	}
+	unwindStage := bson.D{{Key: "$unwind", Value: "$couple"}}
+	projectStage := bson.D{
+		{
+			Key: "$project",
+			Value: bson.M{
+				"_id":             1,
+				"couple_name":     "$couple.couple_name",
+				"couple_id":       "$couple._id",
+				"profile_picture": "$couple.profile_picture",
+				"married":         "$couple.married",
+				"verified":        "$couple.verified",
+				"created_at":      1,
+				"likes_count":     1,
+				"comments_count":  1,
+				"caption":         1,
+				"files":           1,
+				"location":        1,
+				"comments_closed": 1,
+				"post_id":         1,
+				"has_liked":       bson.M{"$in": bson.A{userID, "$likes"}},
+			},
+		},
+	}
+
+	cursor, err := p.collection.Aggregate(
+		context.TODO(),
+		mongo.Pipeline{matchStage, sortStage, skipStage, limStage, joinStage, unwindStage, projectStage},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	err = cursor.All(context.TODO(), &result)
+	return result, err
 }

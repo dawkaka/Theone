@@ -12,6 +12,7 @@ type Reader interface {
 	GetByID(id entity.ID) (entity.Post, error)
 	Comments(postID, userID string, skip int) ([]presentation.Comment, error)
 	GetPosts(coupleID, userID entity.ID, postIDs []string) ([]presentation.Post, error)
+	Explore(coupleIDs []entity.ID, userID entity.ID, country string, skip int) ([]presentation.Post, error)
 }
 
 //Writer user writer
@@ -53,4 +54,5 @@ type UseCase interface {
 	UnLikePost(postID string, userID entity.ID) error
 	EditPost(videoID string, coupleID entity.ID, edit entity.EditPost) error
 	SetClosedComments(postID, coupleID entity.ID, state bool) error
+	GetExplorePosts(coupleIDs []entity.ID, userID entity.ID, country string, skip int) ([]presentation.Post, error)
 }

@@ -493,7 +493,28 @@ func reportPost(service post.UseCase, reportRepo repository.Reports) gin.Handler
 
 func explorePosts(service post.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		coupleIDs, err := userService.ExemptedFromSuggestedAccounts(user.ID, false)
+		fmt.Println(err)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+		skip, err := strconv.Atoi(ctx.Param("skip"))
+		if err != nil {
+			skip = 0
+		}
+		posts, err := service.GetExplorePosts(coupleIDs, user.ID, user.Country, skip)
+		fmt.Println(err)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
+			return
+		}
+		page := entity.Pagination{
+			Next: skip + entity.LimitP,
+			End:  len(posts) < entity.LimitP,
+		}
+		ctx.JSON(http.StatusOK, gin.H{"posts": posts, "pagination": page})
 	}
 }
 
@@ -520,7 +541,6 @@ func setCloseComments(service post.UseCase, userService user.UseCase) gin.Handle
 			return
 		}
 		err = service.SetClosedComments(pID, u.CoupleID, state)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "SomethingWentWrong"))
 			return
@@ -532,7 +552,7 @@ func setCloseComments(service post.UseCase, userService user.UseCase) gin.Handle
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase, reportsRepo repository.Reports) {
 	r.GET("/post/:coupleName/:postID", middlewares.CheckBlocked(coupleService), getPost(service, coupleService)) //tested
 	r.GET("/post/comments/:postID/:skip", postComments(service))                                                 //tested
-	r.GET("/post/explore", explorePosts(service, userService))
+	r.GET("/post/explore/:skip", explorePosts(service, userService))
 	r.POST("/post", newPost(service, coupleService, userService)) //tested
 	r.POST("/post/:postID/:switched", setCloseComments(service, userService))
 	r.POST("/post/comment/:postID", newComment(service, userService, coupleService)) //tested

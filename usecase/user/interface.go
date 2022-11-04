@@ -21,7 +21,7 @@ type Reader interface {
 	Notifications(userName string, page int) (presentation.Notification, error)
 	GetFeedPosts(postID entity.ID, skip int) ([]presentation.Post, error)
 	CheckNameAvailability(name string) bool
-	ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID, error)
+	ExemptedFromSuggestedAccounts(userID entity.ID, addExempt bool) ([]entity.ID, error)
 }
 
 //Writer user writer
@@ -94,7 +94,7 @@ type UseCase interface {
 	NewFeedPost(postID entity.ID, userIDs []entity.ID) error
 	GetFeedPosts(userID entity.ID, skip int) ([]presentation.Post, error)
 	CheckNameAvailability(name string) bool
-	ExemptedFromSuggestedAccounts(userID entity.ID) ([]entity.ID, error)
+	ExemptedFromSuggestedAccounts(userID entity.ID, addExempt bool) ([]entity.ID, error)
 	Exempt(userID, coupleID entity.ID) error
 	ResetPassword(email, password string) error
 }
