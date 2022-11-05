@@ -338,14 +338,14 @@ func updateCouple(service couple.UseCase) gin.HandlerFunc {
 	}
 }
 
-func changeCoupleName(service couple.UseCase) gin.HandlerFunc {
+func changeCoupleName(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		nameStruct := struct {
 			CoupleName string `json:"couple_name"`
 		}{}
 		session := sessions.Default(ctx)
-		user := session.Get("user").(entity.UserSession)
-		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+		u := session.Get("user").(entity.UserSession)
+		lang := utils.GetLang(u.Lang, ctx.Request.Header)
 		err := ctx.ShouldBindJSON(&nameStruct)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
@@ -356,12 +356,17 @@ func changeCoupleName(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
 			return
 		}
+		user, err := userService.GetUser(u.Name)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+			return
+		}
 		_, err = service.GetCouple(newCoupleName, primitive.NewObjectID())
 		if err == nil {
 			ctx.JSON(http.StatusConflict, presentation.Error(lang, "CoupleAlreadyExists"))
 			return
 		} else {
-			if err != mongo.ErrNoDocuments {
+			if err != entity.ErrCoupleNotFound {
 				ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 				return
 			}
@@ -635,7 +640,7 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.POST("/couple/report", reportCouple(reportRepo))
 	r.POST("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
 	r.POST("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
-	r.POST("/couple/name", changeCoupleName(service))                  //tested
+	r.POST("/couple/name", changeCoupleName(service, userService))     //tested
 	r.POST("/couple/status/:status", updateRelationshipStatus(service, userService))
 	r.PUT("/couple", updateCouple(service)) //tested
 }
