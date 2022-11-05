@@ -102,7 +102,7 @@ func IsCoupleName(coupleName string) bool {
 
 func IsPassword(password string) bool {
 	password = strings.TrimSpace(password)
-	return len(password) > 7
+	return len(password) > 6
 }
 
 func IsBio(bio string) bool {
