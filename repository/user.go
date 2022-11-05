@@ -601,7 +601,7 @@ func (u *UserMongo) BreakedUp(couple [2]entity.ID) error {
 
 func (u *UserMongo) Startup(userID entity.ID) (presentation.StartupInfo, error) {
 	result := presentation.StartupInfo{}
-	opts := options.FindOne().SetProjection(bson.M{"has_partner": 1, "new_notifications_count": 1, "user_name": 1, "new_feed_post_count": 1})
+	opts := options.FindOne().SetProjection(bson.M{"has_partner": 1, "new_notifications_count": 1, "user_name": 1, "new_feed_post_count": 1, "pending_request": 1})
 	err := u.collection.FindOne(context.TODO(), bson.D{{Key: "_id", Value: userID}}, opts).Decode(&result)
 	return result, err
 }

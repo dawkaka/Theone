@@ -40,6 +40,7 @@ type StartupInfo struct {
 	NotificationsCount int    `json:"notifications_count" bson:"new_notifications_count"`
 	FeedPostCount      int    `json:"new_posts_count" bson:"new_feed_post_count"`
 	NewMessages        int64  `json:"new_messages_count"`
+	PendingRequest     int    `json:"pending_request" bson:"pending_request"`
 }
 
 type Notification struct {
