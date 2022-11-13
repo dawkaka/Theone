@@ -635,7 +635,7 @@ func (u *UserMongo) NewFeedPost(postID entity.ID, userIDs []entity.ID) error {
 								"$concatArrays": bson.A{
 									bson.A{postID},
 									bson.M{
-										"$slice": bson.A{"$feed_posts", 0, 1000},
+										"$slice": bson.A{"$feed_posts", 0, 500},
 									},
 								},
 							},
@@ -715,7 +715,7 @@ func (u *UserMongo) GetFeedPosts(userID entity.ID, skip int) ([]presentation.Pos
 
 	cursor, err := u.collection.Aggregate(
 		context.TODO(),
-		mongo.Pipeline{matchStage, pro, unwindStage, skipStage, joinStage, unwindStage2, limitStage, joinStage2, unwindStage3, projectStage},
+		mongo.Pipeline{matchStage, pro, unwindStage, skipStage, limitStage, joinStage, unwindStage2, joinStage2, unwindStage3, projectStage},
 	)
 	if err != nil {
 		return nil, err

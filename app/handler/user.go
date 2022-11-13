@@ -1022,6 +1022,7 @@ func getFeed(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(userSession.Lang, "SomethingWentWrong"))
 			return
 		}
+
 		for i := 0; i < len(feed); i++ {
 			if feed[i].CoupleID == u.CoupleID {
 				feed[i].IsThisCouple = true
@@ -1030,7 +1031,7 @@ func getFeed(service user.UseCase) gin.HandlerFunc {
 
 		page := entity.Pagination{
 			Next: skip + entity.Limit,
-			End:  len(feed) < entity.Limit,
+			End:  skip+entity.Limit >= len(u.FeedPosts),
 		}
 		ctx.JSON(http.StatusOK, gin.H{"feed": feed, "pagination": page})
 	}
