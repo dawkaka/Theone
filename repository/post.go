@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -365,7 +364,6 @@ func (p *PostMongo) SetClosedComments(postID, coupleID entity.ID, state bool) er
 }
 
 func (p *PostMongo) Explore(coupleIDs []entity.ID, userID entity.ID, country string, skip int) ([]presentation.Post, error) {
-	fmt.Println(coupleIDs, userID, skip)
 	result := []presentation.Post{}
 	//t := time.Now().AddDate(0, 0, -3)
 	matchStage := bson.D{{Key: "$match",

@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -285,21 +284,5 @@ func SendEmail(Recipient, linkID, eType, lang string) error {
 
 	_, err = svc.SendEmail(input)
 
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case ses.ErrCodeMessageRejected:
-				fmt.Println(ses.ErrCodeMessageRejected, aerr.Error())
-			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				fmt.Println(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
-			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				fmt.Println(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
-			default:
-				fmt.Println(aerr.Error())
-			}
-		} else {
-			fmt.Println(err.Error())
-		}
-	}
 	return err
 }

@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/dawkaka/theone/app/presentation"
@@ -16,7 +15,6 @@ func CheckBlocked(service couple.UseCase) gin.HandlerFunc {
 		user := sessions.Default(c).Get("user").(entity.UserSession)
 		coupleName := c.Param("coupleName")
 		blocked, err := service.IsBlocked(coupleName, user.ID)
-		fmt.Println(blocked, err)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, presentation.Error(user.Lang, "BadRequest"))
 			c.Abort()

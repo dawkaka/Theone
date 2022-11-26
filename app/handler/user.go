@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -68,10 +67,8 @@ func unverifiedSignup(service user.UseCase, verifyRepo repository.VerifyMongo) g
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		fmt.Println(newUser.Email, linkID)
 		go func() {
 			err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
-			fmt.Println(err)
 			count := 0
 			for err != nil && count < 2 {
 				err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
@@ -219,7 +216,6 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
 			return
 		}
-		fmt.Println(thisUser.ID, user.ID)
 		pUser := presentation.UserProfile{
 			FirstName:      user.FirstName,
 			LastName:       user.LastName,

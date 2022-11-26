@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -495,7 +494,6 @@ func explorePosts(service post.UseCase, userService user.UseCase) gin.HandlerFun
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		coupleIDs, err := userService.ExemptedFromSuggestedAccounts(user.ID, false)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
 			return
@@ -505,7 +503,6 @@ func explorePosts(service post.UseCase, userService user.UseCase) gin.HandlerFun
 			skip = 0
 		}
 		posts, err := service.GetExplorePosts(coupleIDs, user.ID, user.Country, skip)
-		fmt.Println(err)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrongInternal"))
 			return

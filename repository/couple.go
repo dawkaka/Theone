@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -114,12 +113,10 @@ func (c *CoupleMongo) Search(query string, userID entity.ID) ([]presentation.Cou
 		},
 		opts,
 	)
-	fmt.Println(err)
 	if err != nil {
 		return nil, err
 	}
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	return results, err
@@ -366,8 +363,14 @@ func (c *CoupleMongo) AddPost(coupleID entity.ID, postID string) error {
 func (c *CoupleMongo) RemovePost(coupleID entity.ID, postID string) error {
 	_, err := c.collection.UpdateByID(
 		context.TODO(),
-		coupleID,
-		bson.M{"$pull": bson.M{"posts": postID}},
+		coupleID, bson.A{
+			bson.D{{
+				Key: "$set", Value: bson.M{"posts": bson.M{"$setDifference": []interface{}{"$posts", []string{postID}}}},
+			}},
+			bson.D{{
+				Key: "$set", Value: bson.M{"post_count": bson.M{"$size": "$posts"}},
+			}},
+		},
 	)
 	return err
 }

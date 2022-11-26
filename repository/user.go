@@ -346,13 +346,11 @@ func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) erro
 	cursor, err := u.collection.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
 
 	if err != nil {
-		fmt.Println(err)
 		return entity.ErrNoMatch
 	}
 
 	notifs := []entity.User{}
 	if err = cursor.All(context.TODO(), &notifs); err != nil {
-		fmt.Println(err)
 		return err
 	}
 	if len(notifs) != 0 && len(notifs[0].Notifications) != 0 {
