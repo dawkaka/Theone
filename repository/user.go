@@ -166,9 +166,6 @@ func (u *UserMongo) CheckSignup(userName, email string) (entity.User, error) {
 		opts,
 	).Decode(&user)
 
-	if err != nil {
-		return user, entity.ErrSomethingWentWrong
-	}
 	return user, err
 }
 

@@ -49,16 +49,19 @@ func unverifiedSignup(service user.UseCase, verifyRepo repository.VerifyMongo) g
 		newUser.Date = time.Now().UnixMilli()
 		userName, email := newUser.UserName, newUser.Email
 		user, err := service.CheckSignup(userName, email)
-		if err != nil {
+		if err != nil && err != mongo.ErrNoDocuments {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		if user.UserName == userName {
-			ctx.JSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
-			return
-		}
-		if user.Email == email {
-			ctx.JSON(http.StatusConflict, presentation.Error(lang, "EmailAlreadyExists"))
+		if user.UserName == userName || user.Email == email {
+			errs := []string{}
+			if user.UserName == userName {
+				errs = append(errs, inter.Localize(lang, "UserAlreadyExists"))
+			}
+			if user.Email == email {
+				errs = append(errs, inter.Localize(lang, "EmailAlreadyExists"))
+			}
+			ctx.JSON(http.StatusConflict, gin.H{"type": "ERROR", "errors": errs})
 			return
 		}
 
@@ -67,15 +70,14 @@ func unverifiedSignup(service user.UseCase, verifyRepo repository.VerifyMongo) g
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		go func() {
+		err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
+		count := 0
+		for err != nil && count < 2 {
 			err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
-			count := 0
-			for err != nil && count < 2 {
-				err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
-				count++
-			}
-		}()
-		ctx.JSON(http.StatusAccepted, presentation.Success(lang, "PendingVerificationSingup"))
+			count++
+		}
+
+		ctx.JSON(http.StatusAccepted, gin.H{"link": linkID})
 	}
 }
 

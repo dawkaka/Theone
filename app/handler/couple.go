@@ -7,6 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
@@ -17,10 +22,6 @@ import (
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/dawkaka/theone/usecase/post"
 	"github.com/dawkaka/theone/usecase/user"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
