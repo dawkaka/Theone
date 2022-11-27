@@ -70,14 +70,33 @@ func unverifiedSignup(service user.UseCase, verifyRepo repository.VerifyMongo) g
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-		err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
+		err = myaws.SendEmail(newUser.Email, linkID, "verify-email", lang)
 		count := 0
 		for err != nil && count < 2 {
-			err = myaws.SendEmail(newUser.Email, linkID, "reset-email", lang)
+			err = myaws.SendEmail(newUser.Email, linkID, "verify-email", lang)
 			count++
 		}
 
 		ctx.JSON(http.StatusAccepted, gin.H{"link": linkID})
+	}
+}
+
+func resendEmailVerificationLink(verifyRepo repository.VerifyMongo) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		linkID := ctx.Param("id")
+		lang := utils.GetLang("", ctx.Request.Header)
+		newUser, err := verifyRepo.GetNewUser(linkID)
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "InvalidOrExpiredLink"))
+			return
+		}
+		err = myaws.SendEmail(newUser.Email, linkID, "verify-email", lang)
+		count := 0
+		for err != nil && count < 2 {
+			err = myaws.SendEmail(newUser.Email, linkID, "verify-email", lang)
+			count++
+		}
+		ctx.JSON(http.StatusNoContent, gin.H{})
 	}
 }
 
@@ -88,7 +107,7 @@ func signup(service user.UseCase, verifyRepo repository.VerifyMongo) gin.Handler
 		lang := utils.GetLang("", ctx.Request.Header)
 		newUser, err := verifyRepo.GetNewUser(linkID)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "InvalidOrExpiredLink"))
+			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "InvalidOrExpiredLink"))
 			return
 		}
 
@@ -1141,6 +1160,7 @@ func resetPassword(service user.UseCase, verifyRepo repository.VerifyMongo) gin.
 
 func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, coupleMessage repository.CoupleMessage, verifyRepo repository.VerifyMongo) {
 	r.POST("/user/u/signup", unverifiedSignup(service, verifyRepo)) //tested
+	r.POST("/user/resend-verification-link/:id", resendEmailVerificationLink(verifyRepo))
 	r.POST("/user/verify-signup/:id", signup(service, verifyRepo))
 	r.POST("/user/u/login", login(service)) //tested
 	r.POST("/user/request-password-reset/:email", passwordResetRequest(service, verifyRepo))
