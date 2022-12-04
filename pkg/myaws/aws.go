@@ -222,14 +222,11 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 }
 
 const (
-	Sender = "mail@toonji.com"
-
-	Subject = "Email Verification"
-
-	TextBody = "This email was sent with Amazon SES using the AWS SDK for Go."
-
+	Sender  = "mail@toonji.com"
 	CharSet = "UTF-8"
 )
+
+var Subject = "Email Verification"
 
 func SendEmail(Recipient, linkID, eType, lang string) error {
 	// Create a new session in the us-west-2 region.
@@ -254,12 +251,20 @@ func SendEmail(Recipient, linkID, eType, lang string) error {
 			Domain string
 		}{Link: config.CORS_DOMAIN + "/" + lang + "/r/verify-email/" + linkID, Domain: config.CORS_DOMAIN})
 
+		if lang == "es" {
+			Subject = "Verificacion de Email"
+		}
+
 	} else {
 		tmpl = template.Must(template.ParseFiles("../templates/reset_password_" + lang + ".html"))
 		tmpl.Execute(&body, struct {
 			Link   string
 			Domain string
 		}{Link: config.CORS_DOMAIN + "/" + lang + "/reset-password/" + linkID, Domain: config.CORS_DOMAIN})
+		Subject = "Reset Password"
+		if lang == "es" {
+			Subject = "Restablecer la Contraseña"
+		}
 
 	}
 	svc := ses.New(sess)
@@ -279,7 +284,7 @@ func SendEmail(Recipient, linkID, eType, lang string) error {
 				},
 				Text: &ses.Content{
 					Charset: aws.String(CharSet),
-					Data:    aws.String(TextBody),
+					Data:    aws.String(body.String()),
 				},
 			},
 			Subject: &ses.Content{
