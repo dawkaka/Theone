@@ -10,6 +10,7 @@ import (
 
 	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/app/presentation"
+	config "github.com/dawkaka/theone/conf"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/inter"
 	"github.com/dawkaka/theone/pkg/myaws"
@@ -162,7 +163,7 @@ func signup(service user.UseCase, verifyRepo repository.VerifyMongo) gin.Handler
 		}
 		session.Set("user", userSession)
 		_ = session.Save()
-		ctx.SetCookie("user_ID", insertedID.Hex(), 10*365*24*60*60*1000, "/", "", false, false)
+		ctx.SetCookie("user_ID", insertedID.Hex(), 10*365*24*60*60*1000, "/", config.COOKIE_DOMAIN, false, false)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "SignupSuccessfull"))
 	}
 }
@@ -211,9 +212,9 @@ func login(service user.UseCase) gin.HandlerFunc {
 			LastVisited:    user.LastVisited,
 		}
 		if user.HasPartner {
-			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", "", false, false)
+			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", config.COOKIE_DOMAIN, false, false)
 		}
-		ctx.SetCookie("user_ID", user.ID.Hex(), 10*365*24*60*60*1000, "/", "", false, false)
+		ctx.SetCookie("user_ID", user.ID.Hex(), 10*365*24*60*60*1000, "/", config.COOKIE_DOMAIN, false, false)
 		session.Set("user", userSession)
 		_ = session.Save()
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "LoginSuccessfull"))
@@ -838,7 +839,7 @@ func logout(ctx *gin.Context) {
 	session.Clear()
 	session.Options(sessions.Options{Path: "/", MaxAge: -1})
 	session.Save()
-	ctx.SetCookie("user_ID", "", -500, "/", "", false, true)
+	ctx.SetCookie("user_ID", "", -500, "/", config.COOKIE_DOMAIN, false, true)
 	ctx.JSON(http.StatusOK, presentation.Success(user.Lang, "LogedOut"))
 }
 
@@ -862,7 +863,7 @@ func changeSettings(service user.UseCase) gin.HandlerFunc {
 			user.Lang = lang
 			session.Set("user", user)
 			session.Save()
-			ctx.SetCookie("NEXT_LOCALE", lang, 1000*60*60*24*12*40, "/", "", false, false)
+			ctx.SetCookie("NEXT_LOCALE", lang, 1000*60*60*24*12*40, "/", config.COOKIE_DOMAIN, false, false)
 		}
 		setting = strings.ToUpper(string(setting[0])) + setting[1:]
 		ctx.JSON(http.StatusOK, presentation.Success(lang, setting+"Updated"))

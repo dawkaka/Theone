@@ -11,8 +11,8 @@ var bundle = i18n.NewBundle(language.English)
 
 func init() {
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
-	bundle.MustLoadMessageFile("../config/locales/en.json")
-	bundle.MustLoadMessageFile("../config/locales/es.json")
+	bundle.MustLoadMessageFile("../locales/en.json")
+	bundle.MustLoadMessageFile("../locales/es.json")
 }
 
 func Localize(lang, messageId string) string {

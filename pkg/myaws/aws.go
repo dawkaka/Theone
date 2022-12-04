@@ -20,7 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/dawkaka/theone/config"
+	config "github.com/dawkaka/theone/conf"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/google/uuid"

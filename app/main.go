@@ -7,7 +7,7 @@ import (
 
 	"github.com/dawkaka/theone/app/handler"
 	"github.com/dawkaka/theone/app/middlewares"
-	"github.com/dawkaka/theone/config"
+	config "github.com/dawkaka/theone/conf"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"

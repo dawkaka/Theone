@@ -14,6 +14,7 @@ import (
 
 	"github.com/dawkaka/theone/app/middlewares"
 	"github.com/dawkaka/theone/app/presentation"
+	config "github.com/dawkaka/theone/conf"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/myaws"
 	"github.com/dawkaka/theone/pkg/utils"
@@ -111,7 +112,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 		userb.PendingRequest = entity.NO_REQUEST
 		session.Set("user", userb)
 		session.Save()
-		ctx.SetCookie("couple_ID", coupleID.Hex(), 500, "/", "", false, true)
+		ctx.SetCookie("couple_ID", coupleID.Hex(), 500, "/", config.COOKIE_DOMAIN, false, true)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CoupleCreated"))
 	}
 
@@ -419,7 +420,7 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 		user.CoupleID = primitive.ObjectID{}
 		session.Set("user", user)
 		session.Save()
-		ctx.SetCookie("couple_ID", "", -33, "/", "", false, true)
+		ctx.SetCookie("couple_ID", "", -33, "/", config.COOKIE_DOMAIN, false, true)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "BreakedUp"))
 	}
 }
