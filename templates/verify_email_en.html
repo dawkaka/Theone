@@ -98,7 +98,7 @@
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
                     <tr>
                         <td align="center" valign="top" style="padding: 36px 24px;">
-                            <a href="http://localhost:3000" target="_blank" style="display: inline-block;">
+                            <a href="{{.Domain}}" target="_blank" style="display: inline-block;">
                                 <span>Prime Couples</span>
                             </a>
                         </td>
@@ -170,7 +170,7 @@
                                         <table border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 <td align="center" style="border-radius: 6px;background-color: #fe2c55">
-                                                    <a href="http://localhost:3000/r/verify-email/{{.LinkID}}" target="_blank"
+                                                    <a href="{{.Link}}" target="_blank"
                                                         style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">
                                                        Verify email</a>
                                                 </td>
@@ -189,8 +189,8 @@
                             style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
                             <p style="margin: 0;">If that doesn't work, copy and paste the following link in your
                                 browser:</p>
-                            <p style="margin: 0;"><a href="https://sendgrid.com"
-                                    target="_blank">https://localhost:3000/r/verify-email/{{.LinkID}}</a></p>
+                            <p style="margin: 0;"><a href="{{.Link}}"
+                                    target="_blank">{{.Link}}</a></p>
                         </td>
                     </tr>
                     <!-- end copy -->

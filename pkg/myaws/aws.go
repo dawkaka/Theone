@@ -245,13 +245,23 @@ func SendEmail(Recipient, linkID, eType, lang string) error {
 		return err
 	}
 	var tmpl *template.Template
+	body := bytes.Buffer{}
+
 	if eType == "verify-email" {
 		tmpl = template.Must(template.ParseFiles("../templates/verify_email_" + lang + ".html"))
+		tmpl.Execute(&body, struct {
+			Link   string
+			Domain string
+		}{Link: config.CORS_DOMAIN + "/" + lang + "/r/verify-email/" + linkID, Domain: config.CORS_DOMAIN})
+
 	} else {
 		tmpl = template.Must(template.ParseFiles("../templates/reset_password_" + lang + ".html"))
+		tmpl.Execute(&body, struct {
+			Link   string
+			Domain string
+		}{Link: config.CORS_DOMAIN + "/" + lang + "/reset-password/" + linkID, Domain: config.CORS_DOMAIN})
+
 	}
-	body := bytes.Buffer{}
-	tmpl.Execute(&body, struct{ LinkID string }{LinkID: linkID})
 	svc := ses.New(sess)
 	// Assemble the email.
 	input := &ses.SendEmailInput{
