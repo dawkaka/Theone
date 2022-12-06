@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	store.Options(sessions.Options{Domain: config.COOKIE_DOMAIN})
 	r.Use(sessions.Sessions("session", store))
 
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.DB_HOST))
