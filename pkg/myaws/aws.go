@@ -229,7 +229,8 @@ const (
 var Subject = "Email Verification"
 
 func SendEmail(Recipient, linkID, eType, lang string) error {
-
+	// Create a new session in the us-west-2 region.
+	// Replace us-west-2 with the AWS Region you're using for Amazon SES.
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("eu-central-1"), Credentials: credentials.NewStaticCredentials(
 			config.AWS_SES_ACCESS_KEY,
@@ -255,13 +256,11 @@ func SendEmail(Recipient, linkID, eType, lang string) error {
 		}
 
 	} else {
-
 		tmpl = template.Must(template.ParseFiles("../templates/reset_password_" + lang + ".html"))
 		tmpl.Execute(&body, struct {
 			Link   string
 			Domain string
 		}{Link: config.CORS_DOMAIN + "/" + lang + "/reset-password/" + linkID, Domain: config.CORS_DOMAIN})
-
 		Subject = "Reset Password"
 		if lang == "es" {
 			Subject = "Restablecer la Contraseña"
