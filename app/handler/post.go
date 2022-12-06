@@ -445,7 +445,13 @@ func deletePost(service post.UseCase, coupleService couple.UseCase) gin.HandlerF
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		err := service.DeletePost(user.CoupleID, postID)
+		post, err := service.GetPostByID(postID)
+
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, "Forbidden")
+			return
+		}
+		err = service.DeletePost(user.CoupleID, postID)
 
 		if err != nil {
 			if err == entity.ErrNotFound {
@@ -455,7 +461,26 @@ func deletePost(service post.UseCase, coupleService couple.UseCase) gin.HandlerF
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		coupleService.RemovePost(user.CoupleID, postID)
+		err = coupleService.RemovePost(user.CoupleID, postID)
+		count := 0
+		for err != nil && count < 2 {
+			err = coupleService.RemovePost(user.CoupleID, postID)
+			count++
+		}
+
+		for i := 0; i < len(post.Files); i++ {
+
+			go func(key string) {
+				count = 0
+				err = myaws.DeleteFile(key, "theone-profile-images")
+				for err != nil && count < 2 {
+					err = myaws.DeleteFile(key, "theone-profile-images")
+					count++
+				}
+			}(post.Files[i].Name)
+
+		}
+
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "PostDeleted"))
 	}
 }

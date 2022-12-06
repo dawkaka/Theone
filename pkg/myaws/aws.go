@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/aws/aws-sdk-go/service/ses"
 	config "github.com/dawkaka/theone/conf"
@@ -110,6 +111,17 @@ func UploadMultipleFiles(files []*multipart.FileHeader) ([]entity.PostMetadata, 
 		}
 	}
 	return filesMeta, nil
+}
+
+func DeleteFile(key string, bucket string) error {
+	svc := s3.New(sess)
+	val, err := svc.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	fmt.Println(val)
+	fmt.Println(err)
+	return err
 }
 
 func upload(file *multipart.FileHeader, ch chan any, i int) {
@@ -221,14 +233,15 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 	}
 }
 
-const (
-	Sender  = "mail@toonji.com"
-	CharSet = "UTF-8"
-)
-
-var Subject = "Email Verification"
-
 func SendEmail(Recipient, linkID, eType, lang string) error {
+	const (
+		CharSet = "UTF-8"
+		Sender  = "Prime Couples <mail@toonji.com>"
+	)
+
+	var (
+		Subject = "Email Verification"
+	)
 	// Create a new session in the us-west-2 region.
 	// Replace us-west-2 with the AWS Region you're using for Amazon SES.
 	sess, err := session.NewSession(&aws.Config{
@@ -272,9 +285,7 @@ func SendEmail(Recipient, linkID, eType, lang string) error {
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			CcAddresses: []*string{},
-			ToAddresses: []*string{
-				aws.String(Recipient),
-			},
+			ToAddresses: []*string{aws.String(Recipient)},
 		},
 		Message: &ses.Message{
 			Body: &ses.Body{

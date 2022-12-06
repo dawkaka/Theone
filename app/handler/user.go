@@ -627,6 +627,10 @@ func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
+		u, err := service.GetUser(user.Name)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "Forbidden"))
+		}
 		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
@@ -640,6 +644,16 @@ func updateUserProfilePic(service user.UseCase) gin.HandlerFunc {
 		user.ProfilePicture = fileName
 		userS.Set("user", user)
 		userS.Save()
+
+		go func() {
+			err = myaws.DeleteFile(u.ProfilePicture, "theone-profile-images")
+			count := 0
+			for err != nil && count < 2 {
+				err = myaws.DeleteFile(u.ProfilePicture, "theone-profile-images")
+				count++
+			}
+		}()
+
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicUpdated"))
 	}
 }
@@ -663,6 +677,12 @@ func updateShowPicture(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 
+		u, err := service.GetUser(user.Name)
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+			return
+		}
+
 		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
@@ -678,6 +698,16 @@ func updateShowPicture(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
+
+		go func() {
+			err = myaws.DeleteFile(u.ShowPictures[index], "theone-profile-images")
+			count := 0
+			for err != nil && count < 2 {
+				err = myaws.DeleteFile(u.ShowPictures[index], "theone-profile-images")
+				count++
+			}
+		}()
+
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ShowPictureChanged"))
 	}
 }

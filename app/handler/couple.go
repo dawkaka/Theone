@@ -278,6 +278,11 @@ func updateCoupleProfilePic(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
+		c, err := service.ListCouple([]entity.ID{user.CoupleID}, user.ID)
+		if err != nil || len(c) == 0 {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+			return
+		}
 		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
@@ -288,6 +293,15 @@ func updateCoupleProfilePic(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
+		go func() {
+			err = myaws.DeleteFile(c[0].ProfilePicture, "theone-profile-images")
+			count := 0
+			for err != nil && count < 2 {
+				err = myaws.DeleteFile(c[0].ProfilePicture, "theone-profile-images")
+				count++
+			}
+		}()
+
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "ProfilePicUpdated"))
 	}
 }
@@ -301,16 +315,35 @@ func updateCoupleCoverPic(service couple.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
+		c, err := service.ListCouple([]entity.ID{user.CoupleID}, user.ID)
+		if err != nil || len(c) == 0 {
+			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
+			return
+		}
+
+		couple, err := service.GetCouple(c[0].CoupleName, user.ID)
 		fileName, err := myaws.UploadImageFile(fileHeader, "theone-profile-images")
+
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "ProfilePicFailed"))
 			return
 		}
+
 		err = service.UpdateCoupleCoverPic(fileName, user.CoupleID)
 		if err != nil {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "Forbidden"))
 			return
 		}
+
+		go func() {
+			err = myaws.DeleteFile(couple.CoverPicture, "theone-profile-images")
+			count := 0
+			for err != nil && count < 2 {
+				err = myaws.DeleteFile(couple.CoverPicture, "theone-profile-images")
+				count++
+			}
+		}()
+
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CoverPicUpdated"))
 	}
 }
