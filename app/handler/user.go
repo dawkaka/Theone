@@ -163,7 +163,7 @@ func signup(service user.UseCase, verifyRepo repository.VerifyMongo) gin.Handler
 		}
 		session.Set("user", userSession)
 		_ = session.Save()
-		ctx.SetCookie("user_ID", insertedID.Hex(), 10*365*24*60*60*1000, "/", config.COOKIE_DOMAIN, false, false)
+		ctx.SetCookie("user_ID", insertedID.Hex(), 5*365*24*60*60*1000, "/", config.COOKIE_DOMAIN, false, false)
 		ctx.JSON(http.StatusCreated, presentation.Success(lang, "SignupSuccessfull"))
 	}
 }
@@ -214,7 +214,7 @@ func login(service user.UseCase) gin.HandlerFunc {
 		if user.HasPartner {
 			ctx.SetCookie("couple_ID", user.CoupleID.Hex(), 500, "/", config.COOKIE_DOMAIN, false, false)
 		}
-		ctx.SetCookie("user_ID", user.ID.Hex(), 10*365*24*60*60*1000, "/", config.COOKIE_DOMAIN, false, false)
+		ctx.SetCookie("user_ID", user.ID.Hex(), 5*365*24*60*60*1000, "/", config.COOKIE_DOMAIN, false, false)
 		session.Set("user", userSession)
 		_ = session.Save()
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "LoginSuccessfull"))

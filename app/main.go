@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"net/http"
 
 	"github.com/dawkaka/theone/app/handler"
 	"github.com/dawkaka/theone/app/middlewares"
@@ -31,6 +32,7 @@ func main() {
 		panic(err)
 	}
 
+	store.Options(sessions.Options{Domain: config.COOKIE_DOMAIN, Path: "/", MaxAge: 5 * 365 * 24 * 60 * 60, HttpOnly: true, Secure: true, SameSite: http.SameSiteDefaultMode})
 	r.Use(sessions.Sessions("session", store))
 
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.DB_HOST))
