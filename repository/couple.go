@@ -397,7 +397,7 @@ func (c *CoupleMongo) FollowersToNotify(coupleID entity.ID, skip int) ([]entity.
 func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error) {
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: bson.D{{Key: "$nin", Value: exempted}}}, {Key: "separated", Value: false}, {Key: "country", Value: country}}}}
 	sortStage := bson.D{{Key: "$sort", Value: bson.M{"followers_count": -1}}}
-	limitStage := bson.D{{Key: "$limit", Value: 20}}
+	limitStage := bson.D{{Key: "$limit", Value: 7}}
 
 	projectStage := bson.D{{
 		Key: "$project",
