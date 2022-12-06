@@ -397,7 +397,7 @@ func (c *CoupleMongo) FollowersToNotify(coupleID entity.ID, skip int) ([]entity.
 func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error) {
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: bson.D{{Key: "$nin", Value: exempted}}}, {Key: "separated", Value: false}, {Key: "country", Value: country}}}}
 	sortStage := bson.D{{Key: "$sort", Value: bson.M{"followers_count": -1}}}
-	limitStage := bson.D{{Key: "$limit", Value: 7}}
+	limitStage := bson.D{{Key: "$limit", Value: 10}}
 
 	projectStage := bson.D{{
 		Key: "$project",
@@ -421,7 +421,7 @@ func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([
 		return nil, err
 	}
 	res2 := []presentation.CouplePreview{}
-	if len(results) < 20 {
+	if len(results) < 10 {
 		category := utils.GetCategory(1, country)
 		fechted := []string{}
 		for _, val := range results {
@@ -435,7 +435,7 @@ func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([
 		},
 		}}
 		sortStage := bson.D{{Key: "$sort", Value: bson.M{"followers_count": -1}}}
-		limitStage := bson.D{{Key: "$limit", Value: 20}}
+		limitStage := bson.D{{Key: "$limit", Value: 10 - len(results)}}
 
 		projectStage := bson.D{{
 			Key: "$project",
