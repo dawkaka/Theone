@@ -6,7 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/validator"
+	"github.com/gin-contrib/sessions"
 )
 
 //User's prefered language for success or error messages
@@ -37,6 +39,17 @@ func GenerateID() string {
 		id += string(alphabets[ind])
 	}
 	return id
+}
+
+//Get session data
+
+func GetSession(session sessions.Session) entity.UserSession {
+	var userSession entity.UserSession
+	val := session.Get("user")
+	if val != nil {
+		userSession = val.(entity.UserSession)
+	}
+	return userSession
 }
 
 //ExtractMentions extracts all users mention (@) so that they can be notified
