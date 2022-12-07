@@ -234,7 +234,7 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 func SendEmail(Recipient, linkID, eType, lang string) error {
 	const (
 		CharSet = "UTF-8"
-		Sender  = "Prime Couples <mail@toonji.com>"
+		Sender  = "Prime Couples <noreply@primecouples.com>"
 	)
 
 	var (
@@ -243,7 +243,7 @@ func SendEmail(Recipient, linkID, eType, lang string) error {
 	// Create a new session in the us-west-2 region.
 	// Replace us-west-2 with the AWS Region you're using for Amazon SES.
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("eu-central-1"), Credentials: credentials.NewStaticCredentials(
+		Region: aws.String("us-west-1"), Credentials: credentials.NewStaticCredentials(
 			config.AWS_SES_ACCESS_KEY,
 			config.AWS_SES_SECRET_KEY,
 			""),
