@@ -1209,7 +1209,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/notifications/:skip", middlewares.Authenticate(), notifications(service))             //tested
 	r.GET("/user/u/partner", middlewares.Authenticate(), getPartner(service))                          //tested
 	r.GET("/user/feed/:skip", middlewares.Authenticate(), getFeed(service))                            //tested
-	r.POST("/user/logout", logout)                                                                     //tested
+	r.POST("/user/logout", middlewares.Authenticate(), logout)                                         //tested
 	r.POST("/user/u/cancel-request", middlewares.Authenticate(), cancelRequest(service))               //tested
 	r.POST("/user/u/reject-request", middlewares.Authenticate(), rejectRequest(service))               //tested
 	r.POST("/user/couple-request/:userName", middlewares.Authenticate(), initiateRequest(service))     //tested
