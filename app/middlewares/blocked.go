@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dawkaka/theone/app/presentation"
-	"github.com/dawkaka/theone/entity"
+	"github.com/dawkaka/theone/pkg/utils"
 	"github.com/dawkaka/theone/usecase/couple"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -12,7 +12,7 @@ import (
 
 func CheckBlocked(service couple.UseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := sessions.Default(c).Get("user").(entity.UserSession)
+		user := utils.GetSession(sessions.Default(c))
 		coupleName := c.Param("coupleName")
 		blocked, err := service.IsBlocked(coupleName, user.ID)
 		if err != nil {

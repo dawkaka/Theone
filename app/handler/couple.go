@@ -122,7 +122,7 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		coupleName := ctx.Param("coupleName")
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		user := utils.GetSession(sessions.Default(ctx))
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
@@ -162,8 +162,9 @@ func getCouplePosts(service couple.UseCase, postService post.UseCase) gin.Handle
 	return func(ctx *gin.Context) {
 		coupleName, skip := ctx.Param("coupleName"), ctx.Param("skip")
 		skipPosts, err := strconv.Atoi(skip)
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := user.Lang
+		user := utils.GetSession(sessions.Default(ctx))
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+
 		if !validator.IsCoupleName(coupleName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -665,18 +666,18 @@ func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.
 	r.GET("/:coupleName/posts/:skip", middlewares.CheckBlocked(service), getCouplePosts(service, postService))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/couple/search/:query", searchCouples(service))
-	r.GET("/:coupleName/followers/:skip", middlewares.CheckBlocked(service), getFollowers(service, userService)) //tested
-	r.GET("/couple/p-messages/:skip", coupleMessages(coupleMessage, userService))
-	r.GET("/couple/u/suggested-accounts", getSuggestedAccounts(service, userService))
-	r.GET("/couple/messages/:skip", usersCoupleMessages(userMessage))
-	r.GET("/couple/u/messages/:userName/:skip", userCoupleMessages(service, userService, userMessage))
-	r.POST("/couple/new/:partnerID", newCouple(service, userService))  //tested
-	r.POST("/couple/break-up", lastLastEdonCast(service, userService)) //tested
-	r.POST("/couple/block/:userName", blockUser(service, userService))
-	r.POST("/couple/report", reportCouple(reportRepo))
-	r.POST("/couple/profile-picture", updateCoupleProfilePic(service)) //tested
-	r.POST("/couple/cover-picture", updateCoupleCoverPic(service))     //tested
-	r.POST("/couple/name", changeCoupleName(service, userService))     //tested
+	r.GET("/:coupleName/followers/:skip", middlewares.Authenticate(), middlewares.CheckBlocked(service), getFollowers(service, userService)) //tested
+	r.GET("/couple/p-messages/:skip", middlewares.Authenticate(), coupleMessages(coupleMessage, userService))
+	r.GET("/couple/u/suggested-accounts", middlewares.Authenticate(), getSuggestedAccounts(service, userService))
+	r.GET("/couple/messages/:skip", middlewares.Authenticate(), usersCoupleMessages(userMessage))
+	r.GET("/couple/u/messages/:userName/:skip", middlewares.Authenticate(), userCoupleMessages(service, userService, userMessage))
+	r.POST("/couple/new/:partnerID", middlewares.Authenticate(), newCouple(service, userService))  //tested
+	r.POST("/couple/break-up", middlewares.Authenticate(), lastLastEdonCast(service, userService)) //tested
+	r.POST("/couple/block/:userName", middlewares.Authenticate(), blockUser(service, userService))
+	r.POST("/couple/report", middlewares.Authenticate(), reportCouple(reportRepo))
+	r.POST("/couple/profile-picture", middlewares.Authenticate(), updateCoupleProfilePic(service)) //tested
+	r.POST("/couple/cover-picture", middlewares.Authenticate(), updateCoupleCoverPic(service))     //tested
+	r.POST("/couple/name", middlewares.Authenticate(), changeCoupleName(service, userService))     //tested
 	r.POST("/couple/status/:status", updateRelationshipStatus(service, userService))
-	r.PUT("/couple", updateCouple(service)) //tested
+	r.PUT("/couple", middlewares.Authenticate(), updateCouple(service)) //tested
 }

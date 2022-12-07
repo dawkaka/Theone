@@ -225,7 +225,7 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		userName := ctx.Param("userName")
-		thisUser := sessions.Default(ctx).Get("user").(entity.UserSession)
+		thisUser := utils.GetSession(sessions.Default(ctx))
 		lang := utils.GetLang(thisUser.Lang, ctx.Request.Header)
 		log.Println(lang)
 		if !validator.IsUserName(userName) {
@@ -1197,34 +1197,34 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/request-password-reset/:email", passwordResetRequest(service, verifyRepo))
 	r.POST("/user/reset-password/:linkID", resetPassword(service, verifyRepo))
 	r.GET("/user/availability/:name", checkAvailability(service))
-	r.Use(middlewares.Authenticate())                                          //tested
-	r.GET("/user/u/session", userSession(service))                             //tested
-	r.GET("/user/:userName", getUser(service))                                 //tested
-	r.GET("/user/search/:query", searchUsers(service))                         //tested
-	r.GET("/user/following/:name/:skip", getFollowing(service, coupleService)) //tested
-	r.GET("/user/u/pending-request", getPendingRequest(service))               //tested
+	r.GET("/user/:userName", getUser(service)) //tested
+
+	r.GET("/user/u/session", middlewares.Authenticate(), userSession(service))                             //tested
+	r.GET("/user/search/:query", middlewares.Authenticate(), searchUsers(service))                         //tested
+	r.GET("/user/following/:name/:skip", middlewares.Authenticate(), getFollowing(service, coupleService)) //tested
+	r.GET("/user/u/pending-request", middlewares.Authenticate(), getPendingRequest(service))               //tested
 	// r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	// r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/u/startup", startup(service, coupleMessage))              //tested
-	r.GET("/user/notifications/:skip", notifications(service))             //tested
-	r.GET("/user/u/partner", getPartner(service))                          //tested
-	r.GET("/user/feed/:skip", getFeed(service))                            //tested
-	r.POST("/user/logout", logout)                                         //tested
-	r.POST("/user/u/cancel-request", cancelRequest(service))               //tested
-	r.POST("/user/u/reject-request", rejectRequest(service))               //tested
-	r.POST("/user/couple-request/:userName", initiateRequest(service))     //tested
-	r.POST("/user/follow/:coupleName", follow(service, coupleService))     //tested
-	r.POST("/user/unfollow/:coupleName", unfollow(service, coupleService)) //tested
-	r.POST("/user/exempt/:coupleName", exempt(service, coupleService))
-	r.PUT("/user/new-notifications", clearNewNotifsCount(service))        //tested
-	r.PUT("/user/new-posts", clearFeedPostsCount(service))                //tested
-	r.PUT("/user/name", changeUserName(service))                          //tested
-	r.PUT("/user/password", changePassword(service))                      //tested
-	r.PUT("/user/email", changeEmail(service))                            //tested
-	r.PUT("/user/request-status/:status", changeRequestStatus(service))   //tested
-	r.PUT("/user", updateUser(service))                                   //tested
-	r.POST("/user/show-pictures/:index", updateShowPicture(service))      //tested
-	r.PATCH("/user/settings/:setting/:newValue", changeSettings(service)) //tested
-	r.POST("/user/profile-pic", updateUserProfilePic(service))            //tested
-	r.DELETE("/user", deleteUser(service))
+	r.GET("/user/u/startup", middlewares.Authenticate(), startup(service, coupleMessage))              //tested
+	r.GET("/user/notifications/:skip", middlewares.Authenticate(), notifications(service))             //tested
+	r.GET("/user/u/partner", middlewares.Authenticate(), getPartner(service))                          //tested
+	r.GET("/user/feed/:skip", middlewares.Authenticate(), getFeed(service))                            //tested
+	r.POST("/user/logout", logout)                                                                     //tested
+	r.POST("/user/u/cancel-request", middlewares.Authenticate(), cancelRequest(service))               //tested
+	r.POST("/user/u/reject-request", middlewares.Authenticate(), rejectRequest(service))               //tested
+	r.POST("/user/couple-request/:userName", middlewares.Authenticate(), initiateRequest(service))     //tested
+	r.POST("/user/follow/:coupleName", middlewares.Authenticate(), follow(service, coupleService))     //tested
+	r.POST("/user/unfollow/:coupleName", middlewares.Authenticate(), unfollow(service, coupleService)) //tested
+	r.POST("/user/exempt/:coupleName", middlewares.Authenticate(), exempt(service, coupleService))
+	r.PUT("/user/new-notifications", middlewares.Authenticate(), clearNewNotifsCount(service))        //tested
+	r.PUT("/user/new-posts", middlewares.Authenticate(), clearFeedPostsCount(service))                //tested
+	r.PUT("/user/name", middlewares.Authenticate(), changeUserName(service))                          //tested
+	r.PUT("/user/password", middlewares.Authenticate(), changePassword(service))                      //tested
+	r.PUT("/user/email", middlewares.Authenticate(), changeEmail(service))                            //tested
+	r.PUT("/user/request-status/:status", middlewares.Authenticate(), changeRequestStatus(service))   //tested
+	r.PUT("/user", middlewares.Authenticate(), updateUser(service))                                   //tested
+	r.POST("/user/show-pictures/:index", middlewares.Authenticate(), updateShowPicture(service))      //tested
+	r.PATCH("/user/settings/:setting/:newValue", middlewares.Authenticate(), changeSettings(service)) //tested
+	r.POST("/user/profile-pic", middlewares.Authenticate(), updateUserProfilePic(service))            //tested
+	r.DELETE("/user", middlewares.Authenticate(), deleteUser(service))
 }

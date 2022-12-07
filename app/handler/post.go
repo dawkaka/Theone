@@ -146,8 +146,8 @@ func getPost(service post.UseCase, coupleService couple.UseCase) gin.HandlerFunc
 
 	return func(ctx *gin.Context) {
 		coupleName, postID := ctx.Param("coupleName"), ctx.Param("postID")
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
-		lang := user.Lang
+		user := utils.GetSession(sessions.Default(ctx))
+		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if !validator.IsCoupleName(coupleName) || strings.TrimSpace(postID) == "" {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -295,8 +295,9 @@ func like(service post.UseCase, userService user.UseCase, coupleService couple.U
 func postComments(service post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		skip, err := strconv.Atoi(ctx.Param("skip"))
-		user := sessions.Default(ctx).Get("user").(entity.UserSession)
+		user := utils.GetSession(sessions.Default(ctx))
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
+
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
@@ -574,16 +575,16 @@ func setCloseComments(service post.UseCase, userService user.UseCase) gin.Handle
 func MakePostHandlers(r *gin.Engine, service post.UseCase, coupleService couple.UseCase, userService user.UseCase, reportsRepo repository.Reports) {
 	r.GET("/post/:coupleName/:postID", middlewares.CheckBlocked(coupleService), getPost(service, coupleService)) //tested
 	r.GET("/post/comments/:postID/:skip", postComments(service))                                                 //tested
-	r.GET("/post/explore/:skip", explorePosts(service, userService))
-	r.POST("/post", newPost(service, coupleService, userService)) //tested
-	r.POST("/post/:postID/:switched", setCloseComments(service, userService))
-	r.POST("/post/comment/:postID", newComment(service, userService, coupleService)) //tested
-	r.POST("/post/report/:postID", reportPost(service, reportsRepo))
-	r.PATCH("/post/like/:postID", like(service, userService, coupleService)) //tested
-	r.PATCH("/post/unlike/:postID", unLikePost(service))                     //tested
-	r.PUT("/post/:postID", editPost(service))                                //tested
-	r.PATCH("/post/comment/like/:postID/:commentID", likeComment(service))
-	r.PATCH("/post/comment/unlike/:postID/:commentID", unlikeComment(service))
-	r.DELETE("/post/comment/:postID/:commentID", deletePostComment(service)) //tested
-	r.DELETE("/post/:postID", deletePost(service, coupleService))
+	r.GET("/post/explore/:skip", middlewares.Authenticate(), explorePosts(service, userService))
+	r.POST("/post", middlewares.Authenticate(), newPost(service, coupleService, userService)) //tested
+	r.POST("/post/:postID/:switched", middlewares.Authenticate(), setCloseComments(service, userService))
+	r.POST("/post/comment/:postID", middlewares.Authenticate(), newComment(service, userService, coupleService)) //tested
+	r.POST("/post/report/:postID", middlewares.Authenticate(), reportPost(service, reportsRepo))
+	r.PATCH("/post/like/:postID", middlewares.Authenticate(), like(service, userService, coupleService)) //tested
+	r.PATCH("/post/unlike/:postID", middlewares.Authenticate(), unLikePost(service))                     //tested
+	r.PUT("/post/:postID", middlewares.Authenticate(), editPost(service))                                //tested
+	r.PATCH("/post/comment/like/:postID/:commentID", middlewares.Authenticate(), likeComment(service))
+	r.PATCH("/post/comment/unlike/:postID/:commentID", middlewares.Authenticate(), unlikeComment(service))
+	r.DELETE("/post/comment/:postID/:commentID", middlewares.Authenticate(), deletePostComment(service)) //tested
+	r.DELETE("/post/:postID", middlewares.Authenticate(), deletePost(service, coupleService))
 }
