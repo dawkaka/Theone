@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dawkaka/theone/entity"
@@ -19,13 +20,13 @@ func UsageMonitoring(service user.UseCase) gin.HandlerFunc {
 				go func() {
 					err := service.UsageMonitoring(user.ID)
 					if err != nil {
+						fmt.Println(err)
 						user.LastVisited = time.Now()
 						session.Set("user", userSession)
 						session.Save()
 					}
 				}()
 			}
-			c.Set("user", user)
 		}
 		c.Next()
 	}
