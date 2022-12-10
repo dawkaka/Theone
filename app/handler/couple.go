@@ -393,6 +393,11 @@ func changeCoupleName(service couple.UseCase, userService user.UseCase) gin.Hand
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidCoupleName"))
 			return
 		}
+		if !validator.IsNotBadName(newCoupleName) {
+			ctx.JSON(http.StatusConflict, presentation.Error(lang, "CoupleAlreadyExists"))
+			return
+		}
+
 		user, err := userService.GetUser(u.Name)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))

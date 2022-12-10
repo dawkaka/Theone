@@ -13,6 +13,32 @@ var (
 	SUPPORTED_LANGUAGES = []string{"en", "es"}
 	POST_REPORT_WEIGHT  = [5]uint8{5, 4, 3, 2, 1}
 	Settings            = map[string][]string{"language": SUPPORTED_LANGUAGES}
+	DefaultProfanities  = []string{
+		"couple",
+		"primecouple",
+		"home",
+		"homophobe",
+		"homophobic",
+		"incest",
+		"jerk",
+		"jizz",
+		"labia",
+		"login",
+		"masturbate",
+		"messages",
+		"nazi",
+		"nigga",
+		"niggu",
+		"notifications",
+		"pedophile",
+		"queer",
+		"rape",
+		"rapist",
+		"racist",
+		"sexist",
+		"user",
+		"vagina",
+	}
 )
 
 func IsEmail(email string) bool {
@@ -194,6 +220,15 @@ func IsSupportedLanguage(lang string) bool {
 func IsValidPostReport(total []int) bool {
 	for _, val := range total {
 		if val > 5 || val < 1 {
+			return false
+		}
+	}
+	return true
+}
+
+func IsNotBadName(name string) bool {
+	for _, val := range DefaultProfanities {
+		if val == name {
 			return false
 		}
 	}

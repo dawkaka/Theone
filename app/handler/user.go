@@ -765,6 +765,11 @@ func changeUserName(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusAccepted, presentation.Success(lang, "ChangedUserName"))
 			return
 		}
+
+		if !validator.IsNotBadName(newUserName) {
+			ctx.JSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
+			return
+		}
 		_, err = service.GetUser(newUserName)
 		if err == nil {
 			ctx.JSON(http.StatusConflict, presentation.Error(lang, "UserAlreadyExists"))
@@ -1088,6 +1093,10 @@ func getFeed(service user.UseCase) gin.HandlerFunc {
 func checkAvailability(service user.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userName := ctx.Param("name")
+		if !validator.IsUserName(userName) || !validator.IsNotBadName(userName) {
+			ctx.JSON(http.StatusOK, gin.H{"available": false})
+
+		}
 		res := service.CheckNameAvailability(userName)
 		ctx.JSON(http.StatusOK, gin.H{"available": res})
 	}

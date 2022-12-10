@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 
 	"github.com/dawkaka/theone/app/handler"
 	"github.com/dawkaka/theone/app/middlewares"
@@ -24,6 +26,16 @@ import (
 )
 
 func main() {
+
+	if config.ENVIRONMENT != "test" {
+		gin.DisableConsoleColor()
+		gin.SetMode(gin.ReleaseMode)
+		f, err := os.Create("request.log")
+		if err != nil {
+			panic(err)
+		}
+		gin.DefaultWriter = io.MultiWriter(f)
+	}
 
 	r := gin.Default()
 
