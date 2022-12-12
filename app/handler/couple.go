@@ -206,7 +206,6 @@ func getCouplePosts(service couple.UseCase, postService post.UseCase) gin.Handle
 			Next: skipPosts + entity.LimitP,
 			End:  len(postIDs) < entity.LimitP,
 		}
-		fmt.Println(posts)
 		ctx.JSON(http.StatusOK, gin.H{"posts": posts, "pagination": page})
 	}
 }
