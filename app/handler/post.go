@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -50,6 +51,10 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			return
 		}
 		filesMetadata, cErr := myaws.UploadMultipleFiles(files)
+		if cErr != nil {
+			log.Println(cErr.Message)
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
+		}
 		for i := 0; i < len(filesMetadata); i++ {
 			filesMetadata[i].Alt = alts[i]
 		}

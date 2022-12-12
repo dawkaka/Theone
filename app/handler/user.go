@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -227,7 +226,6 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 		userName := ctx.Param("userName")
 		thisUser := utils.GetSession(sessions.Default(ctx))
 		lang := utils.GetLang(thisUser.Lang, ctx.Request.Header)
-		log.Println(lang)
 		if !validator.IsUserName(userName) {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidUserName"))
 			return
