@@ -152,22 +152,26 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 		cmd.Stdout = &out
 		err = cmd.Run()
 		if err != nil {
+			fmt.Println(err)
 			ch <- entity.CustomError{Code: http.StatusUnprocessableEntity, Message: entity.ErrVideoProcessing.Error()}
 			return
 		}
 		vStreamMeta := entity.VideoStream{}
 		err = json.Unmarshal(out.Bytes(), &vStreamMeta)
 		if err != nil {
+			fmt.Println(err)
 			ch <- entity.CustomError{Code: http.StatusUnprocessableEntity, Message: entity.ErrVideoProcessing.Error()}
 			return
 		}
 		vMeta := vStreamMeta.Streams[0]
 		vDuration, err := strconv.ParseFloat(vMeta.Duration, 64)
 		if err != nil {
+			fmt.Println(err)
 			ch <- entity.CustomError{Code: http.StatusUnprocessableEntity, Message: entity.ErrVideoProcessing.Error()}
 			return
 		}
 		if vDuration > 30.00 {
+			fmt.Println("too big")
 			ch <- entity.CustomError{Code: http.StatusForbidden, Message: entity.ErrVideoTooLong.Error()}
 			return
 		}
@@ -182,9 +186,11 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 			ACL:         &acl,
 		})
 		if err != nil {
+			fmt.Println(err)
 			ch <- entity.CustomError{Code: http.StatusInternalServerError, Message: entity.ErrAWSUpload.Error()}
 			return
 		}
+		fmt.Println(entity.PostMetadata{Name: fileName, Height: int64(vMeta.Height), Width: int64(vMeta.Width), Type: fType, Alt: fmt.Sprint(i)})
 		ch <- entity.PostMetadata{Name: fileName, Height: int64(vMeta.Height), Width: int64(vMeta.Width), Type: fType, Alt: fmt.Sprint(i)}
 
 	} else if strings.Split(fType, "/")[0] == "image" {
