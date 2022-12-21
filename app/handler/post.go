@@ -226,7 +226,7 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
-
+		u, _ := userService.GetUser(user.Name)
 		go func() {
 			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID}, primitive.NewObjectID())
 			var name string
@@ -243,10 +243,19 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 				Date:    time.Now(),
 			}
 			_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
-
 		}()
 
-		ctx.JSON(http.StatusCreated, presentation.Success(lang, "CommentAdded"))
+		ctx.JSON(http.StatusCreated, gin.H{
+			"comment": presentation.Comment{
+				Comment:        comment,
+				HasPartner:     u.HasPartner,
+				ProfilePicture: u.ProfilePicture,
+				UserName:       u.UserName,
+				LikesCount:     0,
+				HasLiked:       false,
+			},
+			"notif": presentation.Success(lang, "CommentAdded"),
+		})
 	}
 }
 
