@@ -18,7 +18,7 @@ type Reader interface {
 	Login(param string) (entity.User, error)
 	CheckSignup(userName, email string) (entity.User, error)
 	Startup(userID entity.ID) (presentation.StartupInfo, error)
-	Notifications(userName string, page int) (presentation.Notification, error)
+	Notifications(userID entity.ID, page int) (presentation.Notification, error)
 	GetFeedPosts(postID entity.ID, skip int) ([]presentation.Post, error)
 	CheckNameAvailability(name string) bool
 	ExemptedFromSuggestedAccounts(userID entity.ID, addExempt bool) ([]entity.ID, error)
@@ -85,7 +85,7 @@ type UseCase interface {
 	Login(param string) (entity.User, error)
 	CheckSignup(userName, email string) (entity.User, error)
 	NullifyRequest([2]entity.ID) error
-	GetNotifications(userName string, page int) (presentation.Notification, error)
+	GetNotifications(userID entity.ID, page int) (presentation.Notification, error)
 	BreakedUp(couple [2]entity.ID) error
 	StartupInfo(userID entity.ID) (presentation.StartupInfo, error)
 	ClearNotifsCount(userID entity.ID) error

@@ -286,7 +286,7 @@ func getFollowing(service user.UseCase, coupleService couple.UseCase) gin.Handle
 		skip, err := strconv.Atoi(ctx.Param("skip"))
 		lang := utils.GetLang(user.Lang, ctx.Request.Header)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethinWentWrong"))
+			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 		following, err := service.UserFollowing(name, skip)
@@ -370,11 +370,9 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		notification := entity.Notification{
-			Type:    "Couple Request",
-			User:    thisUser.Name,
-			Profile: thisUser.ProfilePicture,
-			Name:    thisUser.FirstName + thisUser.LastName,
-			Date:    time.Now(),
+			Type:   "Couple Request",
+			UserID: thisUser.ID,
+			Date:   time.Now(),
 		}
 
 		thisUser.PendingRequest = entity.SENT_REQUEST
@@ -455,7 +453,7 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 		user := session.Get("user").(entity.UserSession)
 		u, err := service.GetUser(user.Name)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethinWentWrong"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
 			return
 		}
 
@@ -471,16 +469,14 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 		initiator := users[0]
 		err = service.NullifyRequest([2]entity.ID{user.ID, user.PartnerID})
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethinWentWrong"))
+			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
 			return
 		}
 		go func() {
 			notif := entity.Notification{
-				Type:    "Request Rejected",
-				User:    user.Name,
-				Profile: user.ProfilePicture,
-				Name:    user.FirstName + user.LastName,
-				Date:    time.Now(),
+				Type:   "Request Rejected",
+				UserID: user.ID,
+				Date:   time.Now(),
 			}
 			service.NotifyUser(initiator.UserName, notif)
 		}()
@@ -523,10 +519,9 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			return
 		}
 		notif := entity.Notification{
-			Type:    "follow",
-			Profile: user.ProfilePicture,
-			User:    user.Name,
-			Date:    time.Now(),
+			Type:   "follow",
+			UserID: user.ID,
+			Date:   time.Now(),
 		}
 		_ = service.NotifyCouple([2]primitive.ObjectID{couple.Accepted, couple.Initiated}, notif)
 		ctx.JSON(http.StatusOK, presentation.Success(lang, "Followed"))
@@ -903,7 +898,7 @@ func changeSettings(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
-func notifications(service user.UseCase) gin.HandlerFunc {
+func notifications(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
 		skip, err := strconv.Atoi(ctx.Param("skip"))
@@ -911,16 +906,52 @@ func notifications(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, presentation.Error(user.Lang, "BadRequest"))
 			return
 		}
-		notif, err := service.GetNotifications(user.Name, skip)
+		notif, err := service.GetNotifications(user.ID, skip)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(user.Lang, "SomethingWentWrong"))
 			return
 		}
+
+		usersMap := make(map[entity.ID]presentation.UserPreview)
+		couplesMap := make(map[entity.ID]presentation.CouplePreview)
+
+		userIDs := []entity.ID{}
+		coupleIDs := []entity.ID{}
+
+		for _, val := range notif.Notifications {
+			if !val.UserID.IsZero() {
+				usersMap[val.UserID] = presentation.UserPreview{}
+			}
+			if !val.CoupleID.IsZero() {
+				couplesMap[val.CoupleID] = presentation.CouplePreview{}
+			}
+		}
+
+		for key := range usersMap {
+			userIDs = append(userIDs, key)
+		}
+
+		for key := range couplesMap {
+			coupleIDs = append(coupleIDs, key)
+		}
+
+		users, _ := service.ListUsers(userIDs)
+		couples, _ := coupleService.ListCouple(coupleIDs, primitive.ObjectID{})
+
+		for _, val := range users {
+			usersMap[val.ID] = val
+		}
+
+		for _, val := range couples {
+			couplesMap[val.ID] = val
+		}
+		notifs := utils.GetNotifs(usersMap, couplesMap, notif.Notifications)
+
 		page := entity.Pagination{
 			Next: skip + entity.Limit,
 			End:  len(notif.Notifications) < entity.Limit,
 		}
-		ctx.JSON(http.StatusOK, gin.H{"notifications": notif.Notifications, "new_count": notif.NewCount, "pagination": page})
+		ctx.JSON(http.StatusOK, gin.H{"notifications": notifs, "new_count": notif.NewCount, "pagination": page})
 	}
 }
 
@@ -1212,16 +1243,16 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/u/pending-request", middlewares.Authenticate(), getPendingRequest(service))               //tested
 	// r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	// r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/u/startup", middlewares.Authenticate(), startup(service, coupleMessage))              //tested
-	r.GET("/user/notifications/:skip", middlewares.Authenticate(), notifications(service))             //tested
-	r.GET("/user/u/partner", middlewares.Authenticate(), getPartner(service))                          //tested
-	r.GET("/user/feed/:skip", middlewares.Authenticate(), getFeed(service))                            //tested
-	r.POST("/user/logout", middlewares.Authenticate(), logout)                                         //tested
-	r.POST("/user/u/cancel-request", middlewares.Authenticate(), cancelRequest(service))               //tested
-	r.POST("/user/u/reject-request", middlewares.Authenticate(), rejectRequest(service))               //tested
-	r.POST("/user/couple-request/:userName", middlewares.Authenticate(), initiateRequest(service))     //tested
-	r.POST("/user/follow/:coupleName", middlewares.Authenticate(), follow(service, coupleService))     //tested
-	r.POST("/user/unfollow/:coupleName", middlewares.Authenticate(), unfollow(service, coupleService)) //tested
+	r.GET("/user/u/startup", middlewares.Authenticate(), startup(service, coupleMessage))                 //tested
+	r.GET("/user/notifications/:skip", middlewares.Authenticate(), notifications(service, coupleService)) //tested
+	r.GET("/user/u/partner", middlewares.Authenticate(), getPartner(service))                             //tested
+	r.GET("/user/feed/:skip", middlewares.Authenticate(), getFeed(service))                               //tested
+	r.POST("/user/logout", middlewares.Authenticate(), logout)                                            //tested
+	r.POST("/user/u/cancel-request", middlewares.Authenticate(), cancelRequest(service))                  //tested
+	r.POST("/user/u/reject-request", middlewares.Authenticate(), rejectRequest(service))                  //tested
+	r.POST("/user/couple-request/:userName", middlewares.Authenticate(), initiateRequest(service))        //tested
+	r.POST("/user/follow/:coupleName", middlewares.Authenticate(), follow(service, coupleService))        //tested
+	r.POST("/user/unfollow/:coupleName", middlewares.Authenticate(), unfollow(service, coupleService))    //tested
 	r.POST("/user/exempt/:coupleName", middlewares.Authenticate(), exempt(service, coupleService))
 	r.PUT("/user/new-notifications", middlewares.Authenticate(), clearNewNotifsCount(service))        //tested
 	r.PUT("/user/new-posts", middlewares.Authenticate(), clearFeedPostsCount(service))                //tested

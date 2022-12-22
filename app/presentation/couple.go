@@ -2,6 +2,8 @@ package presentation
 
 import (
 	"time"
+
+	"github.com/dawkaka/theone/entity"
 )
 
 type CoupleProfile struct {
@@ -21,9 +23,10 @@ type CoupleProfile struct {
 }
 
 type CouplePreview struct {
-	CoupleName     string `json:"couple_name" bson:"couple_name"`
-	ProfilePicture string `json:"profile_picture" bson:"profile_picture"`
-	Married        bool   `json:"married"`
-	Verified       bool   `json:"verified"`
-	IsFollowing    bool   `json:"is_following" bson:"is_following"`
+	ID             entity.ID `json:"id" bson:"_id"`
+	CoupleName     string    `json:"couple_name" bson:"couple_name"`
+	ProfilePicture string    `json:"profile_picture" bson:"profile_picture"`
+	Married        bool      `json:"married"`
+	Verified       bool      `json:"verified"`
+	IsFollowing    bool      `json:"is_following" bson:"is_following"`
 }

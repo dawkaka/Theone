@@ -94,27 +94,21 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 
 		//Post created, whether notifications are successful or not user does't need to know
 		go func() {
-			couple, _ := coupleService.ListCouple([]entity.ID{u.CoupleID}, primitive.NewObjectID())
-			var name string
-			if len(couple) > 0 {
-				name = couple[0].CoupleName
-			}
+
 			notif := entity.Notification{
-				Type:    "Mentioned",
-				Message: caption,
-				PostID:  post.PostID,
-				Name:    name,
-				User:    name,
-				Date:    time.Now(),
+				Type:     "Mentioned",
+				Message:  caption,
+				PostID:   post.PostID,
+				CoupleID: u.CoupleID,
+				Date:     time.Now(),
 			}
 			partnerNotif := entity.Notification{
-				Type:    "Partner Posted",
-				Profile: user.ProfilePicture,
-				Message: caption,
-				PostID:  post.PostID,
-				Name:    name,
-				User:    user.Name,
-				Date:    time.Now(),
+				Type:     "Partner Posted",
+				Message:  caption,
+				PostID:   post.PostID,
+				CoupleID: u.CoupleID,
+				UserID:   user.ID,
+				Date:     time.Now(),
 			}
 			userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, partnerNotif)
 			if len(mentions) > 0 {
@@ -228,19 +222,13 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 		}
 		u, _ := userService.GetUser(user.Name)
 		go func() {
-			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID}, primitive.NewObjectID())
-			var name string
-			if len(couple) > 0 {
-				name = couple[0].CoupleName
-			}
 			notif := entity.Notification{
-				Type:    "comment",
-				Message: comment.Comment,
-				Profile: user.ProfilePicture,
-				PostID:  post.PostID,
-				Name:    name,
-				User:    user.Name,
-				Date:    time.Now(),
+				Type:     "comment",
+				Message:  comment.Comment,
+				PostID:   post.PostID,
+				CoupleID: post.CoupleID,
+				UserID:   user.ID,
+				Date:     time.Now(),
 			}
 			_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
 		}()
@@ -284,18 +272,12 @@ func like(service post.UseCase, userService user.UseCase, coupleService couple.U
 			return
 		}
 		go func() {
-			couple, _ := coupleService.ListCouple([]entity.ID{post.CoupleID}, primitive.NewObjectID())
-			var name string
-			if len(couple) > 0 {
-				name = couple[0].CoupleName
-			}
 			notif := entity.Notification{
-				Type:    "like",
-				Profile: user.ProfilePicture,
-				PostID:  post.PostID,
-				User:    user.Name,
-				Name:    name,
-				Date:    time.Now(),
+				Type:     "like",
+				PostID:   post.PostID,
+				UserID:   user.ID,
+				CoupleID: post.CoupleID,
+				Date:     time.Now(),
 			}
 			_ = userService.NotifyCouple([2]entity.ID{post.InitiatedID, post.AcceptedID}, notif)
 

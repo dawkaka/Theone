@@ -47,3 +47,13 @@ type Notification struct {
 	Notifications []entity.Notification `json:"notifications"`
 	NewCount      int                   `json:"new_count"`
 }
+
+type NotificationMapped struct {
+	Type    string    `json:"type"`
+	Message string    `json:"message"`
+	Profile string    `json:"profile"`
+	PostID  string    `json:"post_id,omitempty" bson:"post_id,omitempty"`
+	Name    string    `json:"name,omitempty" bson:"name,omitempty"`
+	Date    time.Time `json:"date"`
+	User    string    `json:"user"`
+}

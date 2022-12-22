@@ -183,7 +183,7 @@ func (u *UserMongo) Following(userName string, skip int) ([]entity.ID, error) {
 	return result.Following, nil
 }
 
-func (u *UserMongo) Notifications(userName string, page int) (presentation.Notification, error) {
+func (u *UserMongo) Notifications(userID entity.ID, page int) (presentation.Notification, error) {
 	opts := options.FindOne().SetProjection(bson.M{"notifications": bson.M{"$slice": []int{page, entity.Limit}}})
 
 	user := entity.User{}
@@ -191,7 +191,7 @@ func (u *UserMongo) Notifications(userName string, page int) (presentation.Notif
 
 	err := u.collection.FindOne(
 		context.TODO(),
-		bson.M{"user_name": userName},
+		bson.M{"_id": userID},
 		opts,
 	).Decode(&user)
 
@@ -336,7 +336,7 @@ func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) erro
 			"notifications": bson.M{"$filter": bson.M{
 				"input": "$notifications",
 				"as":    "notif",
-				"cond":  bson.M{"$eq": []interface{}{"$$notif.user", notif.User}},
+				"cond":  bson.M{"$eq": []interface{}{"$$notif.user_id", notif.UserID}},
 			}},
 		},
 	}}

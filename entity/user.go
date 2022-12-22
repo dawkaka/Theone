@@ -11,13 +11,12 @@ import (
 )
 
 type Notification struct {
-	Type    string    `json:"type"`
-	Message string    `json:"message"`
-	Profile string    `json:"profile"`
-	PostID  string    `json:"post_id,omitempty" bson:"post_id,omitempty"`
-	Name    string    `json:"name,omitempty" bson:"name,omitempty"`
-	Date    time.Time `json:"date"`
-	User    string    `json:"user"`
+	Type     string    `json:"type"`
+	Message  string    `json:"message"`
+	PostID   string    `json:"post_id,omitempty" bson:"post_id,omitempty"`
+	CoupleID ID        `json:"couple_id,omitempty" bson:"couple_id,omitempty"`
+	Date     time.Time `json:"date"`
+	UserID   ID        `json:"user_id" bson:"user_id"`
 }
 
 //User data

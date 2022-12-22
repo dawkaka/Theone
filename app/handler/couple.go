@@ -88,19 +88,18 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 				ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "SomethingWentWrong"))
 				return
 			}
+			notif := entity.Notification{
+				Type:     "Request Accepted",
+				UserID:   user.ID,
+				CoupleID: coupleID,
+				Date:     time.Now(),
+			}
+
+			go func() {
+				_ = userService.NotifyUser(partner.UserName, notif)
+			}()
 		}
 
-		notif := entity.Notification{
-			Type:    "Request Accepted",
-			Profile: user.ProfilePicture,
-			User:    user.UserName,
-			Name:    coupleName,
-			Date:    time.Now(),
-		}
-
-		go func() {
-			_ = userService.NotifyUser(partner.UserName, notif)
-		}()
 		err = userService.NewCouple([2]entity.ID{userb.ID, partnerID}, coupleID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
@@ -444,11 +443,9 @@ func lastLastEdonCast(service couple.UseCase, userService user.UseCase) gin.Hand
 
 		go func() {
 			notif := entity.Notification{
-				Type:    "Break Up",
-				Profile: user.ProfilePicture,
-				User:    user.Name,
-				Name:    user.FirstName + user.LastName,
-				Date:    time.Now(),
+				Type:   "Break Up",
+				UserID: user.ID,
+				Date:   time.Now(),
 			}
 			userService.BreakedUp([2]entity.ID{u.ID, u.PartnerID})
 			_ = userService.NotifyCouple([2]entity.ID{u.PartnerID, primitive.NewObjectID()}, notif)

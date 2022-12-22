@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dawkaka/theone/app/presentation"
 	"github.com/dawkaka/theone/entity"
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/gin-contrib/sessions"
@@ -42,7 +43,6 @@ func GenerateID() string {
 }
 
 //Get session data
-
 func GetSession(session sessions.Session) entity.UserSession {
 	var userSession entity.UserSession
 	val := session.Get("user")
@@ -50,6 +50,30 @@ func GetSession(session sessions.Session) entity.UserSession {
 		userSession = val.(entity.UserSession)
 	}
 	return userSession
+}
+
+func GetNotifs(uMap map[entity.ID]presentation.UserPreview, cMap map[entity.ID]presentation.CouplePreview, notifs []entity.Notification) []presentation.NotificationMapped {
+	notifsM := []presentation.NotificationMapped{}
+	for _, val := range notifs {
+		notif := presentation.NotificationMapped{
+			Type:    val.Type,
+			Message: val.Message,
+			PostID:  val.PostID,
+			Date:    val.Date,
+			Profile: uMap[val.UserID].ProfilePicture,
+			User:    uMap[val.UserID].UserName,
+		}
+		if notif.Type == "Couple Request" || notif.Type == "Request Rejected" {
+			notif.Name = uMap[val.UserID].FirstName + uMap[val.UserID].LastName
+		} else {
+			notif.Name = cMap[val.CoupleID].CoupleName
+		}
+		if notif.Type == "Mentioned" {
+			notif.Profile = cMap[val.CoupleID].ProfilePicture
+		}
+		notifsM = append(notifsM, notif)
+	}
+	return notifsM
 }
 
 //ExtractMentions extracts all users mention (@) so that they can be notified
