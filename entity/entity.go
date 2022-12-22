@@ -32,6 +32,25 @@ const (
 	LimitP         = 6
 	EIGHTEEN_YEARS = 18
 )
+
+type Notif struct {
+	COUPLE_REQUEST   string
+	MENTIONED        string
+	REQUEST_REJECTED string
+	LIKE             string
+	FOLLOW           string
+	COMMENT          string
+}
+
+var NOTIF Notif = Notif{
+	COUPLE_REQUEST:   "Couple Request",
+	MENTIONED:        "Mentioned",
+	REQUEST_REJECTED: "Request Rejected",
+	LIKE:             "like",
+	FOLLOW:           "follow",
+	COMMENT:          "comment",
+}
+
 const (
 	NO_REQUEST int8 = iota
 	SENT_REQUEST

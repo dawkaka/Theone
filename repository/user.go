@@ -353,18 +353,18 @@ func (u *UserMongo) NotifyCouple(c [2]entity.ID, notif entity.Notification) erro
 	if len(notifs) != 0 && len(notifs[0].Notifications) != 0 {
 		for _, val := range notifs[0].Notifications {
 			switch val.Type {
-			case "Mentioned":
+			case entity.NOTIF.MENTIONED:
 				fallthrough
-			case "like":
-				if val.PostID == notif.PostID && notif.Type == "like" || notif.Type == "Mentioned" {
+			case entity.NOTIF.LIKE:
+				if val.PostID == notif.PostID && notif.Type == entity.NOTIF.LIKE || notif.Type == entity.NOTIF.MENTIONED {
 					return nil
 				}
-			case "comment":
+			case entity.NOTIF.COMMENT:
 				if val.PostID == notif.PostID && val.Message == notif.Message {
 					return nil
 				}
-			case "follow":
-				if notif.Type == "follow" {
+			case entity.NOTIF.FOLLOW:
+				if notif.Type == entity.NOTIF.FOLLOW {
 					return nil
 				}
 			default:

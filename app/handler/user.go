@@ -370,7 +370,7 @@ func initiateRequest(service user.UseCase) gin.HandlerFunc {
 			return
 		}
 		notification := entity.Notification{
-			Type:   "Couple Request",
+			Type:   entity.NOTIF.COUPLE_REQUEST,
 			UserID: thisUser.ID,
 			Date:   time.Now(),
 		}
@@ -474,7 +474,7 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 		}
 		go func() {
 			notif := entity.Notification{
-				Type:   "Request Rejected",
+				Type:   entity.NOTIF.REQUEST_REJECTED,
 				UserID: user.ID,
 				Date:   time.Now(),
 			}
@@ -519,7 +519,7 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			return
 		}
 		notif := entity.Notification{
-			Type:   "follow",
+			Type:   entity.NOTIF.FOLLOW,
 			UserID: user.ID,
 			Date:   time.Now(),
 		}

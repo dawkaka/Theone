@@ -63,7 +63,7 @@ func GetNotifs(uMap map[entity.ID]presentation.UserPreview, cMap map[entity.ID]p
 			Profile: uMap[val.UserID].ProfilePicture,
 			User:    uMap[val.UserID].UserName,
 		}
-		if notif.Type == "Couple Request" || notif.Type == "Request Rejected" {
+		if notif.Type == entity.NOTIF.COUPLE_REQUEST || notif.Type == entity.NOTIF.REQUEST_REJECTED {
 			notif.Name = uMap[val.UserID].FirstName + uMap[val.UserID].LastName
 		} else {
 			notif.Name = cMap[val.CoupleID].CoupleName

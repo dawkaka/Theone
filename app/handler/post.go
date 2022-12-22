@@ -223,7 +223,7 @@ func newComment(service post.UseCase, userService user.UseCase, coupleService co
 		u, _ := userService.GetUser(user.Name)
 		go func() {
 			notif := entity.Notification{
-				Type:     "comment",
+				Type:     entity.NOTIF.COMMENT,
 				Message:  comment.Comment,
 				PostID:   post.PostID,
 				CoupleID: post.CoupleID,
@@ -273,7 +273,7 @@ func like(service post.UseCase, userService user.UseCase, coupleService couple.U
 		}
 		go func() {
 			notif := entity.Notification{
-				Type:     "like",
+				Type:     entity.NOTIF.LIKE,
 				PostID:   post.PostID,
 				UserID:   user.ID,
 				CoupleID: post.CoupleID,
