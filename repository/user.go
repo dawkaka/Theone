@@ -462,17 +462,23 @@ func (u *UserMongo) Update(userID entity.ID, update entity.UpdateUser) error {
 	return err
 }
 
-func (u *UserMongo) Follow(coupleID entity.ID, userID entity.ID) error {
+func (u *UserMongo) Follow(coupleID entity.ID, userID entity.ID, couplePosts []entity.ID) error {
 	_, err := u.collection.UpdateByID(
 		context.TODO(),
 		userID,
 		bson.A{
 			bson.D{{
-				Key: "$set", Value: bson.M{"following": bson.M{"$setUnion": []interface{}{"$following", []entity.ID{coupleID}}}},
+				Key: "$set", Value: bson.M{
+					"following":  bson.M{"$setUnion": []interface{}{"$following", []entity.ID{coupleID}}},
+					"feed_posts": bson.M{"$setUnion": []interface{}{"$feed_posts", couplePosts}},
+				},
 			}},
-			bson.D{{
-				Key: "$set", Value: bson.M{"following_count": bson.M{"$size": "$following"}},
-			}},
+			bson.D{
+				{Key: "$set", Value: bson.M{
+					"following_count":     bson.M{"$size": "$following"},
+					"new_feed_post_count": bson.M{"$add": bson.A{"$new_feed_post_count", len(couplePosts)}},
+				}},
+			},
 		},
 	)
 	return err

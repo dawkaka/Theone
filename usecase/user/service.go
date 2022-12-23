@@ -69,8 +69,8 @@ func (s *Service) UpdateUser(userID entity.ID, update entity.UpdateUser) error {
 	return s.repo.Update(userID, update)
 }
 
-func (s *Service) Follow(coupleID, userID entity.ID) error {
-	return s.repo.Follow(coupleID, userID)
+func (s *Service) Follow(coupleID, userID entity.ID, couplePosts []entity.ID) error {
+	return s.repo.Follow(coupleID, userID, couplePosts)
 }
 
 func (s *Service) Unfollow(coupleID, userID entity.ID) error {

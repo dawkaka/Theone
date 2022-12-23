@@ -18,6 +18,7 @@ import (
 	"github.com/dawkaka/theone/pkg/validator"
 	"github.com/dawkaka/theone/repository"
 	"github.com/dawkaka/theone/usecase/couple"
+	"github.com/dawkaka/theone/usecase/post"
 	"github.com/dawkaka/theone/usecase/user"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -487,7 +488,7 @@ func rejectRequest(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
-func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
+func follow(service user.UseCase, coupleService couple.UseCase, postService post.UseCase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		coupleName := ctx.Param("coupleName")
 		user := sessions.Default(ctx).Get("user").(entity.UserSession)
@@ -498,7 +499,8 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "BadRequest"))
 			return
 		}
-		couple, err := coupleService.GetCouple(coupleName, userID)
+
+		couple, err := coupleService.GetCouplePosts(coupleName, 0)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				ctx.JSON(http.StatusNotFound, presentation.Error(lang, "CoupleNotFound"))
@@ -507,17 +509,33 @@ func follow(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc 
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+
 		err = coupleService.NewFollower(userID, couple.ID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
 
-		err = service.Follow(couple.ID, userID)
+		st, ed := len(couple.Posts)-0-entity.LimitP, len(couple.Posts)-0
+
+		if st < 0 {
+			st = 0
+		}
+		if ed < 0 {
+			ed = 0
+		}
+		postIDs := couple.Posts[st:ed]
+		posts, _ := postService.GetPosts(couple.ID, user.ID, postIDs)
+		postObjectIDs := []entity.ID{}
+		for i := len(posts) - 1; i >= 0; i-- {
+			postObjectIDs = append(postObjectIDs, posts[i].ID)
+		}
+		err = service.Follow(couple.ID, userID, postObjectIDs)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
+
 		notif := entity.Notification{
 			Type:   entity.NOTIF.FOLLOW,
 			UserID: user.ID,
@@ -1227,7 +1245,7 @@ func resetPassword(service user.UseCase, verifyRepo repository.VerifyMongo) gin.
 	}
 }
 
-func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, coupleMessage repository.CoupleMessage, verifyRepo repository.VerifyMongo) {
+func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.UseCase, postService post.UseCase, coupleMessage repository.CoupleMessage, verifyRepo repository.VerifyMongo) {
 	r.POST("/user/u/signup", unverifiedSignup(service, verifyRepo)) //tested
 	r.POST("/user/resend-verification-link/:id", resendEmailVerificationLink(verifyRepo))
 	r.POST("/user/verify-signup/:id", signup(service, verifyRepo))
@@ -1243,16 +1261,16 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.GET("/user/u/pending-request", middlewares.Authenticate(), getPendingRequest(service))               //tested
 	// r.GET("/user/messages/:skip", userMessages(service, userMessage))
 	// r.GET("/user/c/messages/:coupleName/:skip", userToACoupleMessages(service, coupleService, userMessage))
-	r.GET("/user/u/startup", middlewares.Authenticate(), startup(service, coupleMessage))                 //tested
-	r.GET("/user/notifications/:skip", middlewares.Authenticate(), notifications(service, coupleService)) //tested
-	r.GET("/user/u/partner", middlewares.Authenticate(), getPartner(service))                             //tested
-	r.GET("/user/feed/:skip", middlewares.Authenticate(), getFeed(service))                               //tested
-	r.POST("/user/logout", middlewares.Authenticate(), logout)                                            //tested
-	r.POST("/user/u/cancel-request", middlewares.Authenticate(), cancelRequest(service))                  //tested
-	r.POST("/user/u/reject-request", middlewares.Authenticate(), rejectRequest(service))                  //tested
-	r.POST("/user/couple-request/:userName", middlewares.Authenticate(), initiateRequest(service))        //tested
-	r.POST("/user/follow/:coupleName", middlewares.Authenticate(), follow(service, coupleService))        //tested
-	r.POST("/user/unfollow/:coupleName", middlewares.Authenticate(), unfollow(service, coupleService))    //tested
+	r.GET("/user/u/startup", middlewares.Authenticate(), startup(service, coupleMessage))                       //tested
+	r.GET("/user/notifications/:skip", middlewares.Authenticate(), notifications(service, coupleService))       //tested
+	r.GET("/user/u/partner", middlewares.Authenticate(), getPartner(service))                                   //tested
+	r.GET("/user/feed/:skip", middlewares.Authenticate(), getFeed(service))                                     //tested
+	r.POST("/user/logout", middlewares.Authenticate(), logout)                                                  //tested
+	r.POST("/user/u/cancel-request", middlewares.Authenticate(), cancelRequest(service))                        //tested
+	r.POST("/user/u/reject-request", middlewares.Authenticate(), rejectRequest(service))                        //tested
+	r.POST("/user/couple-request/:userName", middlewares.Authenticate(), initiateRequest(service))              //tested
+	r.POST("/user/follow/:coupleName", middlewares.Authenticate(), follow(service, coupleService, postService)) //tested
+	r.POST("/user/unfollow/:coupleName", middlewares.Authenticate(), unfollow(service, coupleService))          //tested
 	r.POST("/user/exempt/:coupleName", middlewares.Authenticate(), exempt(service, coupleService))
 	r.PUT("/user/new-notifications", middlewares.Authenticate(), clearNewNotifsCount(service))        //tested
 	r.PUT("/user/new-posts", middlewares.Authenticate(), clearFeedPostsCount(service))                //tested

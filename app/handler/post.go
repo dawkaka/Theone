@@ -456,10 +456,10 @@ func deletePost(service post.UseCase, coupleService couple.UseCase) gin.HandlerF
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
 			return
 		}
-		err = coupleService.RemovePost(user.CoupleID, postID)
+		err = coupleService.RemovePost(user.CoupleID, post.PostID)
 		count := 0
 		for err != nil && count < 2 {
-			err = coupleService.RemovePost(user.CoupleID, postID)
+			err = coupleService.RemovePost(user.CoupleID, post.PostID)
 			count++
 		}
 
