@@ -469,18 +469,45 @@ func (u *UserMongo) Follow(coupleID entity.ID, userID entity.ID, couplePosts []e
 		bson.A{
 			bson.D{{
 				Key: "$set", Value: bson.M{
-					"following":  bson.M{"$setUnion": []interface{}{"$following", []entity.ID{coupleID}}},
-					"feed_posts": bson.M{"$setUnion": []interface{}{"$feed_posts", couplePosts}},
+					"following": bson.M{"$setUnion": []interface{}{"$following", []entity.ID{coupleID}}},
 				},
 			}},
 			bson.D{
 				{Key: "$set", Value: bson.M{
-					"following_count":     bson.M{"$size": "$following"},
-					"new_feed_post_count": bson.M{"$add": bson.A{"$new_feed_post_count", len(couplePosts)}},
+					"following_count": bson.M{"$size": "$following"},
 				}},
 			},
 		},
 	)
+
+	if err == nil {
+		user := entity.User{}
+		opts := options.FindOne().SetProjection(bson.D{{Key: "feed_posts", Value: 1}})
+		err = u.collection.FindOne(context.TODO(), bson.M{"_id": userID}, opts).Decode(&user)
+		if err == nil {
+			newFeedPosts := []entity.ID{}
+			newPostsCount := 0
+			for _, val := range couplePosts {
+				found := false
+				for _, v := range user.FeedPosts {
+					if val.Hex() == v.Hex() {
+						found = true
+						break
+					}
+				}
+				if !found {
+					newPostsCount++
+					newFeedPosts = append(newFeedPosts, val)
+				}
+			}
+			newFeedPosts = append(newFeedPosts, user.FeedPosts...)
+			_, err = u.collection.UpdateByID(
+				context.TODO(),
+				userID,
+				bson.M{"$set": bson.M{"feed_posts": newFeedPosts, "new_feed_post_count": newPostsCount}},
+			)
+		}
+	}
 	return err
 }
 

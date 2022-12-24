@@ -536,10 +536,11 @@ func follow(service user.UseCase, coupleService couple.UseCase, postService post
 		if ed < 0 {
 			ed = 0
 		}
+
 		postIDs := couple.Posts[st:ed]
 		posts, _ := postService.GetPosts(couple.ID, user.ID, postIDs)
 		postObjectIDs := []entity.ID{}
-		for i := len(posts) - 1; i >= 0; i-- {
+		for i := 0; i < len(posts); i++ {
 			postObjectIDs = append(postObjectIDs, posts[i].ID)
 		}
 		err = service.Follow(couple.ID, userID, postObjectIDs)
