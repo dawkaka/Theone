@@ -221,9 +221,10 @@ func login(service user.UseCase) gin.HandlerFunc {
 	}
 }
 
-func getUser(service user.UseCase) gin.HandlerFunc {
+func getUser(service user.UseCase, coupleService couple.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
+
 		userName := ctx.Param("userName")
 		thisUser := utils.GetSession(sessions.Default(ctx))
 		lang := utils.GetLang(thisUser.Lang, ctx.Request.Header)
@@ -231,12 +232,21 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, presentation.Error(lang, "InvalidUserName"))
 			return
 		}
+
 		user, err := service.GetUser(userName)
 
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, presentation.Error(lang, entity.ErrUserNotFound.Error()))
 			return
 		}
+
+		coupleList, _ := coupleService.ListCouple([]entity.ID{user.CoupleID}, user.ID)
+
+		var couple presentation.CouplePreview
+		if len(coupleList) > 0 {
+			couple = coupleList[0]
+		}
+
 		pUser := presentation.UserProfile{
 			FirstName:      user.FirstName,
 			LastName:       user.LastName,
@@ -246,9 +256,11 @@ func getUser(service user.UseCase) gin.HandlerFunc {
 			FollowingCount: user.FollowingCount,
 			ShowPictures:   user.ShowPictures,
 			HasPartner:     user.HasPartner,
+			CoupleName:     couple.CoupleName,
 			IsThisUser:     thisUser.ID == user.ID,
 			Website:        user.Website,
 		}
+
 		if pUser.IsThisUser {
 			pUser.DateOfBirth = user.DateOfBirth
 		}
@@ -1253,7 +1265,7 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase, coupleService couple.
 	r.POST("/user/request-password-reset/:email", passwordResetRequest(service, verifyRepo))
 	r.POST("/user/reset-password/:linkID", resetPassword(service, verifyRepo))
 	r.GET("/user/availability/:name", checkAvailability(service))
-	r.GET("/user/:userName", getUser(service)) //tested
+	r.GET("/user/:userName", getUser(service, coupleService)) //tested
 
 	r.GET("/user/u/session", middlewares.Authenticate(), userSession(service))                             //tested
 	r.GET("/user/search/:query", middlewares.Authenticate(), searchUsers(service))                         //tested
