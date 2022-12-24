@@ -15,6 +15,7 @@ type CoupleProfile struct {
 	FollowersCount uint64    `json:"followers_count"`
 	PostCount      uint64    `json:"post_count"`
 	Married        bool      `json:"married"`
+	UserNames      []string  `json:"user_names"`
 	Website        string    `json:"website"`
 	DateCommenced  time.Time `json:"date_commenced,omitempty" bson:"date_commenced,omitempty"`
 	Verified       bool      `json:"verified"`

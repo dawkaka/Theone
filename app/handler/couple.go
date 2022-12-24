@@ -117,7 +117,7 @@ func newCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 
 }
 
-func getCouple(service couple.UseCase) gin.HandlerFunc {
+func getCouple(service couple.UseCase, userService user.UseCase) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		coupleName := ctx.Param("coupleName")
@@ -138,6 +138,12 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			return
 		}
 
+		users, _ := userService.ListUsers([]entity.ID{couple.Accepted, couple.Initiated})
+		userNames := []string{}
+		for _, val := range users {
+			userNames = append(userNames, val.UserName)
+		}
+
 		pCouple := presentation.CoupleProfile{
 			CoupleName:     couple.CoupleName,
 			AcceptedAt:     couple.AcceptedAt,
@@ -145,6 +151,7 @@ func getCouple(service couple.UseCase) gin.HandlerFunc {
 			FollowersCount: couple.FollowersCount,
 			ProfilePicture: couple.ProfilePicture,
 			CoverPicture:   couple.CoverPicture,
+			UserNames:      userNames,
 			PostCount:      couple.PostCount,
 			Married:        couple.Married,
 			Verified:       couple.Verified,
@@ -663,7 +670,7 @@ func blockUser(service couple.UseCase, userService user.UseCase) gin.HandlerFunc
 
 func MakeCoupleHandlers(r *gin.Engine, service couple.UseCase, userService user.UseCase, postService post.UseCase,
 	coupleMessage repository.CoupleMessage, userMessage repository.UserCoupleMessage, reportRepo repository.Reports) {
-	r.GET("/:coupleName", middlewares.CheckBlocked(service), getCouple(service)) //tested
+	r.GET("/:coupleName", middlewares.CheckBlocked(service), getCouple(service, userService)) //tested
 	r.GET("/:coupleName/posts/:skip", middlewares.CheckBlocked(service), getCouplePosts(service, postService))
 	r.GET("/:coupleName/videos/:skip", getCoupleVideos(service))
 	r.GET("/couple/search/:query", searchCouples(service))
