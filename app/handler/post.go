@@ -45,22 +45,20 @@ func newPost(service post.UseCase, coupleService couple.UseCase, userService use
 			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrong"))
 			return
 		}
+
 		if !u.HasPartner {
 			ctx.JSON(http.StatusForbidden, presentation.Error(lang, "OnlyCoupleCanPost"))
 			return
 		}
 		filesMetadata, cErr := myaws.UploadMultipleFiles(files)
-		if cErr != nil {
-			ctx.JSON(http.StatusInternalServerError, presentation.Error(lang, "SomethingWentWrongInternal"))
-		}
-		for i := 0; i < len(filesMetadata); i++ {
-			filesMetadata[i].Alt = alts[i]
-		}
 
 		if cErr != nil {
-
 			ctx.JSON(cErr.Code, presentation.Error(lang, cErr.Error()))
 			return
+		}
+
+		for i := 0; i < len(filesMetadata); i++ {
+			filesMetadata[i].Alt = alts[i]
 		}
 
 		mentions := utils.ExtracMentions(caption)
