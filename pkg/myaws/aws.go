@@ -128,7 +128,7 @@ func upload(file *multipart.FileHeader, ch chan any, i int) {
 		ch <- entity.ErrImageProcessing
 	}
 	pFile := make([]byte, file.Size)
-	if file.Size > 16000000 {
+	if file.Size > 32000000 {
 		ch <- entity.CustomError{Code: http.StatusForbidden, Message: entity.ErrFileTooLarge.Error()}
 	}
 	f.Read(pFile)
