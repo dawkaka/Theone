@@ -307,7 +307,7 @@
   },
   "VideoTooLong": {
     "description": "Long video",
-    "other": "Video can not be longer 30 seconds"
+    "other": "Video can not be longer than 30 seconds"
   },
   "VideoProcessingFailed": {
     "description": "Failed to process video",
