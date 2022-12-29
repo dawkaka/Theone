@@ -1143,8 +1143,8 @@ func getFeed(service user.UseCase) gin.HandlerFunc {
 		}
 
 		page := entity.Pagination{
-			Next: skip + entity.Limit,
-			End:  skip+entity.Limit >= len(u.FeedPosts),
+			Next: skip + entity.LimitP,
+			End:  skip+entity.LimitP >= len(u.FeedPosts),
 		}
 		ctx.JSON(http.StatusOK, gin.H{"feed": feed, "pagination": page})
 	}

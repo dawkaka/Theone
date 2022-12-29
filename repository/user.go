@@ -693,7 +693,7 @@ func (u *UserMongo) GetFeedPosts(userID entity.ID, skip int) ([]presentation.Pos
 		},
 	}
 	skipStage := bson.D{{Key: "$skip", Value: skip}}
-	limitStage := bson.D{{Key: "$limit", Value: entity.Limit}}
+	limitStage := bson.D{{Key: "$limit", Value: entity.LimitP}}
 	joinStage := bson.D{
 		{
 			Key: "$lookup",
