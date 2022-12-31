@@ -74,6 +74,12 @@ func main() {
 	postService := post.NewService(postsRepo)
 	coupleService := couple.NewService(couplesRepo)
 
+	r.GET("/user/man/is/international/now/check/the/statistics", func(ctx *gin.Context) {
+		cStats := couplesRepo.GetStats()
+		uStats := usersRepo.GetStats()
+		pStats := postsRepo.GetStats()
+		ctx.JSON(200, gin.H{"users": uStats, "couples": cStats, "posts": pStats})
+	})
 	gob.Register(entity.UserSession{})
 	r.Use(sessions.Sessions("session", store))
 	r.Use(middlewares.CORSMiddleware())

@@ -431,3 +431,12 @@ func (p *PostMongo) Explore(coupleIDs []entity.ID, userID entity.ID, country str
 	err = cursor.All(context.TODO(), &result)
 	return result, err
 }
+
+func (p *PostMongo) GetStats() interface{} {
+	v, err := p.collection.CountDocuments(context.TODO(), bson.M{})
+	vp := struct{ PostCount interface{} }{PostCount: v}
+	if err != nil {
+		vp.PostCount = err.Error()
+	}
+	return vp
+}

@@ -789,3 +789,23 @@ func (u *UserMongo) ResetPassword(email, password string) error {
 	)
 	return err
 }
+
+func (u *UserMongo) GetStats() interface{} {
+	total, err := u.collection.CountDocuments(context.TODO(), bson.M{})
+
+	yesterday := time.Now().Add(-24 * time.Hour)
+	query := bson.M{"last_visited": bson.M{"$gte": yesterday}}
+	daily, err2 := u.collection.CountDocuments(context.TODO(), query)
+	v := struct {
+		Total      interface{}
+		DailyTotal interface{}
+	}{Total: total, DailyTotal: daily}
+
+	if err != nil {
+		v.Total = err.Error()
+	}
+	if err2 != nil {
+		v.DailyTotal = err.Error()
+	}
+	return v
+}

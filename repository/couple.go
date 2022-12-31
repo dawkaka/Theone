@@ -475,3 +475,22 @@ func (c *CoupleMongo) IsBlocked(coupleName string, userID entity.ID) (bool, erro
 	}
 	return true, nil
 }
+
+func (c *CoupleMongo) GetStats() interface{} {
+	val, err := c.collection.CountDocuments(context.TODO(), bson.M{"separated": false})
+	val2, err2 := c.collection.CountDocuments(context.TODO(), bson.M{"separated": false, "posts": bson.M{"$exists": true, "$not": bson.M{"$size": 0}}})
+	v := struct {
+		Couples         interface{}
+		CouplesWithPost interface{}
+	}{
+		Couples:         val,
+		CouplesWithPost: val2,
+	}
+	if err != nil {
+		v.Couples = err.Error()
+	}
+	if err2 != nil {
+		v.CouplesWithPost = err2.Error()
+	}
+	return v
+}

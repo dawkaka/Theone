@@ -13,6 +13,7 @@ type Reader interface {
 	Comments(postID, userID string, skip int) ([]presentation.Comment, error)
 	GetPosts(coupleID, userID entity.ID, postIDs []string) ([]presentation.Post, error)
 	Explore(coupleIDs []entity.ID, userID entity.ID, country string, skip int) ([]presentation.Post, error)
+	GetStats() interface{}
 }
 
 //Writer user writer

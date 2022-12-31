@@ -34,6 +34,7 @@ type Reader interface {
 	FollowersToNotify(copuleID entity.ID, skip int) ([]entity.ID, error)
 	SuggestedAccounts(exempted []entity.ID, country string) ([]presentation.CouplePreview, error)
 	IsBlocked(coupleName string, userID entity.ID) (bool, error)
+	GetStats() interface{}
 }
 
 //Repository all couple methods

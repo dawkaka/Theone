@@ -22,6 +22,7 @@ type Reader interface {
 	GetFeedPosts(postID entity.ID, skip int) ([]presentation.Post, error)
 	CheckNameAvailability(name string) bool
 	ExemptedFromSuggestedAccounts(userID entity.ID, addExempt bool) ([]entity.ID, error)
+	GetStats() interface{}
 }
 
 //Writer user writer
