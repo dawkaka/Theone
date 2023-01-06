@@ -164,7 +164,7 @@ func signup(service user.UseCase, verifyRepo repository.VerifyMongo) gin.Handler
 		session.Set("user", userSession)
 		_ = session.Save()
 		ctx.SetCookie("user_ID", insertedID.Hex(), 5*365*24*60*60*1000, "/", config.COOKIE_DOMAIN, false, false)
-		ctx.JSON(http.StatusCreated, presentation.Success(lang, "SignupSuccessfull"))
+		ctx.JSON(http.StatusCreated, gin.H{"user_name": userName})
 	}
 }
 
