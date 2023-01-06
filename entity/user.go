@@ -120,9 +120,7 @@ func (s Signup) Validate() []error {
 	if !validator.IsPassword(s.Password) {
 		errs = append(errs, errors.New("WrongPasswordFormat"))
 	}
-	if s.Password != s.RepeatPassword {
-		errs = append(errs, errors.New("PasswordsDontMatch"))
-	}
+
 	if !validator.IsUserName(s.UserName) || !validator.IsNotBadName(s.UserName) {
 		errs = append(errs, errors.New("WrongUserNameFormat"))
 	}
