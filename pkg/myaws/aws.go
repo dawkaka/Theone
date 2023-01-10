@@ -114,6 +114,9 @@ func UploadMultipleFiles(files []*multipart.FileHeader) ([]entity.PostMetadata, 
 }
 
 func DeleteFile(key string, bucket string) error {
+	if strings.Contains(key, "default") {
+		return nil
+	}
 	svc := s3.New(sess)
 	_, err := svc.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
