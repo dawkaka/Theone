@@ -201,11 +201,8 @@ func IsValidSetting(setting, value string) bool {
 }
 
 func Is18Plus(date time.Time) bool {
-	now := time.Now()
-	Today := now.Year() + int(now.Month()) + now.Day()
-	UserAge := date.Year() + int(date.Month()) + date.Day()
-	AgeDiff := Today - UserAge
-	return AgeDiff >= 18
+	age := time.Since(date)
+	return age.Hours()/8766 > 18
 }
 
 func IsSupportedLanguage(lang string) bool {
