@@ -421,17 +421,53 @@ func (c *CoupleMongo) SuggestedAccounts(exempted []entity.ID, country string) ([
 		return nil, err
 	}
 	res2 := []presentation.CouplePreview{}
-	if len(results) < 10 {
-		category := utils.GetCategory(1, country)
-		fechted := []string{}
+	category := utils.GetCategory(1, country)
+	if len(results) < 10 && len(category) > 0 {
+		fetched := []string{}
 		for _, val := range results {
-			fechted = append(fechted, val.CoupleName)
+			fetched = append(fetched, val.CoupleName)
 		}
 		matchStage := bson.D{{Key: "$match", Value: bson.D{
 			{Key: "_id", Value: bson.D{{Key: "$nin", Value: exempted}}},
 			{Key: "separated", Value: false},
 			{Key: "country", Value: bson.M{"$in": category}},
-			{Key: "couple_name", Value: bson.M{"$nin": fechted}},
+			{Key: "couple_name", Value: bson.M{"$nin": fetched}},
+		},
+		}}
+		sortStage := bson.D{{Key: "$sort", Value: bson.M{"followers_count": -1}}}
+		limitStage := bson.D{{Key: "$limit", Value: 10 - len(results)}}
+
+		projectStage := bson.D{{
+			Key: "$project",
+			Value: bson.M{
+				"couple_name":     1,
+				"profile_picture": 1,
+				"married":         1,
+				"verified":        1,
+			},
+		}}
+
+		cursor, err := c.collection.Aggregate(
+			context.TODO(),
+			mongo.Pipeline{matchStage, sortStage, limitStage, projectStage},
+		)
+		if err != nil {
+			return nil, err
+		}
+		cursor.All(context.TODO(), &res2)
+	}
+
+	results = append(results, res2...)
+	res2 = []presentation.CouplePreview{}
+	if len(results) < 10 {
+		fetched := []string{}
+		for _, val := range results {
+			fetched = append(fetched, val.CoupleName)
+		}
+		matchStage := bson.D{{Key: "$match", Value: bson.D{
+			{Key: "_id", Value: bson.D{{Key: "$nin", Value: exempted}}},
+			{Key: "separated", Value: false},
+			{Key: "couple_name", Value: bson.M{"$nin": fetched}},
 		},
 		}}
 		sortStage := bson.D{{Key: "$sort", Value: bson.M{"followers_count": -1}}}
