@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	apitoolkit "github.com/apitoolkit/apitoolkit-go"
 	"github.com/dawkaka/theone/app/handler"
 	"github.com/dawkaka/theone/app/middlewares"
 	config "github.com/dawkaka/theone/conf"
@@ -59,6 +60,15 @@ func main() {
 	}()
 
 	db := client.Database(config.DB_DATABASE)
+	ctx := context.Background()
+
+	apitoolkitClient, err := apitoolkit.NewClient(ctx, apitoolkit.Config{APIKey: config.API_TOOLKIT_KEY})
+
+	if err != nil {
+		panic(err)
+	}
+
+	r.Use(apitoolkitClient.GinMiddleware)
 
 	usersRepo := repository.NewUserMongo(db.Collection("users"))
 	couplesRepo := repository.NewCoupleMongo(db.Collection("couples"))
